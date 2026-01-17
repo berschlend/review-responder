@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Video Page - ReviewResponder</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      background: #f8f9fa;
+      min-height: 100vh;
+    }
+
+    /* Google Maps Header */
+    .gm-header {
+      background: #fff;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid #e0e0e0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .gm-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 22px;
+      font-weight: 500;
+      color: #5f6368;
+    }
+
+    .gm-logo svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .gm-search {
+      flex: 1;
+      max-width: 600px;
+      background: #f1f3f4;
+      border-radius: 24px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .gm-search input {
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      width: 100%;
+      outline: none;
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 800px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    /* Business Card */
+    .business-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .business-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .business-photo {
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .business-info h1 {
+      font-size: 24px;
+      font-weight: 500;
+      color: #202124;
+      margin-bottom: 8px;
+    }
+
+    .business-rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .rating-number {
+      font-size: 14px;
+      font-weight: 500;
+      color: #202124;
+    }
+
+    .stars {
+      color: #fbbc04;
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+
+    .review-count {
+      color: #5f6368;
+      font-size: 14px;
+    }
+
+    .business-type {
+      color: #5f6368;
+      font-size: 14px;
+    }
+
+    /* Reviews Section */
+    .reviews-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .reviews-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .reviews-header h2 {
+      font-size: 18px;
+      font-weight: 500;
+      color: #202124;
+    }
+
+    /* Single Review */
+    .review {
+      padding: 16px 0;
+      border-bottom: 1px solid #f1f3f4;
+    }
+
+    .review:last-child {
+      border-bottom: none;
+    }
+
+    .review-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #ea4335;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      font-size: 18px;
+    }
+
+    .author-info {
+      flex: 1;
+    }
+
+    .author-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #202124;
+    }
+
+    .review-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .review-stars {
+      color: #fbbc04;
+      font-size: 14px;
+    }
+
+    .review-date {
+      color: #5f6368;
+      font-size: 12px;
+    }
+
+    .review-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #202124;
+      margin-bottom: 12px;
+    }
+
+    .review-actions {
+      display: flex;
+      gap: 16px;
+    }
+
+    .review-action {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #5f6368;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 16px;
+      transition: background 0.2s;
+    }
+
+    .review-action:hover {
+      background: #f1f3f4;
+    }
+
+    .review-action.reply-btn {
+      color: #1a73e8;
+      font-weight: 500;
+    }
+
+    /* Reply Section */
+    .reply-section {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .reply-section.active {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .reply-label {
+      font-size: 13px;
+      color: #5f6368;
+      margin-bottom: 8px;
+    }
+
+    .reply-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .reply-textarea:focus {
+      border-color: #1a73e8;
+    }
+
+    .reply-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      border: none;
+      color: #1a73e8;
+    }
+
+    .btn-cancel:hover {
+      background: #e8f0fe;
+    }
+
+    .btn-submit {
+      background: #1a73e8;
+      border: none;
+      color: white;
+    }
+
+    .btn-submit:hover {
+      background: #1557b0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .btn-submit:disabled {
+      background: #dadce0;
+      cursor: not-allowed;
+    }
+
+    /* Success State */
+    .success-message {
+      display: none;
+      padding: 16px;
+      background: #e6f4ea;
+      border-radius: 8px;
+      margin-top: 16px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .success-message.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .success-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #137333;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .success-icon {
+      font-size: 20px;
+    }
+
+    /* Owner Response */
+    .owner-response {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      border-left: 3px solid #1a73e8;
+    }
+
+    .owner-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .owner-badge {
+      background: #1a73e8;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .owner-date {
+      color: #5f6368;
+      font-size: 12px;
+    }
+
+    .owner-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #202124;
+    }
+
+    /* Controls (hidden during recording) */
+    .demo-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 8px;
+      z-index: 1000;
+    }
+
+    .demo-controls button {
+      padding: 8px 16px;
+      background: #202124;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .demo-controls button:hover {
+      background: #3c4043;
+    }
+
+    .demo-controls.hidden {
+      display: none;
+    }
+
+    /* Timer Overlay */
+    .timer-overlay {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      color: #4ade80;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 24px;
+      font-weight: bold;
+      display: none;
+      z-index: 1000;
+    }
+
+    .timer-overlay.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- Google Maps Header -->
+  <header class="gm-header">
+    <div class="gm-logo">
+      <svg viewBox="0 0 92 30" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#4285F4" d="M7.7 10.3c0-.8-.1-1.5-.2-2.2H0v4.1h4.3c-.2 1-.7 1.8-1.5 2.4v2h2.4c1.4-1.3 2.5-3.2 2.5-6.3z"/>
+        <path fill="#34A853" d="M0 14.8c2 0 3.6-.7 4.8-1.8l-2.4-2c-.7.5-1.5.8-2.4.8-1.8 0-3.4-1.2-4-2.9H-4v2c1.2 2.4 3.6 3.9 6.4 3.9z"/>
+      </svg>
+      <span>Maps</span>
+    </div>
+    <div class="gm-search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#5f6368">
+        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input type="text" value="hotels near me" readonly>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Business Card -->
+    <div class="business-card">
+      <div class="business-header">
+        <div class="business-photo">GH</div>
+        <div class="business-info">
+          <h1>The Godfrey Hotel Hollywood</h1>
+          <div class="business-rating">
+            <span class="rating-number">3.4</span>
+            <span class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+            <span class="review-count">(1,096 reviews)</span>
+          </div>
+          <div class="business-type">Hotel in Los Angeles, California</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="reviews-section">
+      <div class="reviews-header">
+        <h2>Reviews</h2>
+      </div>
+
+      <!-- The Review (this is what gets selected) -->
+      <div class="review" id="main-review">
+        <div class="review-author">
+          <div class="author-avatar">J</div>
+          <div class="author-info">
+            <div class="author-name">John Davidson</div>
+            <div class="review-meta">
+              <span class="review-stars">&#9733;&#9734;&#9734;&#9734;&#9734;</span>
+              <span class="review-date">2 weeks ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-text" id="review-text">
+          Worst hotel stay ever. Room was dirty, staff was incredibly rude when I asked for help, and the AC didn't work at all. I couldn't sleep because of the heat. Avoid this place at all costs!
+        </div>
+        <div class="review-actions">
+          <div class="review-action">
+            <span>&#128077;</span> Helpful
+          </div>
+          <div class="review-action reply-btn" id="reply-btn">
+            <span>&#8617;</span> Reply
+          </div>
+          <div class="review-action">
+            <span>&#8942;</span>
+          </div>
+        </div>
+
+        <!-- Reply Section (hidden initially) -->
+        <div class="reply-section" id="reply-section">
+          <div class="reply-label">Response as owner</div>
+          <textarea
+            class="reply-textarea"
+            id="reply-textarea"
+            aria-label="Write a reply to this review"
+            placeholder="Write your reply..."
+          ></textarea>
+          <div class="reply-actions">
+            <button class="btn btn-cancel" id="cancel-btn">Cancel</button>
+            <button class="btn btn-submit" id="submit-btn" aria-label="Post reply">Post reply</button>
+          </div>
+        </div>
+
+        <!-- Success Message (hidden initially) -->
+        <div class="success-message" id="success-message">
+          <div class="success-header">
+            <span class="success-icon">&#10004;</span>
+            Your reply was posted
+          </div>
+          <div class="owner-response">
+            <div class="owner-header">
+              <span class="owner-badge">Owner</span>
+              <span class="owner-date">Just now</span>
+            </div>
+            <div class="owner-text" id="owner-response-text"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Review (for realism) -->
+      <div class="review">
+        <div class="review-author">
+          <div class="author-avatar" style="background: #34a853;">S</div>
+          <div class="author-info">
+            <div class="author-name">Sarah M.</div>
+            <div class="review-meta">
+              <span class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+              <span class="review-date">1 month ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-text">
+          Great location, walking distance to Hollywood attractions. Room was clean and modern. Only downside was the noise from the street at night.
+        </div>
+        <div class="review-actions">
+          <div class="review-action">
+            <span>&#128077;</span> Helpful (3)
+          </div>
+          <div class="review-action reply-btn">
+            <span>&#8617;</span> Reply
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo Controls (hide with ?hideControls=true) -->
+  <div class="demo-controls" id="demo-controls">
+    <button onclick="resetDemo()">Reset Demo</button>
+    <button onclick="toggleTimer()">Toggle Timer</button>
+    <button onclick="hideControls()">Hide Controls</button>
+  </div>
+
+  <!-- Timer Overlay -->
+  <div class="timer-overlay" id="timer-overlay">00:00</div>
+
+  <script>
+    // Elements
+    const replyBtn = document.getElementById('reply-btn');
+    const replySection = document.getElementById('reply-section');
+    const replyTextarea = document.getElementById('reply-textarea');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const successMessage = document.getElementById('success-message');
+    const ownerResponseText = document.getElementById('owner-response-text');
+    const timerOverlay = document.getElementById('timer-overlay');
+    const demoControls = document.getElementById('demo-controls');
+
+    // Timer variables
+    let timerInterval = null;
+    let timerSeconds = 0;
+    let timerActive = false;
+
+    // Open Reply Section
+    replyBtn.addEventListener('click', () => {
+      replySection.classList.add('active');
+      replyTextarea.focus();
+
+      // Start timer when reply opens
+      if (!timerActive && timerOverlay.classList.contains('active')) {
+        startTimer();
+      }
+    });
+
+    // Cancel Reply
+    cancelBtn.addEventListener('click', () => {
+      replySection.classList.remove('active');
+      replyTextarea.value = '';
+    });
+
+    // Submit Reply
+    submitBtn.addEventListener('click', () => {
+      const responseText = replyTextarea.value.trim();
+      if (responseText) {
+        // Hide reply section
+        replySection.classList.remove('active');
+
+        // Show success message with the response
+        ownerResponseText.textContent = responseText;
+        successMessage.classList.add('active');
+
+        // Stop timer
+        if (timerActive) {
+          stopTimer();
+        }
+      }
+    });
+
+    // Also handle Enter in textarea for quick submit
+    replyTextarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        submitBtn.click();
+      }
+    });
+
+    // Listen for text changes (for extension compatibility)
+    replyTextarea.addEventListener('input', () => {
+      submitBtn.disabled = !replyTextarea.value.trim();
+    });
+
+    // Timer functions
+    function startTimer() {
+      timerActive = true;
+      timerSeconds = 0;
+      timerInterval = setInterval(() => {
+        timerSeconds++;
+        const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+        const secs = (timerSeconds % 60).toString().padStart(2, '0');
+        timerOverlay.textContent = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function stopTimer() {
+      timerActive = false;
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function toggleTimer() {
+      timerOverlay.classList.toggle('active');
+      if (!timerOverlay.classList.contains('active')) {
+        stopTimer();
+        timerSeconds = 0;
+        timerOverlay.textContent = '00:00';
+      }
+    }
+
+    // Reset Demo
+    function resetDemo() {
+      replySection.classList.remove('active');
+      successMessage.classList.remove('active');
+      replyTextarea.value = '';
+      ownerResponseText.textContent = '';
+      stopTimer();
+      timerSeconds = 0;
+      timerOverlay.textContent = '00:00';
+    }
+
+    // Hide Controls
+    function hideControls() {
+      demoControls.classList.add('hidden');
+    }
+
+    // Check URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('hideControls') === 'true') {
+      hideControls();
+    }
+    if (urlParams.get('showTimer') === 'true') {
+      timerOverlay.classList.add('active');
+    }
+
+    // Custom business name from URL
+    const businessName = urlParams.get('business');
+    if (businessName) {
+      document.querySelector('.business-info h1').textContent = decodeURIComponent(businessName);
+    }
+
+    // Custom review text from URL
+    const reviewText = urlParams.get('review');
+    if (reviewText) {
+      document.getElementById('review-text').textContent = decodeURIComponent(reviewText);
+    }
+
+    // Console log for debugging extension integration
+    console.log('Demo Video Page loaded. ReviewResponder Extension should detect:');
+    console.log('- Reply textarea with aria-label="Write a reply to this review"');
+    console.log('- Submit button with aria-label="Post reply"');
+  </script>
+</body>
+</html>
