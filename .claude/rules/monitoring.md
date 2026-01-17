@@ -123,27 +123,33 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\claude-notify.ps1" \
 
 ## Real User Definition (KRITISCH!)
 
-> **ECHTER USER = Mindestens 1 Response generiert**
+> **ECHTER USER = Mind. 1 Generierung EGAL WO**
+> - `responses` (eingeloggt generiert)
+> - `demo_generations` (Demo-Seite mit Email)
 > Registration allein zaehlt NICHT!
 
 ```
-DB-Felder (user-list Endpoint):
-- total_registered = Alle mit Account (inkl. 0 Responses)
-- total_real = Nur User mit 1+ Response generiert
+API Response (admin/stats):
+realUsers: {
+  total: X,        // Echte User (1+ Generierung)
+  viaGenerator: Y, // Davon eingeloggt generiert
+  viaDemo: Z,      // Nur Demo-Generierung (ohne responses)
+  inactive: A      // Registriert aber 0 Generierungen
+}
 
 BEISPIEL:
-- 60 registered, 6 real = 54 haben nie das Produkt genutzt!
-- Das ist ein ONBOARDING Problem, nicht Traffic Problem
+- 60 registered, 6 real, 54 inactive = Onboarding Problem!
+- Demo-Generierung zaehlt auch als "aktiv"!
 ```
 
 ### API Check
 ```bash
-# User-Liste mit Real/Registered Split:
+# Stats mit Real/Inactive Split:
 curl -s -H "x-admin-key: XXX" \
-  "https://review-responder.onrender.com/api/admin/user-list?exclude_test=true"
+  "https://review-responder.onrender.com/api/admin/stats?exclude_test=true"
 
 # Response enthaelt:
-# { total_registered: 60, total_real: 6, ... }
+# { realUsers: { total: 6, viaGenerator: 4, viaDemo: 2, inactive: 54 }, ... }
 ```
 
 ---

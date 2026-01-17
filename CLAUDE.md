@@ -63,7 +63,7 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 | 3 | Test-Accounts: `?exclude_test=true` | Metriken verfaelscht |
 | 4 | Bei weisser Seite: Browser Console | React-Errors dort sichtbar |
 | 5 | Discount vor Nutzung implementieren | Stripe-Handler pruefen |
-| 6 | **ECHTER USER = 1+ Response generiert** | Registration != Activation |
+| 6 | **ECHTER USER = 1+ Generierung (egal wo!)** | responses ODER demo_generations |
 
 ---
 
@@ -197,6 +197,10 @@ Claude entfernt Task aus `.claude/sticky-tasks.json`
 | Gemini Design | ACTIVE |
 | Chrome MCP (`claude --chrome`) | ACTIVE |
 
+### Browser Screenshots (Autonom)
+`computer(action: "screenshot")` braucht KEINE User-Verifikation.
+Nicht verwechseln mit `/screenshot` Skill (User macht Win+Shift+S).
+
 ### Marketing Skill
 `/marketing [status|chase|outreach|demo|analyze|linkedin]`
 
@@ -267,11 +271,14 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
-### Real User Definition (18.01.2026)
+### Real User Definition (17.01.2026, updated 18.01)
 **Problem:** 56 "User" in DB aber 0 zahlende Kunden. Inflated Metrics.
-**Loesung:** Echter User = Mind. 1 Response generiert (nicht nur registriert).
-**API:** `/api/admin/user-list` jetzt mit `total_registered` (0 Responses) vs `total_real` (1+ Responses).
-**Lesson:** Registration != Activation. 6 registriert, 0 echte User = Onboarding Problem!
+**Loesung:** Echter User = Mind. 1 Generierung EGAL WO:
+- `responses` (eingeloggt generiert)
+- `demo_generations` (Demo-Seite mit Email via outreach_leads JOIN)
+**API:** `/api/admin/stats` hat jetzt `realUsers.total`, `realUsers.viaGenerator`, `realUsers.viaDemo`, `realUsers.inactive`
+**Dashboard:** Zeigt Real Users / Inactive / Paying nebeneinander
+**Lesson:** Registration != Activation. Demo-Generierung zaehlt auch als "aktiv"!
 
 ### react-select fuer Searchable Dropdowns (18.01.2026)
 **Problem:** Native `<select>` mit 20+ Business Types ist unuebersichtlich.

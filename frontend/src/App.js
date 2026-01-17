@@ -31860,6 +31860,15 @@ const AdminPage = () => {
                   </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: '#EF4444' }}>
+                    {salesData.realUsers?.inactive || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Inactive</div>
+                  <div style={{ fontSize: '10px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    0 Generierungen
+                  </div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '36px', fontWeight: '700', color: '#10B981' }}>
                     {salesData.users?.paying || 0}
                   </div>

@@ -132,12 +132,15 @@ releaseLock('email_send', leadId);
 
 ## Real User Definition (KRITISCH!)
 
-> **ECHTER USER = Mindestens 1 Response generiert**
+> **ECHTER USER = Mind. 1 Generierung EGAL WO**
+> - `responses` (eingeloggt generiert)
+> - `demo_generations` (Demo-Seite mit Email)
 > Registration allein zaehlt NICHT!
 
 ```
 Warum wichtig fuer Sales:
-- 60 registered, 6 real = 90% Churn vor erster Nutzung
+- 60 registered, 6 real, 54 inactive = 90% Churn vor erster Nutzung
+- Demo-Generierung zaehlt auch als "aktiv"!
 - Problem ist ONBOARDING, nicht mehr Leads scrapen
 - Fokus auf Activation, nicht Acquisition
 ```
