@@ -1426,17 +1426,25 @@ async function initDatabase() {
     await dbQuery(`ALTER TABLE email_captures ADD COLUMN IF NOT EXISTS business_type TEXT`);
 
     // Public try usage tracking (for InstantDemoWidget analytics)
+    // Enhanced 18.01.2026: Added session_id + email for Real User tracking
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS public_try_usage (
         id SERIAL PRIMARY KEY,
         ip_hash TEXT NOT NULL,
+        session_id TEXT,
+        email TEXT,
         review_length INTEGER,
         tone TEXT,
         platform TEXT,
         business_type TEXT,
+        converted_to_user_id INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // Add columns if table already exists
+    await dbQuery(`ALTER TABLE public_try_usage ADD COLUMN IF NOT EXISTS session_id TEXT`);
+    await dbQuery(`ALTER TABLE public_try_usage ADD COLUMN IF NOT EXISTS email TEXT`);
+    await dbQuery(`ALTER TABLE public_try_usage ADD COLUMN IF NOT EXISTS converted_to_user_id INTEGER`);
 
     // Personalized discount links
     await dbQuery(`
@@ -8960,23 +8968,32 @@ Respond DIRECTLY. No quotes. No prefix. Just the response text.`;
       generatedResponse = cleanAISlop(generatedResponse);
     }
 
-    // Track try usage for analytics
+    // Track try usage for analytics - Enhanced 18.01.2026 with session_id
+    const ipHash = crypto
+      .createHash('sha256')
+      .update(req.ip || 'unknown')
+      .digest('hex')
+      .substring(0, 16);
+    const sessionId = req.body.sessionId || req.headers['x-session-id'] || null;
+    const userEmail = authenticatedUser?.email || req.body.email || null;
+
     try {
-      await dbQuery(
-        `INSERT INTO public_try_usage (ip_hash, review_length, tone, platform, business_type, created_at)
-         VALUES ($1, $2, $3, $4, $5, NOW())`,
+      const result = await dbQuery(
+        `INSERT INTO public_try_usage (ip_hash, session_id, email, review_length, tone, platform, business_type, converted_to_user_id, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+         RETURNING id`,
         [
-          crypto
-            .createHash('sha256')
-            .update(req.ip || 'unknown')
-            .digest('hex')
-            .substring(0, 16),
+          ipHash,
+          sessionId,
+          userEmail,
           reviewText.length,
           tone,
           platform || null,
           businessType || null,
+          authenticatedUser?.id || null,
         ]
       );
+      console.log(`[public_try_usage] Tracked: id=${result?.rows?.[0]?.id}, session=${sessionId}, email=${userEmail || 'anon'}`);
     } catch (trackError) {
       console.error('[public_try_usage] Track error:', trackError.message);
     }
@@ -13459,14 +13476,14 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
       console.error('User stats query error:', e.message);
     }
 
-    // Real users = haben mindestens 1x generiert (egal wo!)
-    // Definition: responses (eingeloggt) ODER Demo-Seite WIRKLICH besucht (demo_page_viewed_at NOT NULL)
-    // FIX 17.01.2026: Vorher zählte Email-Match als "viaDemo" - jetzt nur wenn Demo wirklich angesehen
-    let realUserStats = { real_users: 0, via_generator: 0, via_demo: 0, inactive_users: 0 };
+    // Real users = haben mindestens 1x generiert (EGAL WO!)
+    // Definition 18.01.2026: responses OR demo_generations OR public_try_usage
+    // Bare minimum: 1 Generierung irgendwo = Real User
+    let realUserStats = { real_users: 0, via_generator: 0, via_demo: 0, via_instant_try: 0, inactive_users: 0 };
     try {
       realUserStats = (await dbGet(`
         SELECT
-          -- Echte User: haben irgendwo generiert ODER Demo wirklich angesehen
+          -- Echte User: haben IRGENDWO generiert (responses, demo, instant try)
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
             OR EXISTS (
@@ -13475,12 +13492,17 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
               WHERE LOWER(ol.email) = LOWER(u.email)
               AND d.demo_page_viewed_at IS NOT NULL
             )
+            OR EXISTS (
+              SELECT 1 FROM public_try_usage p
+              WHERE p.converted_to_user_id = u.id
+                 OR LOWER(p.email) = LOWER(u.email)
+            )
           ) as real_users,
           -- Davon: via Generator (eingeloggt)
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
           ) as via_generator,
-          -- Davon: via Demo-Seite (Demo WIRKLICH angesehen aber KEINE logged-in responses)
+          -- Davon: via Demo-Seite (Demo angesehen, keine logged-in responses)
           COUNT(*) FILTER (WHERE
             EXISTS (
               SELECT 1 FROM demo_generations d
@@ -13490,7 +13512,22 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
             )
             AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
           ) as via_demo,
-          -- Inaktive User: registriert aber nie generiert UND Demo nie angesehen
+          -- Davon: via Instant Try (public_try_usage, keine anderen)
+          COUNT(*) FILTER (WHERE
+            EXISTS (
+              SELECT 1 FROM public_try_usage p
+              WHERE p.converted_to_user_id = u.id
+                 OR LOWER(p.email) = LOWER(u.email)
+            )
+            AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+            AND NOT EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+              AND d.demo_page_viewed_at IS NOT NULL
+            )
+          ) as via_instant_try,
+          -- Inaktive User: registriert aber NIRGENDS generiert
           COUNT(*) FILTER (WHERE
             NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
             AND NOT EXISTS (
@@ -13498,6 +13535,11 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
               JOIN outreach_leads ol ON d.lead_id = ol.id
               WHERE LOWER(ol.email) = LOWER(u.email)
               AND d.demo_page_viewed_at IS NOT NULL
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM public_try_usage p
+              WHERE p.converted_to_user_id = u.id
+                 OR LOWER(p.email) = LOWER(u.email)
             )
           ) as inactive_users
         FROM users u
@@ -13549,11 +13591,13 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         newThisWeek: parseInt(userStats.new_users_week) || 0,
         newThisMonth: parseInt(userStats.new_users_month) || 0,
       },
-      // NEU: Echte User Metriken (haben mindestens 1x generiert)
+      // Echte User Metriken (haben mindestens 1x generiert - EGAL WO!)
+      // 18.01.2026: Added viaInstantTry for public_try_usage tracking
       realUsers: {
         total: parseInt(realUserStats.real_users) || 0,
         viaGenerator: parseInt(realUserStats.via_generator) || 0,
         viaDemo: parseInt(realUserStats.via_demo) || 0,
+        viaInstantTry: parseInt(realUserStats.via_instant_try) || 0,
         inactive: parseInt(realUserStats.inactive_users) || 0,
       },
       affiliates: {
@@ -14341,6 +14385,73 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
       console.error('Activated query error:', e.message);
     }
 
+    // ========== REAL USER METRICS (18.01.2026) ==========
+    // Real users = haben mindestens 1x generiert (EGAL WO!)
+    let realUserMetrics = { real_users: 0, via_generator: 0, via_demo: 0, via_instant_try: 0, inactive_users: 0 };
+    try {
+      realUserMetrics = (await dbGet(`
+        SELECT
+          COUNT(*) FILTER (WHERE
+            EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+            OR EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+              AND d.demo_page_viewed_at IS NOT NULL
+            )
+            OR EXISTS (
+              SELECT 1 FROM public_try_usage p
+              WHERE p.converted_to_user_id = u.id
+                 OR LOWER(p.email) = LOWER(u.email)
+            )
+          ) as real_users,
+          COUNT(*) FILTER (WHERE
+            EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+          ) as via_generator,
+          COUNT(*) FILTER (WHERE
+            EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+              AND d.demo_page_viewed_at IS NOT NULL
+            )
+            AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+          ) as via_demo,
+          COUNT(*) FILTER (WHERE
+            EXISTS (
+              SELECT 1 FROM public_try_usage p
+              WHERE p.converted_to_user_id = u.id
+                 OR LOWER(p.email) = LOWER(u.email)
+            )
+            AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+            AND NOT EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+              AND d.demo_page_viewed_at IS NOT NULL
+            )
+          ) as via_instant_try,
+          COUNT(*) FILTER (WHERE
+            NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+            AND NOT EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+              AND d.demo_page_viewed_at IS NOT NULL
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM public_try_usage p
+              WHERE p.converted_to_user_id = u.id
+                 OR LOWER(p.email) = LOWER(u.email)
+            )
+          ) as inactive_users
+        FROM users u
+        WHERE 1=1 ${excludeEmailsClause.replace(/email/g, 'u.email')}
+      `)) || realUserMetrics;
+    } catch (e) {
+      console.error('Real user metrics query error:', e.message);
+    }
+
     // ========== RECENT SIGNUPS ==========
     const recentSignups = await dbAll(`
       SELECT id, email, subscription_plan, created_at, email_verified, stripe_customer_id
@@ -14514,6 +14625,7 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
         total: parseInt(realUserMetrics.real_users) || 0,
         viaGenerator: parseInt(realUserMetrics.via_generator) || 0,
         viaDemo: parseInt(realUserMetrics.via_demo) || 0,
+        viaInstantTry: parseInt(realUserMetrics.via_instant_try) || 0,
         inactive: parseInt(realUserMetrics.inactive_users) || 0,
       },
       activity: {
