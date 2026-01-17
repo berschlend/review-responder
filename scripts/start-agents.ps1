@@ -261,12 +261,10 @@ function Start-Agent {
     }
 
     $psCommand = @"
-`$env:CLAUDE_CONFIG_DIR = '$escapedConfigDir'
 `$env:CLAUDE_SESSION = 'BURST$AgentNum'
 Set-Location '$escapedProjectRoot'
 Write-Host '========================================' -ForegroundColor Magenta
 Write-Host ' BURST-$AgentNum : $agentName' -ForegroundColor Magenta
-Write-Host ' Account: $selectedAccount' -ForegroundColor DarkGray
 if ('$chromeFlag' -ne '') { Write-Host ' [CHROME MCP ENABLED]' -ForegroundColor Cyan }
 $promptDisplay
 Write-Host '========================================' -ForegroundColor Magenta
