@@ -107,7 +107,7 @@ Render | Stripe | Cron-job.org | Resend
 
 ## CURRENT TASKS
 
-**Stand: 18.01.2026**
+**Stand: 17.01.2026**
 
 ### Chrome Web Store
 - Status: Ueberprufung laeuft (eingereicht 13.01)
