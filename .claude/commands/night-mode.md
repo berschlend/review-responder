@@ -1,6 +1,6 @@
-# Night Mode - Alle Agents starten (V4.4)
+# Night Mode - Intelligente Agent Auswahl (V4.4)
 
-Starte Night-Burst Agents (Default: alle 15).
+Starte Night-Burst Agents mit intelligenter Auswahl.
 
 **Argument:** $ARGUMENTS
 
@@ -8,103 +8,106 @@ Starte Night-Burst Agents (Default: alle 15).
 
 ## AUTOMATISCHE AUSFÜHRUNG
 
-Parse `$ARGUMENTS` wie folgt:
+### Schritt 1: Preset bestimmen
 
-### Bekannte Presets (erstes Wort checken):
+**Option A: Explizites Preset (erstes Wort)**
 - `priority` → Agents 2,4,5
 - `monitoring` → Agents 9,11,14
 - `outreach` → Agents 1,2,4,5,14
 - `full` → Alle 15 Agents
 
-### Logik:
+**Option B: Intelligentes Matching (wenn kein explizites Preset)**
 
-1. **Erstes Wort ist ein Preset?**
-   - JA → Nutze dieses Preset, Rest ist der Prompt
-   - NEIN → Default `full`, gesamter Text ist der Prompt
+Scanne den Prompt nach Keywords:
 
-2. **Beispiele:**
-   ```
-   ""                          → Preset: full, Prompt: (keiner)
-   "priority"                  → Preset: priority, Prompt: (keiner)
-   "NUR Demo-Emails"           → Preset: full, Prompt: "NUR Demo-Emails"
-   "priority Erster Sale!"     → Preset: priority, Prompt: "Erster Sale!"
-   "monitoring Bugs finden"    → Preset: monitoring, Prompt: "Bugs finden"
-   ```
+| Keywords im Prompt | → Preset |
+|-------------------|----------|
+| `bug`, `debug`, `fehler`, `error`, `fix`, `health`, `test`, `funnel` | `monitoring` |
+| `demo`, `email`, `outreach`, `lead`, `cold`, `follow`, `scrape` | `outreach` |
+| `sale`, `conversion`, `revenue`, `zahlen`, `paying`, `kunde` | `priority` |
+| `alle`, `full`, `komplett`, `gesamt`, `nacht`, `night` | `full` |
+| (keine Keywords) | `full` (Default für night-mode) |
 
-3. **Führe aus:**
-   ```bash
-   powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [PRESET] -NoSafetyCheck -Prompt "[PROMPT]"
-   ```
-   (Wenn Prompt leer, `-Prompt` weglassen)
+### Schritt 2: Beispiele
 
-4. **Melde Ergebnis:**
-   - Mit Prompt: "✅ [PRESET] Agents gestartet mit Fokus: [PROMPT]"
-   - Ohne Prompt: "✅ [PRESET] Agents gestartet"
+```
+""                              → full, kein Fokus
+"priority"                      → priority, kein Fokus
+"Bugs im Funnel finden"         → monitoring (wegen "Bugs", "Funnel")
+"Demo-Emails an alle Leads"     → outreach (wegen "Demo", "Leads")
+"Erster Sale heute Nacht!"      → priority (wegen "Sale")
+"Alle Agents Vollgas"           → full (wegen "Alle")
+"Health Check machen"           → monitoring (wegen "Health")
+"Cold Outreach starten"         → outreach (wegen "Cold", "Outreach")
+```
+
+### Schritt 3: Ausführen
+
+```bash
+powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [PRESET] -NoSafetyCheck -Prompt "[PROMPT]"
+```
+(Wenn Prompt leer, `-Prompt` weglassen)
+
+### Schritt 4: Melden
+
+"✅ [PRESET] Agents ([AGENT-NUMMERN]) gestartet mit Fokus: [PROMPT]"
 
 ---
 
 ## Presets
 
-| Preset | Agents | Use Case |
-|--------|--------|----------|
-| `full` | 1-15 | Full Night Mode (DEFAULT) |
-| `priority` | 2,4,5 | Outreach Focus |
-| `monitoring` | 9,11,14 | Health Check |
-| `outreach` | 1,2,4,5,14 | Lead to Conversion |
+| Preset | Agents | Trigger-Keywords |
+|--------|--------|------------------|
+| `full` | 1-15 | alle, full, komplett, gesamt, nacht, night |
+| `priority` | 2,4,5 | sale, conversion, revenue, paying, kunde |
+| `monitoring` | 9,11,14 | bug, debug, fehler, error, fix, health, test, funnel |
+| `outreach` | 1,2,4,5,14 | demo, email, outreach, lead, cold, follow, scrape |
 
 ---
 
 ## Beispiele
 
 ```
-/night-mode                                 → full (alle 15), kein Fokus
-/night-mode priority                        → priority (2,4,5), kein Fokus
-/night-mode NUR Demo-Emails                 → full (alle 15), Fokus: "NUR Demo-Emails"
-/night-mode Erster Sale heute!              → full (alle 15), Fokus: "Erster Sale heute!"
-/night-mode priority Hot Leads chasen       → priority (2,4,5), Fokus: "Hot Leads chasen"
-/night-mode monitoring Funnel debuggen      → monitoring (9,11,14), Fokus: "Funnel debuggen"
+/night-mode                                 → full (alle 15)
+/night-mode priority                        → priority (2,4,5)
+/night-mode Bugs finden                     → monitoring (9,11,14) ← AUTO!
+/night-mode Demo-Emails senden              → outreach (1,2,4,5,14) ← AUTO!
+/night-mode Erster Sale heute!              → priority (2,4,5) ← AUTO!
+/night-mode Funnel Health Check             → monitoring (9,11,14) ← AUTO!
+/night-mode Lead Scraping starten           → outreach (1,2,4,5,14) ← AUTO!
+/night-mode full nur Miami Leads            → full (15), explizit
 ```
 
 ---
 
 ## Agent Overview
 
-| # | Agent | Priority | Dev-Skills |
-|---|-------|----------|------------|
-| 1 | Lead Finder | P2 | - |
-| 2 | Cold Emailer | **P1** | - |
-| 3 | Social DM | P3 | - |
-| 4 | Demo Generator | **P1** | - |
-| 5 | Hot Lead Chaser | **P1** | - |
-| 6 | User Activator | P3 | - |
-| 7 | Payment Converter | P3 | - |
-| 8 | Upgrader | P3 | - |
-| 9 | Doctor | P2 | `/test-and-fix`, `/review-changes` |
-| 10 | Morning Briefer | P3 | - |
-| 11 | Bottleneck Analyzer | P2 | `/review-changes` |
-| 12 | Creative Strategist | P3 | `/simplify-code` |
-| 13 | Churn Prevention | P2 | - |
-| 14 | Lead Scorer | P2 | - |
-| 15 | Approval Gate | **P1** | - |
+| # | Agent | Priority | In Preset |
+|---|-------|----------|-----------|
+| 1 | Lead Finder | P2 | outreach, full |
+| 2 | Cold Emailer | **P1** | priority, outreach, full |
+| 3 | Social DM | P3 | full |
+| 4 | Demo Generator | **P1** | priority, outreach, full |
+| 5 | Hot Lead Chaser | **P1** | priority, outreach, full |
+| 6 | User Activator | P3 | full |
+| 7 | Payment Converter | P3 | full |
+| 8 | Upgrader | P3 | full |
+| 9 | Doctor | P2 | monitoring, full |
+| 10 | Morning Briefer | P3 | full |
+| 11 | Bottleneck Analyzer | P2 | monitoring, full |
+| 12 | Creative Strategist | P3 | full |
+| 13 | Churn Prevention | P2 | full |
+| 14 | Lead Scorer | P2 | monitoring, outreach, full |
+| 15 | Approval Gate | **P1** | full |
 
 ---
 
 ## Features
-- ✅ Bypass Permissions (--dangerously-skip-permissions)
-- ✅ Chrome MCP ON by default
+- ✅ Bypass Permissions
+- ✅ Chrome MCP ON
 - ✅ Dev-Skills verfügbar
-- ✅ Flexible Preset + Prompt Kombination
-
----
-
-## 🎯 Prompt-Keywords
-
-| Keyword | Bedeutung |
-|---------|-----------|
-| `NUR X` | Andere Tasks ignorieren |
-| `KEIN Y` | Y komplett überspringen |
-| `FOKUS auf Z` | Z hat Priorität |
-| `ALLE Agents` | Globale Anweisung |
+- ✅ Intelligentes Preset-Matching
+- ✅ Explizites Preset überschreibt Auto-Match
 
 ---
 
@@ -112,4 +115,3 @@ Parse `$ARGUMENTS` wie folgt:
 
 - **Ein Agent:** Terminal Window schließen
 - **Alle Agents:** Alle Terminals schließen
-- **Tab Cleanup:** `powershell chrome-tab-manager.ps1 -Action cleanup`

@@ -30,14 +30,20 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 | `.claude/secrets.local` | Admin URLs, API Keys |
 | `content/claude-progress/real-user-metrics.json` | **ECHTE User-Zahlen (verifiziert)** |
 
-### Session-Start Regel (WICHTIG!)
-**Bei JEDER neuen Session die Metriken betrifft:**
+### Session-Start Regel (KRITISCH!)
+**Bei JEDER neuen Session:**
 ```bash
-# 1. Echte Zahlen lesen (nicht die DB-Zahlen!)
+# 1. IMMER ZUERST echte Zahlen lesen!
 cat content/claude-progress/real-user-metrics.json
-# 2. Wenn >24h alt: /data-analyze ausfuehren zum Update
+
+# 2. NIEMALS Dashboard ohne Bot-Filter vertrauen!
+# FALSCH: curl ".../api/outreach/dashboard"
+# RICHTIG: curl ".../api/outreach/dashboard?exclude_bots=true"
+
+# 3. Bei Metriken-Entscheidungen:
+/data-analyze
 ```
-> Die DB zeigt 61 User - das ist FALSCH. Echte Zahl: 0 organic.
+> **ALLE METRIKEN SIND FAKE!** 85 "Clicks" = 0 echte. 6 "User" = 0 echte. CTR = 0%.
 
 ---
 

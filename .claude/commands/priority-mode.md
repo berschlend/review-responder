@@ -1,6 +1,6 @@
 # Priority Mode - Flexible Agent Auswahl (V4.4)
 
-Starte Night-Burst Agents mit flexibler Auswahl.
+Starte Night-Burst Agents mit intelligenter Auswahl.
 
 **Argument:** $ARGUMENTS
 
@@ -8,79 +8,80 @@ Starte Night-Burst Agents mit flexibler Auswahl.
 
 ## AUTOMATISCHE AUSFÜHRUNG
 
-Parse `$ARGUMENTS` wie folgt:
+### Schritt 1: Preset bestimmen
 
-### Bekannte Presets (erstes Wort checken):
+**Option A: Explizites Preset (erstes Wort)**
 - `priority` → Agents 2,4,5
 - `monitoring` → Agents 9,11,14
 - `outreach` → Agents 1,2,4,5,14
 - `full` → Alle 15 Agents
 
-### Logik:
+**Option B: Intelligentes Matching (wenn kein explizites Preset)**
 
-1. **Erstes Wort ist ein Preset?**
-   - JA → Nutze dieses Preset, Rest ist der Prompt
-   - NEIN → Default `priority`, gesamter Text ist der Prompt
+Scanne den Prompt nach Keywords:
 
-2. **Beispiele:**
-   ```
-   ""                          → Preset: priority, Prompt: (keiner)
-   "monitoring"                → Preset: monitoring, Prompt: (keiner)
-   "full NUR Demo-Emails"      → Preset: full, Prompt: "NUR Demo-Emails"
-   "NUR Demo-Emails"           → Preset: priority, Prompt: "NUR Demo-Emails"
-   "outreach Erster Sale!"     → Preset: outreach, Prompt: "Erster Sale!"
-   ```
+| Keywords im Prompt | → Preset |
+|-------------------|----------|
+| `bug`, `debug`, `fehler`, `error`, `fix`, `health`, `test` | `monitoring` |
+| `demo`, `email`, `outreach`, `lead`, `cold`, `follow` | `outreach` |
+| `sale`, `conversion`, `revenue`, `zahlen`, `paying` | `priority` |
+| `alle`, `full`, `komplett`, `gesamt` | `full` |
+| (keine Keywords) | `priority` (Default) |
 
-3. **Führe aus:**
-   ```bash
-   powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [PRESET] -NoSafetyCheck -Prompt "[PROMPT]"
-   ```
-   (Wenn Prompt leer, `-Prompt` weglassen)
+### Schritt 2: Beispiele
 
-4. **Melde Ergebnis:**
-   - Mit Prompt: "✅ [PRESET] Agents gestartet mit Fokus: [PROMPT]"
-   - Ohne Prompt: "✅ [PRESET] Agents gestartet"
+```
+""                              → priority, kein Fokus
+"monitoring"                    → monitoring, kein Fokus
+"full NUR Demo-Emails"          → full, Fokus: "NUR Demo-Emails"
+"NUR Demo-Emails"               → outreach (wegen "Demo"), Fokus: "NUR Demo-Emails"
+"Bugs finden und fixen"         → monitoring (wegen "Bugs"), Fokus: "Bugs finden und fixen"
+"Erster Sale heute!"            → priority (wegen "Sale"), Fokus: "Erster Sale heute!"
+"Alle Agents debuggen"          → full (wegen "Alle"), Fokus: "Alle Agents debuggen"
+"Hot Leads chasen"              → outreach (wegen "Leads"), Fokus: "Hot Leads chasen"
+```
+
+### Schritt 3: Ausführen
+
+```bash
+powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [PRESET] -NoSafetyCheck -Prompt "[PROMPT]"
+```
+(Wenn Prompt leer, `-Prompt` weglassen)
+
+### Schritt 4: Melden
+
+"✅ [PRESET] Agents ([AGENT-NUMMERN]) gestartet mit Fokus: [PROMPT]"
 
 ---
 
 ## Presets
 
-| Preset | Agents | Use Case |
-|--------|--------|----------|
-| `priority` | 2,4,5 | Outreach Focus (DEFAULT) |
-| `monitoring` | 9,11,14 | Health Check |
-| `outreach` | 1,2,4,5,14 | Lead to Conversion |
-| `full` | 1-15 | Full Night Mode |
+| Preset | Agents | Trigger-Keywords |
+|--------|--------|------------------|
+| `priority` | 2,4,5 | sale, conversion, revenue, paying |
+| `monitoring` | 9,11,14 | bug, debug, fehler, error, fix, health, test |
+| `outreach` | 1,2,4,5,14 | demo, email, outreach, lead, cold, follow |
+| `full` | 1-15 | alle, full, komplett, gesamt |
 
 ---
 
 ## Beispiele
 
 ```
-/priority-mode                              → priority (2,4,5), kein Fokus
-/priority-mode monitoring                   → monitoring (9,11,14), kein Fokus
-/priority-mode full                         → full (alle 15), kein Fokus
-/priority-mode NUR Demo-Emails              → priority (2,4,5), Fokus: "NUR Demo-Emails"
-/priority-mode full Erster Sale!            → full (alle 15), Fokus: "Erster Sale!"
-/priority-mode monitoring Bugs finden       → monitoring (9,11,14), Fokus: "Bugs finden"
-/priority-mode outreach Miami und NYC only  → outreach (1,2,4,5,14), Fokus: "Miami und NYC only"
+/priority-mode                              → priority (2,4,5)
+/priority-mode monitoring                   → monitoring (9,11,14)
+/priority-mode Bugs finden                  → monitoring (9,11,14) ← AUTO!
+/priority-mode Demo-Emails senden           → outreach (1,2,4,5,14) ← AUTO!
+/priority-mode Erster Sale!                 → priority (2,4,5) ← AUTO!
+/priority-mode Alle Agents Vollgas          → full (15) ← AUTO!
+/priority-mode full nur Agent 2 und 4       → full (15), explizit
 ```
 
 ---
 
 ## Features
-- ✅ Bypass Permissions (--dangerously-skip-permissions)
-- ✅ Chrome MCP ON by default
+- ✅ Bypass Permissions
+- ✅ Chrome MCP ON
 - ✅ Dev-Skills verfügbar
-- ✅ Flexible Preset + Prompt Kombination
-
----
-
-## 🎯 Prompt-Keywords
-
-| Keyword | Bedeutung |
-|---------|-----------|
-| `NUR X` | Andere Tasks ignorieren |
-| `KEIN Y` | Y komplett überspringen |
-| `FOKUS auf Z` | Z hat Priorität |
-| `ALLE Agents` | Globale Anweisung |
+- ✅ Intelligentes Preset-Matching
+- ✅ Explizites Preset überschreibt Auto-Match

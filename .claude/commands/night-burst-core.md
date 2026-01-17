@@ -1,11 +1,65 @@
-# Night-Burst Core V4.4 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V4.5 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V4.4 mit Dev-Skills + Bypass Permissions (18.01.2026)
+> Updated: V4.5 mit DATA REALITY CHECK (18.01.2026)
 
 ---
 
-## 🚀 QUICK START (V4.4)
+## ⛔ STOP! LIES DAS ZUERST! (V4.5 CRITICAL UPDATE)
+
+> **ALLE METRIKEN SIND FAKE!** Das Dashboard lügt dich an.
+
+### Die brutale Wahrheit (18.01.2026 Analyse)
+
+| Metrik | Dashboard sagt | Realität |
+|--------|----------------|----------|
+| Clicks | 85 | **0** (alle Bots) |
+| CTR | 4.47% | **0%** |
+| Registrierungen | 6 | **0 echte** |
+| Echte User | 6 | **0** |
+
+### Warum?
+
+1. **100% der Clicks sind Bots** - Email Security Scanner (Microsoft 365, Proofpoint) klicken automatisch alle Links um 00:00-00:20 UTC
+2. **Die 6 "User" sind Fake** - Auto-Accounts von Bot-Clicks + Corporate Support-Emails (H####@accor.com)
+3. **Cold Email hat ZERO Menschen erreicht** - 1.902 Emails, 0 echte Reaktionen
+
+### PFLICHT bei Session-Start
+
+```bash
+# 1. IMMER ZUERST real-user-metrics.json lesen!
+cat content/claude-progress/real-user-metrics.json
+
+# 2. NIEMALS Dashboard-Zahlen ohne Bot-Filter vertrauen
+# FALSCH:
+curl ".../api/outreach/dashboard"
+# RICHTIG:
+curl ".../api/outreach/dashboard?exclude_bots=true"
+
+# 3. Bei Metriken-Entscheidungen: /data-analyze ausfuehren
+powershell -File scripts/agent-helpers.ps1 -Action data-analyze
+```
+
+### Was das für Agents bedeutet
+
+| Agent | Impact |
+|-------|--------|
+| Burst-2 (Cold Email) | **PAUSIERT** - Cold Email funktioniert nicht |
+| Burst-4 (Demo) | **PAUSIERT** - Demos für Bots generieren ist sinnlos |
+| Burst-5 (Hot Lead) | **PAUSIERT** - 0 echte Hot Leads |
+| Burst-9,10,11 | **AKTIV** - Aber mit echten Daten arbeiten! |
+
+### Nächster Schritt
+
+MANUELL 5 Restaurant-Owner anrufen (nicht emailen) und fragen:
+- "Wie handhaben Sie negative Reviews?"
+- "Wäre eine AI-Lösung dafür interessant?"
+
+Das validiert ob das Problem überhaupt existiert.
+
+---
+
+## 🚀 QUICK START (V4.5)
 
 **Alle Agents laufen mit `--dangerously-skip-permissions` = KEINE Dialoge!**
 
