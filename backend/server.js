@@ -10058,6 +10058,142 @@ app.delete('/api/admin/blog/:id', async (req, res) => {
   }
 });
 
+// POST /api/admin/blog/fix-formatting - Fix paragraph spacing, meta descriptions, and keywords
+// This is a one-time fix for existing articles generated before the prompt improvement
+app.post('/api/admin/blog/fix-formatting', async (req, res) => {
+  const { key } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key || '', process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Get all articles
+    const articles = await dbAll('SELECT id, title, content, meta_description, keywords FROM blog_articles');
+    const fixed = [];
+
+    for (const article of articles) {
+      let changes = [];
+      let newContent = article.content;
+      let newMetaDescription = article.meta_description;
+      let newKeywords = article.keywords;
+
+      // Fix 1: Add paragraph spacing (double newlines between paragraphs)
+      // Split by headers and process each section
+      const sections = newContent.split(/(\n##[^\n]+\n)/);
+      const processedSections = sections.map(section => {
+        // Don't process header lines
+        if (section.startsWith('\n##')) return section;
+
+        // Split section into paragraphs/elements
+        const lines = section.split('\n');
+        const processed = [];
+        let prevWasContent = false;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const trimmed = line.trim();
+
+          // Skip empty lines
+          if (!trimmed) {
+            prevWasContent = false;
+            continue;
+          }
+
+          // Check if this is a list item, blockquote, or code
+          const isListItem = /^[-*]\s/.test(trimmed) || /^\d+\.\s/.test(trimmed);
+          const isBlockquote = trimmed.startsWith('>');
+          const isCode = trimmed.startsWith('```');
+          const isHeader = /^#{1,6}\s/.test(trimmed);
+
+          // Add blank line before regular paragraphs (not lists, not first line)
+          if (prevWasContent && !isListItem && !isBlockquote && !isCode && !isHeader) {
+            processed.push('');
+          }
+
+          processed.push(line);
+          prevWasContent = trimmed.length > 0 && !isListItem && !isHeader;
+        }
+
+        return processed.join('\n');
+      });
+      newContent = processedSections.join('');
+
+      // Ensure double newlines after headers
+      newContent = newContent.replace(/\n(##[^\n]+)\n([^\n])/g, '\n$1\n\n$2');
+
+      // Remove excessive newlines (more than 2)
+      newContent = newContent.replace(/\n{3,}/g, '\n\n');
+
+      if (newContent !== article.content) {
+        changes.push('paragraph_spacing');
+      }
+
+      // Fix 2: Remove markdown from meta description
+      if (newMetaDescription) {
+        const cleanMeta = newMetaDescription
+          .replace(/\*\*/g, '')
+          .replace(/\*/g, '')
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+          .replace(/`/g, '')
+          .trim();
+        if (cleanMeta !== newMetaDescription) {
+          newMetaDescription = cleanMeta;
+          changes.push('meta_description');
+        }
+      }
+
+      // Fix 3: Generate better keywords from title and content (not just title words)
+      if (newKeywords && newKeywords.split(',').some(k => k.trim().length <= 3)) {
+        // Extract meaningful keywords from title
+        const titleWords = article.title
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .split(/\s+/)
+          .filter(w => w.length > 3 && !['that', 'with', 'your', 'this', 'from', 'into', 'have', 'been', 'what', 'when', 'where', 'which', 'their', 'there', 'about', 'would', 'could', 'should', 'without'].includes(w));
+
+        // Add category-based keywords
+        const contentLower = article.content.toLowerCase();
+        const seoKeywords = [];
+
+        if (contentLower.includes('review')) seoKeywords.push('review management');
+        if (contentLower.includes('negative')) seoKeywords.push('negative review response');
+        if (contentLower.includes('customer')) seoKeywords.push('customer feedback');
+        if (contentLower.includes('reputation')) seoKeywords.push('online reputation');
+        if (contentLower.includes('star')) seoKeywords.push('star rating');
+        if (contentLower.includes('google')) seoKeywords.push('google reviews');
+        if (contentLower.includes('yelp')) seoKeywords.push('yelp reviews');
+        if (contentLower.includes('seo') || contentLower.includes('local')) seoKeywords.push('local SEO');
+        if (contentLower.includes('respond')) seoKeywords.push('review response');
+        if (contentLower.includes('small business')) seoKeywords.push('small business');
+
+        // Combine and deduplicate
+        const allKeywords = [...new Set([...titleWords, ...seoKeywords])].slice(0, 8);
+        newKeywords = allKeywords.join(', ');
+        changes.push('keywords');
+      }
+
+      // Update if changes were made
+      if (changes.length > 0) {
+        await dbQuery(
+          `UPDATE blog_articles SET content = $1, meta_description = $2, keywords = $3 WHERE id = $4`,
+          [newContent, newMetaDescription, newKeywords, article.id]
+        );
+        fixed.push({ id: article.id, title: article.title, changes });
+      }
+    }
+
+    res.json({
+      success: true,
+      total: articles.length,
+      fixed: fixed.length,
+      details: fixed,
+    });
+  } catch (error) {
+    console.error('Fix formatting error:', error);
+    res.status(500).json({ error: 'Failed to fix formatting', details: error.message });
+  }
+});
+
 // ============== REFERRAL SYSTEM ==============
 
 // Helper function to generate unique referral code
@@ -26793,54 +26929,99 @@ app.get('/api/cron/generate-blog-article', async (req, res) => {
       tools: [{ googleSearch: {} }],
     });
 
-    const prompt = `You are an expert SEO content writer for ReviewResponder, a SaaS tool that helps businesses respond to customer reviews using AI.
+    // Improved prompt following Google's Gemini Best Practices:
+    // - XML-style tags for clear structure
+    // - Few-shot example for consistent output format
+    // - Explicit paragraph spacing instructions
+    // - Keywords generated by AI (not from title)
+    const prompt = `<system>
+You are an expert SEO content writer for ReviewResponder, a SaaS tool that helps businesses respond to customer reviews using AI.
+Your goal: Write a comprehensive, authoritative blog article that ranks well on Google and provides genuine value to small business owners.
+</system>
 
-Write a comprehensive, SEO-optimized blog article about: "${topic}"
+<task>
+Write an SEO-optimized blog article about: "${topic}"
 
-IMPORTANT: Use Google Search to find current statistics, trends, and data to make the article authoritative and up-to-date.
+Use Google Search to find current statistics, trends, and data from 2024-2026. Every statistic MUST include a direct link to the specific source page (not just the domain).
+</task>
 
-Requirements:
-- Length: Approximately 1200-1500 words
-- Tone: Professional yet approachable, helpful and actionable
-- Include relevant keywords naturally
-- Structure with:
-  - An engaging introduction that gets straight to the point
-  - Clear headings (use ## for main sections, ### for subsections)
-  - Bullet points or numbered lists where appropriate
-  - Practical, actionable tips businesses can implement today
-  - A conclusion with a call-to-action mentioning ReviewResponder
-- Include 1-2 natural mentions of ReviewResponder as a solution (not salesy)
-- Include statistics or data points where relevant
-- IMPORTANT: For every statistic, link directly to the source using markdown: [Study Name](URL) or "According to [BrightLocal](https://url)..."
-- At the end of the article, include a "## Sources" section listing all referenced URLs
-- Make it valuable for small to medium business owners
+<requirements>
+LENGTH: 1200-1500 words
+TONE: Professional, helpful, actionable - write like a knowledgeable friend
+AUDIENCE: Small to medium business owners who are busy and need practical advice
 
-IMPORTANT: Include a subtle CTA like:
+STRUCTURE:
+- Opening paragraph that hooks the reader immediately (no preamble)
+- 4-6 main sections with ## headers
+- Use ### for subsections when needed
+- Bullet points or numbered lists for actionable items
+- IMPORTANT: Add a blank line between every paragraph for readability
+- Each paragraph should be 2-4 sentences max
+- Conclusion with natural ReviewResponder mention
+
+SOURCES:
+- Include 4-8 statistics with SPECIFIC source URLs (not just domain)
+- Example: According to [BrightLocal's 2024 Survey](https://www.brightlocal.com/research/local-consumer-review-survey-2024/)...
+- End with "## Sources" section listing all referenced URLs with full titles
+
+REVIEWRESPONDER MENTIONS (1-2, natural, not salesy):
 - "Tools like ReviewResponder can help automate this process..."
-- "With AI-powered solutions like ReviewResponder, responding to reviews takes seconds..."
-- "ReviewResponder's Chrome extension makes this even easier by..."
+- "With AI-powered solutions like ReviewResponder, responding takes seconds..."
+- "ReviewResponder's Chrome extension integrates directly into your workflow..."
+</requirements>
 
-WRITING STYLE - AVOID AI SLOP:
-Never use these phrases: "Here's the thing", "The uncomfortable truth is", "It turns out", "Let me be clear", "Full stop", "Period", "Let that sink in", "This matters because", "Make no mistake", "Here's why that matters", "Navigate", "Unpack", "Lean into", "Landscape", "Game-changer", "Double down", "Deep dive", "At its core", "In today's world", "It's worth noting", "Interestingly", "Importantly", "At the end of the day", "In a world where".
+<avoid>
+BANNED PHRASES: "Here's the thing", "The uncomfortable truth", "Let me be clear", "Full stop", "Let that sink in", "Make no mistake", "Navigate", "Unpack", "Lean into", "Landscape", "Game-changer", "Double down", "Deep dive", "At its core", "In today's world", "It's worth noting", "Interestingly", "Importantly", "At the end of the day", "In a world where", "thrilled", "delighted", "excited to share"
 
-Avoid these structures:
-- "Not because X. Because Y." binary contrasts
-- "[X] isn't the problem. [Y] is." framing
-- Opening with "What if [reframe]?"
-- Closing paragraphs with punchy one-liners
-- Three consecutive sentences of matching length
+BANNED STRUCTURES:
+- "Not because X. Because Y." contrasts
+- Opening with "What if..."
+- Punchy one-liner endings
+- Three consecutive same-length sentences
 - Em-dashes before reveals
-- Immediate question-answers
-- Starting sentences with "Look," or "So,"
-- DO NOT start with horizontal rules (*** or ---)
+- Starting with "Look," or "So,"
+- Horizontal rules (*** or ---)
+</avoid>
 
-Write directly, trust the reader, avoid explaining obvious things.
+<output_format>
+You MUST follow this exact format:
 
-Output Format:
-Line 1: The article title (without any prefix like "Title:")
-Line 2: A compelling meta description (150-160 characters, without prefix)
-Line 3: Empty line
-Lines 4+: The full article content in Markdown format (start directly with content, no horizontal rules).`;
+---START OUTPUT---
+TITLE: [Article title without quotes]
+META: [150-160 chars, plain text, NO markdown, NO asterisks]
+KEYWORDS: [5-8 SEO keywords separated by commas, e.g., review response, reputation management, customer feedback]
+
+[Article content starts here with a blank line after KEYWORDS]
+
+[Remember: blank line between EVERY paragraph]
+
+## First Section Header
+
+First paragraph of this section.
+
+Second paragraph with a blank line above it.
+
+## Sources
+
+- [Full Source Title](https://full-url.com/specific-page)
+---END OUTPUT---
+</output_format>
+
+<example>
+TITLE: How to Respond to a 1-Star Review Without Losing Customers
+META: Learn the proven 5-step framework to turn negative reviews into loyalty. 88% of consumers trust businesses that respond to all reviews.
+KEYWORDS: negative review response, 1-star review, customer complaints, review management, reputation recovery
+
+A single 1-star review can feel like a punch to the gut. But here's what most business owners don't realize: how you respond matters more than the review itself.
+
+According to [BrightLocal's 2024 Consumer Survey](https://www.brightlocal.com/research/local-consumer-review-survey-2024/), 88% of consumers are more likely to use a business that responds to all reviews—positive and negative.
+
+## Why Your Response Matters More Than the Rating
+
+When potential customers see a negative review, they're watching for your reaction...
+</example>
+
+Now write the article about: "${topic}"`;
 
     const result = await model.generateContent(prompt);
     const fullResponse = result.response.text();
@@ -26853,19 +27034,56 @@ Lines 4+: The full article content in Markdown format (start directly with conte
       metadata: { topic, promptLength: prompt.length, responseLength: fullResponse.length },
     });
 
-    // Parse the response
+    // Parse the response (new format: TITLE:, META:, KEYWORDS:, then content)
     const lines = fullResponse.split('\n');
-    const title = lines[0]
-      .replace(/^#\s*/, '')
-      .replace(/^\*\*/, '')
-      .replace(/\*\*$/, '')
-      .replace(/^Title:\s*/i, '')
-      .trim();
-    const metaDescription = lines[1]
-      .replace(/^Meta Description:\s*/i, '')
-      .replace(/^Description:\s*/i, '')
-      .trim();
-    const rawContent = lines.slice(3).join('\n').trim();
+
+    // Find TITLE line
+    let title = '';
+    let metaDescription = '';
+    let keywords = '';
+    let contentStartIndex = 0;
+
+    for (let i = 0; i < Math.min(lines.length, 10); i++) {
+      const line = lines[i].trim();
+      if (line.startsWith('TITLE:')) {
+        title = line.replace(/^TITLE:\s*/i, '').replace(/^["']|["']$/g, '').trim();
+      } else if (line.startsWith('META:')) {
+        // Remove any markdown from meta description
+        metaDescription = line
+          .replace(/^META:\s*/i, '')
+          .replace(/\*\*/g, '')
+          .replace(/\*/g, '')
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
+          .trim();
+      } else if (line.startsWith('KEYWORDS:')) {
+        keywords = line.replace(/^KEYWORDS:\s*/i, '').trim();
+        contentStartIndex = i + 1;
+        // Skip empty lines after keywords
+        while (contentStartIndex < lines.length && !lines[contentStartIndex].trim()) {
+          contentStartIndex++;
+        }
+        break;
+      }
+    }
+
+    // Fallback parsing for old format if new format not detected
+    if (!title) {
+      title = lines[0]
+        .replace(/^#\s*/, '')
+        .replace(/^\*\*/, '')
+        .replace(/\*\*$/, '')
+        .replace(/^Title:\s*/i, '')
+        .trim();
+      metaDescription = (lines[1] || '')
+        .replace(/^Meta Description:\s*/i, '')
+        .replace(/^Description:\s*/i, '')
+        .replace(/\*\*/g, '')
+        .trim();
+      keywords = topic.toLowerCase().replace(/[^a-z0-9\s]+/g, ' ').split(/\s+/).filter(w => w.length > 3).slice(0, 8).join(', ');
+      contentStartIndex = 3;
+    }
+
+    const rawContent = lines.slice(contentStartIndex).join('\n').trim();
 
     // Apply AI slop filter to clean up typical AI phrases
     const content = cleanAISlop(rawContent);
@@ -26912,7 +27130,7 @@ Lines 4+: The full article content in Markdown format (start directly with conte
         title,
         contentWithLinks,
         metaDescription,
-        topic.toLowerCase().replace(/[^a-z0-9]+/g, ', '),
+        keywords || topic.toLowerCase().replace(/[^a-z0-9\s]+/g, ' ').split(/\s+/).filter(w => w.length > 3).slice(0, 8).join(', '), // Use AI-generated keywords
         topic,
         'informative',
         wordCount,
