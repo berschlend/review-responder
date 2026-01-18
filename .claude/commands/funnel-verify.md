@@ -26,6 +26,71 @@ claude --chrome
 
 ---
 
+## ⚡ PERFORMANCE RULES (KRITISCH FÜR PARALLELE AGENTS!)
+
+> **Mehrere Claudes können gleichzeitig Chrome MCP nutzen - aber NUR mit diesen Rules!**
+
+### DIE 4 KILLER VERMEIDEN
+
+| Killer | Problem | Lösung |
+|--------|---------|--------|
+| `wait(5)` | Wartet IMMER 5 Sek | Smart Wait mit `find` |
+| `screenshot` | 2-5MB pro Bild | `read_page` first |
+| Serielle Ops | Tab1, dann Tab2 | Parallel Tool-Calls |
+| Tab-Registry | PowerShell nach navigate | Batch/Skip |
+
+### SMART WAIT PATTERN (PFLICHT!)
+
+```javascript
+// FALSCH (blockiert Chrome):
+navigate({ url, tabId })
+computer({ action: "wait", duration: 5, tabId })
+
+// RICHTIG (gibt Chrome frei):
+navigate({ url, tabId })
+// Sofort prüfen ob bereit:
+for (let i = 0; i < 3; i++) {
+  const result = find({ query: "expected element", tabId });
+  if (result.elements.length > 0) break;
+  computer({ action: "wait", duration: 1, tabId });  // MAX 1 Sek!
+}
+```
+
+### READ_PAGE > SCREENSHOT
+
+```javascript
+// FALSCH (2-5MB, blockiert):
+computer({ action: "screenshot", tabId })
+
+// RICHTIG (~10KB, schnell):
+read_page({ tabId, filter: "interactive" })
+```
+
+**Screenshot NUR wenn:**
+- Visuelles Debugging nötig
+- Evidence für User/Report
+- Layout-Check (selten!)
+
+### PARALLELE TOOL-CALLS
+
+```javascript
+// FALSCH (seriell, langsam):
+navigate({ url: "gmail.com", tabId: 1 })
+navigate({ url: "stripe.com", tabId: 2 })
+
+// RICHTIG (parallel, schnell):
+// Beide in EINEM Tool-Call Block senden!
+```
+
+### PERFORMANCE CHECKLIST (vor jedem Flow!)
+
+- [ ] Nutze ich `find` + retry statt `wait(X)` wo möglich?
+- [ ] Nutze ich `read_page` statt `screenshot` wo möglich?
+- [ ] Sind unabhängige Operationen parallel?
+- [ ] Max Wait pro Aktion: 1-2 Sekunden?
+
+---
+
 ## ARCHITEKTUR
 
 ```
@@ -114,8 +179,8 @@ DEMO FLOW CHECKLIST:
 
 [ ] STEP 1: Demo-Page Navigation
     - navigate(demo_url, tabId)
-    - wait(3s)
-    - screenshot()
+    - find("response" OR "review", tabId)  # Smart Wait!
+    - read_page({ tabId, filter: "interactive" })  # Statt screenshot!
     - VERIFY: Page loads ohne Error
 
 [ ] STEP 2: Responses Visible
@@ -132,7 +197,7 @@ DEMO FLOW CHECKLIST:
     - form_input(email_ref, test_email, tabId)
     - find("unlock" OR "continue", tabId)
     - click(submit_ref, tabId)
-    - wait(3s)
+    - find("copy" OR "dashboard" OR "generating", tabId)  # Smart Wait!
 
 [ ] STEP 5: Auto-Account Verification
     - javascript("localStorage.getItem('token')", tabId)
@@ -186,7 +251,7 @@ ACTIVATION FLOW CHECKLIST:
 [ ] STEP 1: CTA Click (von Demo Page)
     - find("Start generating" OR "try it", tabId)
     - click(cta_ref, tabId)
-    - wait(3s)
+    - find("business" OR "review" OR "generator", tabId)  # Smart Wait!
 
 [ ] STEP 2: Correct Redirect
     - javascript("window.location.pathname", tabId)
@@ -208,7 +273,12 @@ ACTIVATION FLOW CHECKLIST:
 [ ] STEP 5: Generate Response
     - find("generate", tabId)
     - click(ref, tabId)
-    - wait(8s)  # AI Generation braucht Zeit
+    - # Smart Wait: AI Gen kann 3-15s dauern, aber nicht blockieren!
+    - for (let i = 0; i < 15; i++) {
+        const result = find({ query: "copy OR response-text OR generated", tabId });
+        if (result.length > 0) break;
+        wait({ duration: 1, tabId });  # 1s Intervall, max 15 retries
+      }
 
 [ ] STEP 6: Response Verification
     - read_page(tabId)
@@ -286,7 +356,7 @@ CONVERSION FLOW CHECKLIST:
 [ ] STEP 4: Upgrade Button Click
     - find("upgrade" OR "get more", tabId)
     - click(ref, tabId)
-    - wait(3s)
+    - find("pricing" OR "stripe" OR "checkout", tabId)  # Smart Wait!
 
 [ ] STEP 5: Pricing Page OR Stripe Direct
     - javascript("window.location.href", tabId)
@@ -687,12 +757,27 @@ async function verifyURL(expected, tabId) {
   return current === expected;
 }
 
-async function safeClick(query, tabId) {
+async function safeClick(query, tabId, expectAfter = null) {
   const ref = await find(query, tabId);
   if (!ref) return false;
   await computer({action: "left_click", ref, tabId});
-  await computer({action: "wait", duration: 2, tabId});
+  // Smart Wait: Wenn expectAfter gegeben, warte darauf
+  if (expectAfter) {
+    for (let i = 0; i < 3; i++) {
+      const result = await find(expectAfter, tabId);
+      if (result && result.length > 0) return true;
+      await computer({action: "wait", duration: 1, tabId});
+    }
+  }
   return true;
+}
+
+// TAB CLEANUP nach Test-Session
+async function cleanupTestTabs(tabIds) {
+  // Schließe alle Test-Tabs am Ende
+  // NICHT während Tests - blockiert andere Agents!
+  console.log(`Cleanup: ${tabIds.length} tabs to close`);
+  // MCP Tab-Gruppen werden automatisch isoliert
 }
 ```
 
@@ -995,5 +1080,56 @@ curl "/api/admin/stats?exclude_test=true" -H "x-admin-key: ..."
 
 ---
 
-*Version: 3.0 - Mit Test-Accounts, Admin Access & Data Safety*
-*Erstellt: 18.01.2026*
+## 🧹 TAB CLEANUP (PARALLELE AGENTS!)
+
+> **MCP Tab-Gruppen sind isoliert** - jeder Agent hat seine eigenen Tabs.
+> Aber: Zu viele offene Tabs belasten Chrome trotzdem!
+
+### Automatisches Cleanup am Session-Ende
+
+```bash
+# Stop-Hook ruft automatisch:
+powershell -File "$env:USERPROFILE\chrome-tab-manager.ps1" -Action cleanup
+```
+
+### Manuelles Cleanup während Session
+
+```javascript
+// Tabs schließen die nicht mehr gebraucht werden:
+// 1. Tab-Context holen
+const ctx = await tabs_context_mcp({});
+
+// 2. Nicht-benötigte Tabs identifizieren
+// (Tab-IDs merken die während Tests erstellt wurden)
+
+// 3. Am ENDE der Test-Session schließen
+// NICHT während Tests - andere Agents könnten die Tabs nutzen!
+```
+
+### Best Practice für Parallele Agents
+
+| Phase | Tab-Verhalten |
+|-------|---------------|
+| **Start** | `tabs_create_mcp()` für neuen Tab |
+| **Während Tests** | Tab wiederverwenden, NICHT schließen |
+| **Ende** | Via Stop-Hook oder manuell cleanup |
+
+### Chrome-Entlastung: Alternativen nutzen!
+
+Bevor Chrome MCP für alles genutzt wird:
+
+| Task | Chrome MCP | Bessere Alternative |
+|------|------------|---------------------|
+| API Health Check | ❌ Tab öffnen | ✅ `curl` oder `fetch` MCP |
+| DB Check | ❌ Dashboard | ✅ `postgres` MCP |
+| Email Check | ❌ Gmail Tab | ✅ `gmail` MCP |
+
+**Nur Chrome MCP wenn:**
+- Visuelles Testen (UI Flow)
+- Login mit 2FA/Captcha
+- User soll was sehen
+
+---
+
+*Version: 3.1 - Mit Performance Rules & Tab Cleanup für parallele Agents*
+*Updated: 17.01.2026*

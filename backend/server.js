@@ -20439,6 +20439,105 @@ app.get('/api/cron/enrich-g2-leads', async (req, res) => {
   }
 });
 
+// GET /api/cron/enrich-outreach-leads - Find emails for ALL leads with website but no email
+// Created: 18.01.2026 - Processes 100 leads per call (vs 30 in daily-outreach)
+app.get('/api/cron/enrich-outreach-leads', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const limit = parseInt(req.query.limit) || 100;
+  const results = {
+    leads_checked: 0,
+    emails_found: 0,
+    by_source: {},
+    errors: 0,
+  };
+
+  try {
+    // Find ALL leads with website but no email (not just G2)
+    const leadsNeedingEmail = await dbAll(`
+      SELECT id, business_name, website, lead_type, contact_name, business_type
+      FROM outreach_leads
+      WHERE email IS NULL
+        AND website IS NOT NULL
+        AND status IN ('new', 'needs_enrichment')
+      ORDER BY
+        CASE WHEN google_reviews_count > 2000 THEN 0
+             WHEN google_reviews_count > 500 THEN 1
+             ELSE 2 END,
+        created_at DESC
+      LIMIT $1
+    `, [limit]);
+
+    console.log(`🔍 Enriching ${leadsNeedingEmail.length} leads...`);
+
+    for (const lead of leadsNeedingEmail) {
+      results.leads_checked++;
+
+      try {
+        // Use the combined email finder with all fallbacks
+        const result = await findEmailForLead(lead);
+
+        if (result?.email) {
+          // Update lead with found email
+          const updateFields = ['email = $1', 'email_source = $2'];
+          const updateValues = [result.email, result.source];
+
+          // If we found contact name, save it too
+          if (result.contactName || result.ownerName) {
+            updateFields.push('contact_name = COALESCE(contact_name, $4)');
+            updateValues.push(result.contactName || result.ownerName);
+          }
+
+          updateValues.push(lead.id);
+
+          await dbQuery(
+            `UPDATE outreach_leads SET ${updateFields.join(', ')} WHERE id = $${updateFields.length === 2 ? 3 : 4}`,
+            updateValues
+          );
+
+          // Track source stats
+          results.by_source[result.source] = (results.by_source[result.source] || 0) + 1;
+          results.emails_found++;
+
+          console.log(`✅ Found email for ${lead.business_name}: ${result.email} (${result.source})`);
+        }
+
+        // Rate limiting between leads (300ms)
+        await new Promise(r => setTimeout(r, 300));
+      } catch (e) {
+        console.error(`Email finding error for ${lead.business_name}:`, e.message);
+        results.errors++;
+      }
+    }
+
+    const successRate = results.leads_checked > 0
+      ? Math.round((results.emails_found / results.leads_checked) * 100)
+      : 0;
+
+    res.json({
+      success: true,
+      ...results,
+      success_rate: `${successRate}%`,
+      remaining_without_email: await dbGet(
+        'SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NULL AND website IS NOT NULL'
+      ).then(r => parseInt(r?.count || 0)),
+    });
+  } catch (error) {
+    console.error('Enrich outreach leads error:', error);
+    res.status(500).json({
+      error: 'Failed to enrich leads',
+      details: error.message?.substring(0, 100),
+      partial_results: results,
+    });
+  }
+});
+
 // ==========================================
 // AUTOMATED OUTREACH SYSTEM
 // Fully automated lead generation & cold email

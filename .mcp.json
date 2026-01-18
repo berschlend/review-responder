@@ -1,0 +1,79 @@
+{
+  "mcpServers": {
+    "gemini": {
+      "type": "stdio",
+      "command": "gemini-mcp",
+      "args": []
+    },
+    "memory": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-memory"]
+    },
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-fetch"]
+    },
+    "filesystem": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Berend Mainz\\Documents"]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@playwright/mcp"]
+    },
+    "puppeteer": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "puppeteer-mcp-server"]
+    },
+    "brave-search": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-brave-search"]
+    },
+    "youtube": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-youtube"]
+    },
+    "postgres": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-postgres"]
+    },
+    "github": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-github"]
+    },
+    "google-maps": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-google-maps"]
+    },
+    "slack": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-slack"]
+    },
+    "linear": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-linear"]
+    },
+    "sentry": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-sentry"]
+    }
+  }
+}

@@ -58,6 +58,56 @@ DISCOUNT ENTSCHEIDUNG:
 
 ---
 
+## Lead Scoring (KRITISCH - Updated 18.01.2026)
+
+> **Reviews = PAIN = VALUE!** Mehr Reviews = Mehr Arbeit = Höhere Zahlungsbereitschaft
+
+### Scoring-Tabelle
+
+| Faktor | Punkte | Warum |
+|--------|--------|-------|
+| **500-2000 Reviews** | +40 | Established SMB mit echtem PAIN |
+| **2000-5000 Reviews** | +50 | Big SMB mit SERIOUS PAIN! |
+| **>5000 Reviews** | +30 (SMB) / -30 (Kette) | Nur wenn kein Corporate |
+| **50-500 Reviews** | +10 | Sweet Spot für kleine SMBs |
+| **Personal Email** | +20 | Entscheider direkt erreichbar! |
+| **Creative Email** | +15 | z.B. prost@, der@, chef@ |
+| **Gmail/Personal Domain** | +10 | Wahrscheinlich Owner |
+| **info@, contact@** | -20 | Erreicht nie Entscheider |
+| **Kette/Corporate Pattern** | -30 | H####@accor.com etc. |
+| **Hat 1-2★ Review** | +3 | Akuter Pain |
+| **Lokales Business** | +1 | Nicht-Kette |
+| **Bereits interagiert** | +2 | Warm Lead |
+
+### Super-High Leads Beispiele (Score 80+)
+
+| Business | Reviews | Email | Score | Warum SUPER |
+|----------|---------|-------|-------|-------------|
+| IMLAUER Sky Salzburg | 3,102 | dominik@imlauer.com | 105 | Personal Name! |
+| Tengri Tagh Düsseldorf | 4,674 | tengritaghuigur@gmail.com | 105 | Personal Gmail! |
+| east Salzburg | 1,496 | eastsalzburg@gmail.com | 95 | Personal Gmail! |
+| Pauli Stubm Salzburg | 1,884 | der@paul-stube.at | 90 | Creative Email! |
+| Bärenwirt Salzburg | 6,053 | prost@baerenwirt-salzburg.at | 80 | Creative Email! |
+
+### Score-Berechnung (Pseudocode)
+```javascript
+let score = 0;
+// Review Pain Score
+if (reviews >= 2000 && reviews < 5000) score += 50;
+else if (reviews >= 500 && reviews < 2000) score += 40;
+else if (reviews >= 5000 && !isCorporate) score += 30;
+else if (reviews >= 50 && reviews < 500) score += 10;
+
+// Email Quality Score
+if (isPersonalEmail(email)) score += 20;  // dominik@, chef@, owner@
+if (isCreativeEmail(email)) score += 15;  // prost@, der@, hello@
+if (isGmail(email) || isPersonalDomain(email)) score += 10;
+if (isGenericEmail(email)) score -= 20;   // info@, contact@, office@
+if (isCorporatePattern(email)) score -= 30; // H####@accor.com
+```
+
+---
+
 ## Lead-DB Schema
 
 ### outreach_leads
@@ -65,8 +115,8 @@ DISCOUNT ENTSCHEIDUNG:
 -- WICHTIG: status ist VARCHAR, nicht BOOLEAN!
 status: 'new' | 'contacted' | 'clicked' | 'converted' | 'bounced' | 'unsubscribed'
 
--- Query fuer neue Leads:
-GET /api/admin/scraped-leads?status=new&limit=10
+-- Query fuer neue Leads (sorted by score):
+GET /api/admin/scraped-leads?status=new&limit=10&sort=score
 
 -- Email senden:
 POST /api/admin/send-cold-email

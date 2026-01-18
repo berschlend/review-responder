@@ -4,16 +4,71 @@
       "command": "gemini-mcp",
       "args": [],
       "env": { "GEMINI_API_KEY": "AIzaSyBbANWPv3uaxDiEUHnxZv_sRd9QM7vjXaw" }
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-fetch"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Users\\Berend Mainz\\Documents\\Start-up\\ReviewResponder"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-playwright"]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-puppeteer"]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-brave-search"],
+      "env": { "BRAVE_API_KEY": "" }
     }
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\parallel-session-start.ps1\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\parallel-pre-edit.ps1\""
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"$r = npx prettier --write $env:CLAUDE_FILE_PATH 2>&1; if ($LASTEXITCODE -ne 0) { Write-Host '[Prettier]' $r -ForegroundColor Yellow }; exit 0\""
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\parallel-post-edit.ps1\""
           }
         ]
       },
@@ -22,18 +77,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"$ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'; try { Add-Content -Path 'logs/agent-actions.log' -Value \\\"[$ts] Bash: $env:CLAUDE_TOOL_INPUT\\\" } catch { Write-Host '[Log Error]' $_ -ForegroundColor Yellow }\""
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\parallel-session-activity.ps1\" -Activity \"Running command\""
           }
         ]
-      }
-    ],
-    "SessionStart": [
+      },
       {
-        "matcher": "",
+        "matcher": "Task",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"$ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'; $session = $env:CLAUDE_SESSION; try { Add-Content -Path 'logs/sessions.log' -Value \\\"[$ts] Session Started: $session\\\" } catch { Write-Host '[Log Error]' $_ -ForegroundColor Yellow }\""
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\parallel-session-activity.ps1\" -Activity \"Spawned subagent\""
           }
         ]
       }
@@ -55,18 +108,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"try { & 'C:\\Users\\Berend Mainz\\sticky-tasks-display.ps1' } catch { Write-Host '[Hook Error]' $_ -ForegroundColor Red }; exit 0\""
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "mcp__claude-in-chrome__tabs_create|mcp__claude-in-chrome__navigate",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -Command \"Write-Host '[Chrome MCP] Tab operation detected - remember to register tab'\""
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\parallel-session-stop.ps1\""
           }
         ]
       }
@@ -77,6 +119,12 @@
       "mcp__claude-in-chrome__*",
       "mcp__memory__*",
       "mcp__sequential-thinking__*",
+      "mcp__fetch__*",
+      "mcp__filesystem__*",
+      "mcp__playwright__*",
+      "mcp__puppeteer__*",
+      "mcp__brave-search__*",
+      "mcp__gemini__*",
       "Bash(npm run *)",
       "Bash(npm install *)",
       "Bash(npm uninstall *)",
@@ -123,7 +171,8 @@
       "Bash(grep *)",
       "Bash(find *)",
       "Bash(wc *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(powershell *)"
     ],
     "deny": [
       "Bash(rm -rf /)",
