@@ -4148,6 +4148,18 @@ const LandingPage = () => {
                   REAL OUTPUT
                 </span>
               </div>
+              <div
+                style={{
+                  fontSize: '0.7rem',
+                  color: 'var(--text-muted)',
+                  marginBottom: '12px',
+                  padding: '6px 8px',
+                  background: 'var(--bg-secondary)',
+                  borderRadius: '4px',
+                }}
+              >
+                GPT-4o-mini • Generic prompt, no context
+              </div>
               <p
                 style={{
                   fontStyle: 'italic',
