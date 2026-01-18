@@ -2,8 +2,9 @@
 User-agent: *
 Allow: /
 
-# Sitemap location
+# Sitemap locations
 Sitemap: https://tryreviewresponder.com/sitemap.xml
+Sitemap: https://review-responder.onrender.com/sitemap-blog.xml
 
 # Disallow private pages
 Disallow: /dashboard
