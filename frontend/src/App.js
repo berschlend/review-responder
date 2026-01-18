@@ -4169,10 +4169,9 @@ const LandingPage = () => {
                   marginBottom: '12px',
                 }}
               >
-                "Dear [Customer's Name], I would like to sincerely apologize for the experience you
-                had during your anniversary dinner. The long wait and temperature of your wife's
-                steak are not reflective of our standards. Please reach out to me at [contact
-                information] so we can discuss this. Thank you for bringing this to our attention."
+                "Dear [Customer's Name], Thank you for sharing your feedback. We're thrilled you
+                enjoyed the risotto. We sincerely apologize it arrived lukewarm. Your feedback is
+                invaluable to us. We hope you'll give us another chance. Best regards, [Your Name]"
               </p>
               <div
                 style={{
@@ -4182,11 +4181,11 @@ const LandingPage = () => {
                   color: 'var(--text-muted)',
                 }}
               >
-                <span>54 words</span>
+                <span>46 words</span>
                 <span>•</span>
-                <span>Has [placeholders]</span>
+                <span>[Placeholders]</span>
                 <span>•</span>
-                <span>Generic</span>
+                <span>"Thrilled"</span>
               </div>
             </div>
 
@@ -4232,7 +4231,7 @@ const LandingPage = () => {
                   borderRadius: '4px',
                 }}
               >
-                Customized: Bella Italia • Warm tone • Personal email
+                Customized: Bella Italia • Warm tone • Confident
               </div>
               <p
                 style={{
@@ -4243,9 +4242,8 @@ const LandingPage = () => {
                   marginBottom: '12px',
                 }}
               >
-                "That's completely unacceptable, and I'm sorry your anniversary was ruined like
-                that. Please email me directly at marco@bellaitalia.com - I need to make this right
-                and ensure this never happens again."
+                "That's on us - hot risotto makes all the difference. Glad Marco took care of you
+                with dessert, and we'll make sure your next dish comes out piping hot."
               </p>
               <div
                 style={{
@@ -4256,11 +4254,11 @@ const LandingPage = () => {
                   fontWeight: '500',
                 }}
               >
-                <span>35 words</span>
+                <span>29 words</span>
                 <span>•</span>
-                <span>Personal</span>
+                <span>Confident</span>
                 <span>•</span>
-                <span>Offers solution</span>
+                <span>Human</span>
               </div>
             </div>
           </div>
@@ -4282,8 +4280,7 @@ const LandingPage = () => {
                 border: '1px solid var(--border-color)',
               }}
             >
-              Same 1-star review • "Anniversary dinner ruined. Hour wait, cold steak, manager
-              shrugged."
+              Same 3-star review • "Risotto delicious but lukewarm. Waiter comped dessert."
             </span>
           </div>
 
