@@ -16828,6 +16828,249 @@ app.post('/api/admin/import-leads', async (req, res) => {
   }
 });
 
+// POST /api/admin/import-chrome-scraped-leads - Import leads from Chrome MCP scraper
+// Higher quality leads with validation, deduplication, and scoring
+app.post('/api/admin/import-chrome-scraped-leads', async (req, res) => {
+  try {
+    const authKey = req.headers['x-admin-key'] || req.query.key;
+    if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { leads } = req.body;
+    if (!leads || !Array.isArray(leads)) {
+      return res.status(400).json({ error: 'leads array required' });
+    }
+
+    const imported = [];
+    const skipped = [];
+    const duplicates = [];
+
+    // Chain detection patterns
+    const CHAIN_EMAIL_PATTERNS = [
+      /^[A-Z]\d{4,}@/i,  // H0796@accor.com
+      /@(marriott|hilton|hyatt|ihg|wyndham|accor)\./i,
+      /^(emp|employee|staff|loc|location|store|unit|franchise)\d+@/i
+    ];
+
+    // Generic email patterns
+    const GENERIC_EMAILS = ['info', 'contact', 'office', 'admin', 'support', 'hello', 'mail', 'email', 'service', 'kontakt', 'anfrage', 'buchung', 'reservation', 'booking'];
+
+    // Email classification function
+    function classifyEmail(email) {
+      if (!email) return { type: 'none', score_impact: -30 };
+
+      const localPart = email.split('@')[0].toLowerCase();
+
+      // Corporate pattern (chain indicator)
+      if (CHAIN_EMAIL_PATTERNS.some(p => p.test(email))) {
+        return { type: 'corporate', score_impact: -30 };
+      }
+
+      // Generic
+      if (GENERIC_EMAILS.includes(localPart)) {
+        return { type: 'generic', score_impact: -20 };
+      }
+
+      // Personal firstname (best)
+      if (/^[a-z]{2,15}$/.test(localPart) && !GENERIC_EMAILS.includes(localPart)) {
+        return { type: 'personal_firstname', score_impact: 20 };
+      }
+
+      // Personal fullname
+      if (/^[a-z]+[._-][a-z]+$/.test(localPart)) {
+        return { type: 'personal_fullname', score_impact: 20 };
+      }
+
+      // Creative personal
+      if (['chef', 'prost', 'der', 'die', 'owner', 'boss'].some(p => localPart.includes(p))) {
+        return { type: 'creative_personal', score_impact: 15 };
+      }
+
+      // Gmail/personal domain
+      if (email.match(/@(gmail|gmx|web|outlook)\./i)) {
+        return { type: 'personal_gmail', score_impact: 10 };
+      }
+
+      return { type: 'unknown', score_impact: 0 };
+    }
+
+    // Score calculation function
+    function calculateScore(lead, emailClassification) {
+      let score = 0;
+
+      // Review count scoring
+      const reviews = lead.google_reviews_count || 0;
+      if (reviews >= 2000 && reviews < 5000) score += 50;
+      else if (reviews >= 500 && reviews < 2000) score += 40;
+      else if (reviews >= 5000) score += 30;
+      else if (reviews >= 50) score += 10;
+
+      // Email quality
+      score += emailClassification.score_impact;
+
+      // Owner identified bonus
+      if (lead.owner_name) score += 10;
+
+      // Unreplied negatives bonus
+      if (lead.unreplied_negatives > 10) score += 10;
+      else if (lead.unreplied_negatives > 5) score += 5;
+
+      // Chain penalty
+      const chainLikelihood = lead.chain_likelihood || 0;
+      if (chainLikelihood > 0.5) score -= 50;
+      else if (chainLikelihood > 0.3) score -= 20;
+
+      return score;
+    }
+
+    for (const lead of leads) {
+      try {
+        // Skip if no business name
+        if (!lead.business_name) {
+          skipped.push({ name: 'Unknown', error: 'Missing business_name' });
+          continue;
+        }
+
+        // Check for duplicates
+        const existing = await dbQuery(
+          `SELECT id, business_name, email FROM outreach_leads
+           WHERE LOWER(business_name) = LOWER($1) AND LOWER(city) = LOWER($2)`,
+          [lead.business_name, lead.city || 'Unknown']
+        );
+
+        if (existing.length > 0) {
+          // Update if new email is better
+          const existingLead = existing[0];
+          const newEmailClass = classifyEmail(lead.email);
+          const oldEmailClass = classifyEmail(existingLead.email);
+
+          if (newEmailClass.score_impact > oldEmailClass.score_impact) {
+            // Update with better email
+            await dbQuery(
+              `UPDATE outreach_leads SET
+                email = $1, email_type = $2, contact_name = $3,
+                updated_at = NOW()
+               WHERE id = $4`,
+              [lead.email, newEmailClass.type, lead.owner_name || null, existingLead.id]
+            );
+            duplicates.push({
+              id: existingLead.id,
+              name: lead.business_name,
+              action: 'updated_email',
+              old_email: existingLead.email,
+              new_email: lead.email
+            });
+          } else {
+            duplicates.push({
+              id: existingLead.id,
+              name: lead.business_name,
+              action: 'skipped_duplicate'
+            });
+          }
+          continue;
+        }
+
+        // Classify email
+        const emailClassification = classifyEmail(lead.email);
+
+        // Skip corporate emails (strong chain indicator)
+        if (emailClassification.type === 'corporate') {
+          skipped.push({
+            name: lead.business_name,
+            error: 'Corporate email pattern - likely a chain'
+          });
+          continue;
+        }
+
+        // Calculate score
+        const calculatedScore = lead.lead_score || calculateScore(lead, emailClassification);
+
+        // Skip very low scores
+        if (calculatedScore < 20) {
+          skipped.push({
+            name: lead.business_name,
+            error: `Score too low: ${calculatedScore}`,
+            email_type: emailClassification.type
+          });
+          continue;
+        }
+
+        // Insert lead
+        const result = await dbQuery(
+          `INSERT INTO outreach_leads (
+            business_name, business_type, address, city, country,
+            phone, website, email, email_type, contact_name,
+            google_rating, google_reviews_count, google_place_id,
+            source, lead_type, score,
+            chain_likelihood, unreplied_negatives, status
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, 'new')
+          RETURNING id, business_name, score`,
+          [
+            lead.business_name,
+            lead.business_type || 'restaurant',
+            lead.address || null,
+            lead.city || 'Unknown',
+            lead.country || 'DE',
+            lead.phone || null,
+            lead.website || null,
+            lead.email || null,
+            emailClassification.type,
+            lead.owner_name || lead.contact_name || null,
+            lead.google_rating ? parseFloat(lead.google_rating) : null,
+            lead.google_reviews_count ? parseInt(lead.google_reviews_count) : null,
+            lead.google_place_id || null,
+            lead.source || 'chrome_maps_scrape',
+            lead.lead_type || 'chrome_scraped',
+            calculatedScore,
+            lead.chain_likelihood || 0,
+            lead.unreplied_negatives || 0
+          ]
+        );
+
+        imported.push({
+          id: result[0].id,
+          name: result[0].business_name,
+          score: result[0].score,
+          email_type: emailClassification.type
+        });
+      } catch (err) {
+        console.error('Import chrome lead error:', err.message);
+        skipped.push({ name: lead.business_name || 'Unknown', error: err.message });
+      }
+    }
+
+    // Calculate stats
+    const avgScore = imported.length > 0
+      ? Math.round(imported.reduce((sum, l) => sum + l.score, 0) / imported.length)
+      : 0;
+
+    const personalEmailCount = imported.filter(l =>
+      ['personal_firstname', 'personal_fullname', 'creative_personal', 'personal_gmail'].includes(l.email_type)
+    ).length;
+
+    res.json({
+      success: true,
+      stats: {
+        imported: imported.length,
+        duplicates: duplicates.length,
+        skipped: skipped.length,
+        avg_score: avgScore,
+        personal_emails: personalEmailCount,
+        personal_email_rate: imported.length > 0
+          ? `${Math.round((personalEmailCount / imported.length) * 100)}%`
+          : '0%'
+      },
+      imported_leads: imported,
+      duplicates,
+      skipped_leads: skipped
+    });
+  } catch (error) {
+    console.error('Import chrome scraped leads error:', error);
+    res.status(500).json({ error: 'Failed to import leads' });
+  }
+});
+
 // GET /api/admin/scraped-leads - Get all scraped leads
 app.get('/api/admin/scraped-leads', async (req, res) => {
   try {

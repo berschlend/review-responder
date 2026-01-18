@@ -171,6 +171,60 @@ releaseLock('email_send', leadId);
 
 ---
 
+## Chrome MCP Lead Scraper (PRIMARY METHOD!)
+
+> **`/scrape-leads-chrome` ist die bevorzugte Methode fuer Lead-Finding!**
+> API-Scraping hat 40% falsche Business-Typen und generic Emails.
+
+### Warum Chrome MCP > API Scraping?
+
+| Problem mit API | Chrome MCP Loesung |
+|-----------------|-------------------|
+| 40% falsche Business-Typen | Opus evaluiert jeden einzeln |
+| Generic Emails (info@) | Website Deep-Dive fuer Personal Email |
+| Ketten inkludiert | Chain Detection Patterns |
+| $0.02-0.05 pro Lead | **$0 - Kostenlos** |
+
+### Quick Start
+
+```bash
+/scrape-leads-chrome munich restaurants 10
+```
+
+### Import Endpoint
+
+```bash
+POST /api/admin/import-chrome-scraped-leads
+Content-Type: application/json
+X-Admin-Key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
+
+{
+  "leads": [
+    {
+      "business_name": "Trattoria Milano",
+      "city": "Munich",
+      "website": "https://...",
+      "email": "marco@trattoria-milano.de",
+      "google_rating": 4.2,
+      "google_reviews_count": 1847,
+      "owner_name": "Marco Rossi"
+    }
+  ]
+}
+```
+
+### Features
+- **Auto Email Classification**: personal_firstname, personal_fullname, creative_personal, generic, corporate
+- **Auto Score Calculation**: Basierend auf Reviews + Email Quality + Chain Likelihood
+- **Smart Deduplication**: Existing Leads werden mit besserer Email geupdated
+- **Chain Detection**: Corporate Emails werden automatisch geskipped
+
+### Related Rules
+- Chain Patterns: `.claude/rules/lead-scraper.md`
+- Full Command Docs: `.claude/commands/scrape-leads-chrome.md`
+
+---
+
 ## LinkedIn Limits (KRITISCH!)
 
 - MAX 20-25 Connection Requests/Tag
