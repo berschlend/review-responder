@@ -1,0 +1,51 @@
+{
+  "accounts": [
+    {
+      "id": "acc1",
+      "email": "TODO",
+      "browser": "Firefox",
+      "subscribed": "2025-01-XX",
+      "renewalDate": "2025-02-XX",
+      "monthlyPrice": 20,
+      "currency": "USD",
+      "status": "active",
+      "notes": ""
+    },
+    {
+      "id": "acc2",
+      "email": "TODO",
+      "browser": "Edge",
+      "subscribed": "2025-01-XX",
+      "renewalDate": "2025-02-XX",
+      "monthlyPrice": 20,
+      "currency": "USD",
+      "status": "active",
+      "notes": ""
+    },
+    {
+      "id": "acc3",
+      "email": "TODO",
+      "browser": "Chrome (Default)",
+      "subscribed": "2025-01-XX",
+      "renewalDate": "2025-02-XX",
+      "monthlyPrice": 20,
+      "currency": "USD",
+      "status": "active",
+      "notes": ""
+    },
+    {
+      "id": "acc4",
+      "email": "berendder4te@gmail.com",
+      "browser": "Chrome (Profile 2)",
+      "subscribed": "2025-01-18",
+      "renewalDate": "2025-02-18",
+      "monthlyPrice": 20,
+      "currency": "USD",
+      "status": "active",
+      "notes": "Neu erstellt für mehr parallele Kapazität"
+    }
+  ],
+  "totalMonthly": 80,
+  "totalMonthlyEUR": 76,
+  "lastUpdated": "2025-01-18"
+}
