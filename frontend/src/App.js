@@ -3190,11 +3190,16 @@ SIGN OFF:
 const LandingPage = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [testimonials, setTestimonials] = useState([]);
   const [referralBanner, setReferralBanner] = useState(null);
   const [affiliateBanner, setAffiliateBanner] = useState(null);
   const [showLandingVideo, setShowLandingVideo] = useState(false);
   const [showDemoVideo, setShowDemoVideo] = useState(false);
+
+  // Activation Mode - shown after registration for new users
+  const [activationMode, setActivationMode] = useState(false);
+  const [showPersonalizePrompt, setShowPersonalizePrompt] = useState(false);
 
   // Try Before Signup - Hero Demo State
   const [tryReviewText, setTryReviewText] = useState('');
@@ -3304,6 +3309,28 @@ const LandingPage = () => {
     }
   }, [location.search]);
 
+  // Check for activation mode (new user redirect after registration)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const isActivation = params.get('activation') === 'true';
+    if (isActivation && user) {
+      setActivationMode(true);
+      // Clean up URL without reload
+      window.history.replaceState({}, '', '/');
+    }
+  }, [location.search, user]);
+
+  // Show personalize prompt after successful generation in activation mode
+  useEffect(() => {
+    if (activationMode && tryResponse && user) {
+      // Small delay so user can see the response first
+      const timer = setTimeout(() => {
+        setShowPersonalizePrompt(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [activationMode, tryResponse, user]);
+
   return (
     <div>
       {!user && <ExitIntentPopup />}
@@ -3338,6 +3365,120 @@ const LandingPage = () => {
         >
           Recommended by <span style={{ fontWeight: '600' }}>{affiliateBanner.affiliateName}</span>!
           Sign up now to get started.
+        </div>
+      )}
+
+      {/* Activation Mode Welcome Banner */}
+      {activationMode && user && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+            color: 'white',
+            padding: '16px 20px',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
+            Welcome{user.businessName ? `, ${user.businessName}` : ''}! 🎉
+          </div>
+          <div style={{ fontSize: '14px', opacity: 0.95 }}>
+            Try generating a response below to see how it works for your business
+          </div>
+        </div>
+      )}
+
+      {/* Personalize Prompt Modal */}
+      {showPersonalizePrompt && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+          onClick={() => setShowPersonalizePrompt(false)}
+        >
+          <div
+            style={{
+              background: 'var(--bg-primary)',
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '420px',
+              width: '100%',
+              textAlign: 'center',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+              }}
+            >
+              <Sparkles size={28} color="white" />
+            </div>
+            <h3
+              style={{
+                fontSize: '22px',
+                fontWeight: '600',
+                marginBottom: '12px',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Nice! Want responses that match your brand?
+            </h3>
+            <p
+              style={{
+                color: 'var(--text-secondary)',
+                marginBottom: '24px',
+                fontSize: '15px',
+                lineHeight: '1.5',
+              }}
+            >
+              Take 30 seconds to personalize your AI. Future responses will automatically match your
+              tone and style.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                onClick={() => {
+                  setShowPersonalizePrompt(false);
+                  navigate('/dashboard?showOnboarding=true');
+                }}
+                className="btn btn-primary"
+                style={{
+                  padding: '12px 24px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                }}
+              >
+                Personalize Now
+              </button>
+              <button
+                onClick={() => setShowPersonalizePrompt(false)}
+                className="btn"
+                style={{
+                  padding: '12px 24px',
+                  fontSize: '15px',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
         </div>
       )}
       <section
@@ -5047,8 +5188,20 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login(email, password);
-      toast.success('Welcome back! Generate your first response now.');
-      navigate('/generator');
+      toast.success('Welcome back!');
+      // Smart Activation Flow: Check if user has ever generated
+      try {
+        const res = await api.get('/auth/has-generated');
+        if (res.data.hasGenerated) {
+          // Returning user who has generated -> dashboard
+          navigate('/dashboard');
+        } else {
+          // User never generated -> activation mode
+          navigate('/?activation=true');
+        }
+      } catch {
+        navigate('/dashboard');
+      }
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Login failed';
       // Show helpful message for invalid credentials
@@ -5082,8 +5235,20 @@ const LoginPage = () => {
       setGoogleLoading(true);
       try {
         await loginWithGoogle(credential);
-        toast.success('Welcome back! Generate your first response now.');
-        navigate('/generator');
+        toast.success('Welcome back!');
+        // Smart Activation Flow: Check if user has ever generated
+        try {
+          const res = await api.get('/auth/has-generated');
+          if (res.data.hasGenerated) {
+            // Returning user who has generated -> dashboard
+            navigate('/dashboard');
+          } else {
+            // User never generated -> activation mode
+            navigate('/?activation=true');
+          }
+        } catch {
+          navigate('/dashboard');
+        }
       } catch (error) {
         toast.error(error.response?.data?.error || 'Google sign-in failed');
       } finally {
@@ -5227,14 +5392,26 @@ const MagicLoginPage = () => {
       // Fetch user data and login
       api
         .get('/auth/me')
-        .then(res => {
+        .then(async res => {
           setUser(res.data.user);
           // Mark admin users permanently to skip demo view tracking
           if (res.data.user?.email?.toLowerCase() === 'berend.mainz@web.de') {
             localStorage.setItem('isAdminUser', 'true');
           }
-          toast.success('Welcome! Try generating a response now.');
-          navigate('/generator'); // Send to generator for immediate value
+          toast.success('Welcome!');
+          // Smart Activation Flow: Check if user has ever generated
+          try {
+            const genRes = await api.get('/auth/has-generated');
+            if (genRes.data.hasGenerated) {
+              // User has generated -> dashboard
+              navigate('/dashboard');
+            } else {
+              // User never generated -> activation mode
+              navigate('/?activation=true');
+            }
+          } catch {
+            navigate('/dashboard');
+          }
         })
         .catch(err => {
           console.error('Magic login error:', err);
@@ -5324,9 +5501,21 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       await register(email, password, businessName, refParam);
-      toast.success('Account created! Try generating your first response now.');
-      // Send to generator for immediate value (not dashboard where they might get lost)
-      navigate('/generator');
+      toast.success('Account created!');
+      // Smart Activation Flow: Check if user has already generated (via demo/instant_try)
+      try {
+        const res = await api.get('/auth/has-generated');
+        if (res.data.hasGenerated) {
+          // User already saw value via demo/instant_try -> go to dashboard for onboarding
+          navigate('/dashboard?showOnboarding=true');
+        } else {
+          // New user without experience -> landing page with activation mode
+          navigate('/?activation=true');
+        }
+      } catch {
+        // Fallback: go to activation mode
+        navigate('/?activation=true');
+      }
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
     } finally {
@@ -5339,9 +5528,21 @@ const RegisterPage = () => {
       setGoogleLoading(true);
       try {
         await loginWithGoogle(credential, refParam);
-        toast.success('Account created! Try generating your first response now.');
-        // Send to generator for immediate value (not dashboard where they might get lost)
-        navigate('/generator');
+        toast.success('Account created!');
+        // Smart Activation Flow: Check if user has already generated (via demo/instant_try)
+        try {
+          const res = await api.get('/auth/has-generated');
+          if (res.data.hasGenerated) {
+            // User already saw value via demo/instant_try -> go to dashboard for onboarding
+            navigate('/dashboard?showOnboarding=true');
+          } else {
+            // New user without experience -> landing page with activation mode
+            navigate('/?activation=true');
+          }
+        } catch {
+          // Fallback: go to activation mode
+          navigate('/?activation=true');
+        }
       } catch (error) {
         toast.error(error.response?.data?.error || 'Google sign-up failed');
       } finally {
@@ -6677,6 +6878,7 @@ const DashboardPage = () => {
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isFirstResponse, setIsFirstResponse] = useState(false);
+  const [showPersonalizeBanner, setShowPersonalizeBanner] = useState(false);
 
   // Keyboard shortcuts help modal
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
@@ -7038,6 +7240,7 @@ const DashboardPage = () => {
     const params = new URLSearchParams(window.location.search);
     const planParam = params.get('plan');
     const stripeSuccess = params.get('success');
+    const showOnboardingParam = params.get('showOnboarding');
 
     const loadDashboard = async () => {
       setIsLoadingDashboard(true);
@@ -7069,9 +7272,13 @@ const DashboardPage = () => {
     };
     loadDashboard();
 
-    // Check if user needs onboarding
-    if (user && !user.onboardingCompleted) {
+    // Check if user needs onboarding (or forced via URL param for activation flow)
+    if (user && (!user.onboardingCompleted || showOnboardingParam === 'true')) {
       setShowOnboarding(true);
+      // Clean up URL if showOnboarding param was used
+      if (showOnboardingParam) {
+        window.history.replaceState({}, '', '/dashboard');
+      }
     }
     if (user && user.responsesUsed === 0) setIsFirstResponse(true);
 
@@ -7548,6 +7755,10 @@ const DashboardPage = () => {
         fireConfetti();
         toast.success('Congratulations on your first response!', { icon: '✅', duration: 4000 });
         setIsFirstResponse(false);
+        // Show personalize banner if user hasn't completed onboarding
+        if (!user?.onboardingCompleted) {
+          setTimeout(() => setShowPersonalizeBanner(true), 2000);
+        }
       } else {
         const aiLabel = res.data.aiModel === 'smart' ? 'Smart AI' : 'Standard';
         toast.success(`Response generated with ${aiLabel}!`);
@@ -7825,6 +8036,67 @@ const DashboardPage = () => {
           >
             Try it now →
           </button>
+        </div>
+      )}
+
+      {/* Personalize Banner - shown after first response if onboarding not complete */}
+      {showPersonalizeBanner && !showOnboarding && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
+            border: '1px solid #10B981',
+            borderRadius: '12px',
+            padding: '20px 24px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Sparkles size={32} color="#059669" />
+            <div>
+              <p style={{ margin: 0, fontWeight: '700', fontSize: '18px', color: '#065F46' }}>
+                Want responses that match your brand?
+              </p>
+              <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: '#047857' }}>
+                Take 30 seconds to personalize. All future responses will automatically match your
+                tone and style.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button
+              onClick={() => {
+                setShowPersonalizeBanner(false);
+                setShowOnboarding(true);
+              }}
+              className="btn btn-primary"
+              style={{
+                padding: '10px 20px',
+                whiteSpace: 'nowrap',
+                background: '#059669',
+                borderColor: '#059669',
+              }}
+            >
+              Personalize Now
+            </button>
+            <button
+              onClick={() => setShowPersonalizeBanner(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#6B7280',
+                cursor: 'pointer',
+                padding: '8px',
+                fontSize: '14px',
+              }}
+            >
+              Maybe later
+            </button>
+          </div>
         </div>
       )}
 

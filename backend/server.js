@@ -423,10 +423,11 @@ const BOT_EMAIL_PATTERNS = [
 
 // Known test burst periods (owner testing)
 // Format: { date: 'YYYY-MM-DD', hourStart: H, hourEnd: H } (UTC)
+// IMPORTANT: Only add periods where we KNOW owner was testing, not general time windows!
+// 2026-01-18: Removed old entries that were filtering REAL clicks (Le Bernardin, Alice, Brenners)
 const KNOWN_TEST_BURSTS = [
-  { date: '2026-01-13', hourStart: 16, hourEnd: 17 }, // Owner test burst
-  { date: '2026-01-14', hourStart: 6, hourEnd: 7 }, // Early morning tests
-  { date: '2026-01-14', hourStart: 21, hourEnd: 23 }, // Evening tests
+  // Only add specific confirmed test periods here
+  // { date: '2026-01-XX', hourStart: H, hourEnd: H }, // Description
 ];
 
 /**
@@ -437,20 +438,20 @@ const KNOWN_TEST_BURSTS = [
  * @returns {string} SQL AND clause
  */
 function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 'email') {
-  // Filter midnight burst (00:00-00:20 UTC) - email security scanners
-  const midnightFilter = `NOT (
-    EXTRACT(HOUR FROM ${clickedAtColumn} AT TIME ZONE 'UTC') = 0
-    AND EXTRACT(MINUTE FROM ${clickedAtColumn} AT TIME ZONE 'UTC') < 20
-  )`;
+  // 2026-01-18: Removed midnight filter - was too aggressive, filtering REAL clicks like Le Bernardin
+  // The filterSequentialClicks() function already catches bursts via 3+ clicks per minute detection
 
-  // Filter known test burst periods
-  const testBurstFilters = KNOWN_TEST_BURSTS.map(burst => {
-    return `NOT (
-      DATE(${clickedAtColumn} AT TIME ZONE 'UTC') = '${burst.date}'
-      AND EXTRACT(HOUR FROM ${clickedAtColumn} AT TIME ZONE 'UTC') >= ${burst.hourStart}
-      AND EXTRACT(HOUR FROM ${clickedAtColumn} AT TIME ZONE 'UTC') <= ${burst.hourEnd}
-    )`;
-  }).join(' AND ');
+  // Filter known test burst periods (only if explicitly confirmed)
+  let testBurstFilters = '1=1'; // Default: no filter
+  if (KNOWN_TEST_BURSTS.length > 0) {
+    testBurstFilters = KNOWN_TEST_BURSTS.map(burst => {
+      return `NOT (
+        DATE(${clickedAtColumn} AT TIME ZONE 'UTC') = '${burst.date}'
+        AND EXTRACT(HOUR FROM ${clickedAtColumn} AT TIME ZONE 'UTC') >= ${burst.hourStart}
+        AND EXTRACT(HOUR FROM ${clickedAtColumn} AT TIME ZONE 'UTC') <= ${burst.hourEnd}
+      )`;
+    }).join(' AND ');
+  }
 
   // Filter known bot email patterns
   const botPatternClauses = BOT_EMAIL_PATTERNS.map(p => {
@@ -460,7 +461,7 @@ function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 
     return `LOWER(${emailColumn}) != '${p.toLowerCase()}'`;
   }).join(' AND ');
 
-  return `AND ${midnightFilter} AND ${testBurstFilters} AND ${botPatternClauses}`;
+  return `AND ${testBurstFilters} AND ${botPatternClauses}`;
 }
 
 /**
@@ -3113,6 +3114,62 @@ app.put('/api/auth/complete-onboarding', authenticateToken, async (req, res) => 
   } catch (error) {
     console.error('Complete onboarding error:', error);
     res.status(500).json({ error: 'Failed to complete onboarding' });
+  }
+});
+
+// GET /api/auth/has-generated - Check if user has ever generated a response
+// Used for smart activation flow: redirect users who haven't generated yet to landing page
+app.get('/api/auth/has-generated', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await dbGet('SELECT email FROM users WHERE id = $1', [userId]);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check 1: Has generated via logged-in generator (responses table)
+    const viaGenerator = await dbGet(
+      'SELECT 1 FROM responses WHERE user_id = $1 LIMIT 1',
+      [userId]
+    );
+
+    if (viaGenerator) {
+      return res.json({ hasGenerated: true, source: 'responses' });
+    }
+
+    // Check 2: Has generated via demo page (demo_generations with actual responses)
+    const viaDemo = await dbGet(
+      `SELECT 1 FROM demo_generations d
+       JOIN outreach_leads ol ON d.lead_id = ol.id
+       WHERE LOWER(ol.email) = LOWER($1)
+       AND jsonb_array_length(COALESCE(d.generated_responses, '[]'::jsonb)) > 0
+       LIMIT 1`,
+      [user.email]
+    );
+
+    if (viaDemo) {
+      return res.json({ hasGenerated: true, source: 'demo' });
+    }
+
+    // Check 3: Has generated via instant try widget (public_try_usage)
+    const viaInstantTry = await dbGet(
+      `SELECT 1 FROM public_try_usage
+       WHERE converted_to_user_id = $1
+          OR LOWER(email) = LOWER($2)
+       LIMIT 1`,
+      [userId, user.email]
+    );
+
+    if (viaInstantTry) {
+      return res.json({ hasGenerated: true, source: 'instant_try' });
+    }
+
+    // User has never generated
+    return res.json({ hasGenerated: false, source: null });
+  } catch (error) {
+    console.error('Has-generated check error:', error);
+    res.status(500).json({ error: 'Failed to check generation history' });
   }
 });
 
@@ -28098,8 +28155,7 @@ app.get('/api/outreach/dashboard', async (req, res) => {
             : '0%',
         filters_applied: excludeBots
           ? [
-              'midnight_burst (00:00-00:20 UTC)',
-              'known_test_periods (owner testing)',
+              'bot_email_patterns (scanner domains)',
               'sequential_clicks (<30s gap)',
               'burst_detection (3+ per minute)',
             ]
