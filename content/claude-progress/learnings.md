@@ -996,3 +996,19 @@ View count is a better signal than click count (less bot noise).
 ### [2026-01-18 17:28] Burst-9
 - 37 hot leads from 947 emails = 3.91% CTR - ABOVE industry average (1-3%). Cold email IS working when measured correctly!
 
+
+### [2026-01-18 17:34] Burst-0
+- First-Principles: Free Starter Offer - Berend traut sich nicht anzurufen weil er 'verkaufen' muss. Loesung: 'Erster Monat free' macht aus Verkauf eine Einladung zum Testen. FIRSTMONTHFREE Code implementiert (30 Tage Trial via Stripe).
+
+
+### [2026-01-18 17:41] Burst-0
+- Stop-Hook mit Start-Job + exit 0 verhindert Terminal-Blocking - Hook muss SOFORT beenden, Background-Job macht den Rest (RR Session 18.01)
+
+
+### [2026-01-18 17:43] Burst-4
+- Chrome MCP Review-Scraping ist BESSER als API: Ermöglicht gezielte Auswahl der SCHLIMMSTEN Reviews (1-2 Sterne) statt Random-Picks. Qualität > Quantität: 5 perfekte Demos schlagen 1000 generische.
+
+
+### [2026-01-18 17:43] Burst-4
+- First Principles: Bisherige Demo-Strategie (3000 Leads, 1000 Auto-Demos, 0 Conversions) war falsch weil GENERISCH. Neuer Ansatz: Wenige handverlesene Leads mit deren schlimmsten Reviews = persönlicher, wertvoller, höhere Conversion.
+

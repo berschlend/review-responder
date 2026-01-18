@@ -3,33 +3,55 @@
   "version": "3.0",
   "status": "running",
   "started_at": "2026-01-18T06:42:26Z",
-  "last_heartbeat": "2026-01-18T07:50:00Z",
-  "current_loop": 2,
+  "last_heartbeat": "2026-01-18T08:55:00Z",
+  "current_loop": 3,
   "loop_interval": "2h",
   "current_bottleneck": {
     "rank": 1,
-    "step": "ALL Review-APIs EXHAUSTED",
-    "description": "Google Places, Serper, Outscraper (alle 3 Keys) - ALLE APIs exhausted!",
-    "impact": "Keine neuen Demos generierbar = Demo-Pipeline BLOCKED",
-    "status": "CRITICAL",
-    "fix": "1. Serper Credits 2. Outscraper Billing 3. Google Places API Status",
-    "discovered_at": "2026-01-18T07:48:00Z",
-    "discovered_by": "Burst-4"
+    "step": "Demo → Activation = 0%",
+    "description": "ROOT CAUSE FOUND via Funnel-Test! CTA ist 'Go to Dashboard', Generator ist BELOW THE FOLD",
+    "impact": "8 Real Users sehen Demo, aber KEINER findet den Generator",
+    "status": "ROOT_CAUSE_FOUND",
+    "fix": "1. Demo-Page CTA ändern 2. Dashboard Layout: Generator OBEN 3. Chrome Extension UNTEN",
+    "discovered_at": "2026-01-18T08:50:00Z",
+    "discovered_by": "Burst-11 Funnel-Test"
   },
   "secondary_bottlenecks": [
     {
       "rank": 2,
-      "step": "Campaign Cities",
-      "description": "Campaign sendet nur an US-Cities, 1656 EU-Leads werden ignoriert",
-      "status": "QUICK_FIX"
+      "step": "ALL Review-APIs EXHAUSTED",
+      "description": "Google Places, Serper, Outscraper (alle 3 Keys) - ALLE APIs exhausted!",
+      "status": "CRITICAL - BEREND MUSS FIXEN"
     },
     {
       "rank": 3,
-      "step": "Demo → Activation",
-      "description": "8 Real Users via Demo, 0 nutzen Generator",
-      "status": "CRITICAL"
+      "step": "Campaign Cities",
+      "description": "Campaign sendet nur an US-Cities, 1656 EU-Leads werden ignoriert",
+      "status": "QUICK_FIX"
     }
   ],
+  "funnel_test_results": {
+    "timestamp": "2026-01-18T08:50:00Z",
+    "test_type": "Demo → Activation Flow",
+    "demo_token_used": "51f3655882934e73e99f9422be8a2d5c",
+    "business": "Blumen Behrendt Essen",
+    "findings": {
+      "demo_page_loads": "PASS",
+      "unlock_modal_appears": "PASS",
+      "email_unlock_works": "PASS",
+      "all_responses_visible": "PASS",
+      "auto_account_created": "PASS",
+      "onboarding_modal": "PASS - Business Name pre-filled",
+      "cta_after_unlock": "FAIL - Says 'Go to Dashboard' not 'Generate Response'",
+      "dashboard_layout": "FAIL - Generator BELOW THE FOLD, Chrome Extension takes half screen"
+    },
+    "root_cause": "User sieht Demo, denkt 'fertig', verlässt. Generator nicht sichtbar ohne Scrollen.",
+    "recommended_fixes": [
+      "Demo-Page CTA: 'Generate Your Own Responses →' statt 'Go to Dashboard'",
+      "Dashboard: Generator OBEN, Chrome Extension UNTEN",
+      "Alternative: Separierte /generator Route für neue User"
+    ]
+  },
   "corrections": [
     {
       "timestamp": "2026-01-18T07:50:00Z",
@@ -40,7 +62,7 @@
     }
   ],
   "funnel_snapshot": {
-    "timestamp": "2026-01-18T07:50:00Z",
+    "timestamp": "2026-01-18T08:55:00Z",
     "leads": 2958,
     "leads_with_email": 1638,
     "leads_new_status": 1656,
@@ -52,9 +74,10 @@
     "real_users": 8,
     "active_users": 0,
     "paying_users": 0,
-    "demo_generation": "BLOCKED - APIs exhausted"
+    "demo_generation": "BLOCKED - APIs exhausted",
+    "activation_bottleneck": "IDENTIFIED - Generator below fold"
   },
-  "recommendations_count": 4,
+  "recommendations_count": 5,
   "hot_leads": [
     {
       "business": "Le Bernardin NYC",
@@ -73,31 +96,35 @@
     }
   ],
   "metrics": {
-    "actions_taken": 3,
-    "success_rate": 66,
+    "actions_taken": 4,
+    "success_rate": 75,
     "errors_count": 1,
-    "corrections_made": 1
+    "corrections_made": 1,
+    "funnel_tests_run": 1
   },
   "health": {
     "api_budget_ok": true,
     "memory_ok": true,
     "stuck_detected": false,
-    "last_error": "Misinterpreted campaign.last_reset as last email sent"
+    "last_error": null
   },
   "checkpoints": {
     "resume_from": null,
-    "last_successful_action": "bottleneck-report-corrected",
+    "last_successful_action": "funnel-test-completed",
     "last_processed_id": null
   },
   "learnings_applied": [
     "Campaign nur US-Cities = 1656 Leads ignoriert",
     "campaign.last_reset != last email sent - always check parallel-safe-status",
-    "Review APIs (Serper, Outscraper, Google Places) can ALL fail simultaneously"
+    "Review APIs (Serper, Outscraper, Google Places) can ALL fail simultaneously",
+    "Demo→Activation: CTA 'Go to Dashboard' führt nicht zur Aktivierung",
+    "Dashboard Layout: Generator BELOW THE FOLD = User findet ihn nicht"
   ],
   "escalations_pending": [
+    "ACTIVATION FIX: Demo-Page CTA ändern + Dashboard Layout (DEV SESSION!)",
     "ALL Review-APIs EXHAUSTED! (CRITICAL - Berend muss fixen)",
-    "Campaign Cities erweitern (QUICK FIX)",
+    "Campaign Cities erweitern (QUICK FIX - SQL bereit)",
     "Hot Leads anrufen (Le Bernardin, Ti Cafe, Trattoria Sempre)"
   ],
-  "next_analysis": "2026-01-18T10:00:00Z"
+  "next_analysis": "2026-01-18T11:00:00Z"
 }

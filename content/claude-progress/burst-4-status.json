@@ -34,7 +34,7 @@
                     "api_calls_attempted":  8,
                     "api_failures":  8
                 },
-    "status":  "running",
+    "status":  "completed",
     "blocked_reason":  "API credits exhausted - waiting for Berend to fix",
-    "last_heartbeat":  "2026-01-18T07:41:11Z"
+    "last_heartbeat":  "2026-01-18T17:43:58Z"
 }

@@ -58,15 +58,29 @@
 
 ---
 
+## DEIN ANGEBOT (Sag das!)
+
+```
+"You know what, let me make you an offer:
+First month is completely free. Try it out.
+If you like it, it's $29/month after that.
+If not, cancel with one click. No risk at all."
+```
+
+**Code:** `FIRSTMONTHFREE` (bei Checkout eingeben)
+
+---
+
 ## Objection Handling
 
 | Einwand | Antwort |
 |---------|---------|
 | "We're busy right now" | "Totally get it - coffee rush! When's a better time? Before you open tomorrow?" |
 | "We already respond to reviews" | "Awesome! How long does each one take? Our AI does it in 5 seconds. Want to see how it handles your toughest review?" |
-| "What does it cost?" | "20 responses are completely free. After that it's $29/month for 300. But try the free version first!" |
+| "What does it cost?" | "First month is free! After that $29/month - but only if you like it. No risk." |
 | "We're a small cafe" | "That's exactly why! You don't have time to write responses. Our AI sounds like YOU - not generic." |
 | "I'll check it out later" | "Totally - I can text you the link right now. 30 seconds to see it work. What's the best number?" |
+| "Let me think about it" | "Sure! But hey - first month is free anyway. Nothing to lose, right?" |
 
 ---
 

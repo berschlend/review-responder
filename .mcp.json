@@ -4,44 +4,72 @@
       "command": "gemini-mcp",
       "args": [],
       "env": {
-        "GEMINI_API_KEY": "AIzaSyBbANWPv3uaxDiEUHnxZv_sRd9QM7vjXaw"
+        "GEMINI_API_KEY": "AIzaSyBbANWPv3uaxDiEUHnxZv_sRd9QM7vjXaw",
+        "NODE_OPTIONS": "--max-old-space-size=512"
       }
     },
     "memory": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=512"
+      }
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=256"
+      }
     },
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Berend Mainz\\Documents"]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Berend Mainz\\Documents"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=256"
+      }
     },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp"]
+      "args": ["-y", "@playwright/mcp"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=1024"
+      }
     },
     "puppeteer": {
       "command": "npx",
-      "args": ["-y", "puppeteer-mcp-server"]
+      "args": ["-y", "puppeteer-mcp-server"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=1024"
+      }
     },
     "fetch": {
       "command": "npx",
-      "args": ["-y", "@mokei/mcp-fetch"]
+      "args": ["-y", "@mokei/mcp-fetch"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=256"
+      }
     },
     "github": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"]
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=256"
+      }
     },
     "notion": {
       "command": "npx",
-      "args": ["-y", "@notionhq/notion-mcp-server"]
+      "args": ["-y", "@notionhq/notion-mcp-server"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=256"
+      }
     },
     "postgres": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://review_responder_db_user:ZSrmS3ZEY2pTaa7DmkyD4JvU4W2T4rN1@dpg-d5gjq7e3jp1c73c443sg-a.frankfurt-postgres.render.com/review_responder_db"]
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://review_responder_db_user:ZSrmS3ZEY2pTaa7DmkyD4JvU4W2T4rN1@dpg-d5gjq7e3jp1c73c443sg-a.frankfurt-postgres.render.com/review_responder_db"],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=256"
+      }
     }
   }
 }

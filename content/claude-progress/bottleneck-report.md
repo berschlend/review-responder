@@ -7,16 +7,36 @@
 
 ## Executive Summary
 
-**Letztes Update:** 2026-01-18 07:50 UTC (Loop 2 - KORREKTUR)
+**Letztes Update:** 2026-01-18 08:55 UTC (Loop 3 - FUNNEL-TEST!)
 
-### TOP BOTTLENECK (KRITISCH!):
+### TOP BOTTLENECK (MIT EVIDENCE!):
 
-| Rank | Bottleneck | Impact | Status |
-|------|------------|--------|--------|
-| **#1 NEU** | **ALLE Review-APIs EXHAUSTED** | **Keine neuen Demos moeglich!** | **CRITICAL** |
-| **#2** | **Campaign nur US-Cities** | **1656 EU-Leads werden ignoriert!** | **QUICK FIX** |
-| **#3** | **Demo → Activation = 0%** | **8 "Real Users", 0 nutzen Generator** | **CRITICAL** |
-| ~~#4~~ | ~~Email Outreach~~ | ~~KORRIGIERT: Funktioniert!~~ | **OK** |
+| Rank | Bottleneck | Impact | Status | Evidence |
+|------|------------|--------|--------|----------|
+| **#1** | **Demo → Activation = 0%** | **8 User, 0 nutzen Generator** | **ROOT CAUSE FOUND!** | Funnel-Test 08:50 |
+| **#2** | **Review-APIs EXHAUSTED** | **Keine neuen Demos** | **CRITICAL** | Berend muss fixen |
+| **#3** | **Campaign nur US-Cities** | **1656 EU-Leads ignoriert** | **QUICK FIX** | SQL bereit |
+| ~~#4~~ | ~~Email Outreach~~ | ~~KORRIGIERT~~ | **OK** | 49/24h |
+
+### NEUE ERKENNTNIS (08:55 UTC - Funnel-Test!):
+
+```
+ROOT CAUSE FÜR 0% ACTIVATION GEFUNDEN!
+
+Nach Demo-Email-Eingabe:
+1. ✅ User sieht alle Responses (GUT!)
+2. ✅ Auto-Account wird erstellt (GUT!)
+3. ❌ CTA ist "Go to Dashboard" statt "Generate Response"
+4. ❌ Dashboard zeigt Chrome Extension ÜBER dem Generator
+5. ❌ Generator ist BELOW THE FOLD - User muss scrollen!
+
+USER DENKT: "Hab Demo gesehen, fertig" → Verlässt Seite
+USER SIEHT NICHT: Den Generator wo er SELBST Responses generieren kann
+
+QUICK FIX:
+- Demo-Page CTA: "Generate Your Own →" statt "Go to Dashboard"
+- Dashboard: Generator OBEN, Chrome Extension UNTEN
+```
 
 ### KORREKTUR (07:50 UTC):
 
@@ -144,7 +164,7 @@ WHERE id = 1;
 
 ---
 
-## ROOT CAUSE #3: Demo → Activation = 0%
+## ROOT CAUSE #3: Demo → Activation = 0% (FUNNEL-TEST 08:50 UTC!)
 
 **WAS:** 8 "Real Users" haben Demo generiert, aber 0 nutzen Generator
 
@@ -153,15 +173,59 @@ WHERE id = 1;
 - 4 weitere via Demo-View
 - KEINER hat jemals den Generator genutzt
 
-**WARUM?**
-1. Nach Demo-View → Wohin werden sie geschickt?
-2. Welcome Email mit Generator-Link?
-3. Onboarding Flow unklar
+### FUNNEL-TEST ERGEBNISSE (Burst-11, 08:50 UTC):
 
-**FIX NEEDED:**
-- Demo-User direkt zu /generator schicken
-- Magic Link → /generator (nicht /dashboard)
-- Pre-fill Business Name wenn bekannt
+**Was FUNKTIONIERT:**
+1. ✅ Demo-Page lädt korrekt mit Business-spezifischen Reviews
+2. ✅ "Unlock with Email" Modal erscheint
+3. ✅ Nach Email-Eingabe: Alle Responses werden SOFORT sichtbar (kein Redirect!)
+4. ✅ Auto-Account wird erstellt
+5. ✅ Onboarding-Modal mit Business Name PRE-FILLED erscheint
+
+**WO DER USER VERLOREN GEHT:**
+
+```
+PROBLEM #1: "Go to Dashboard" statt "Generate Your First Response"
+─────────────────────────────────────────────────────────────────
+Nach Demo-Unlock ist der CTA "Go to Dashboard"
+Der User denkt: "Fertig, hab alles gesehen" → Verlässt die Seite
+
+PROBLEM #2: Generator ist BELOW THE FOLD auf /dashboard
+─────────────────────────────────────────────────────────────────
+Wenn User zum Dashboard geht:
+1. Sieht: Banner "Welcome! Generate your first response" (klein)
+2. Sieht: "Set Up Your Business Profile" Banner (groß, ablenkend)
+3. Sieht: Chrome Extension Promo (RIESIG, nimmt halben Screen)
+4. MUSS SCROLLEN um Generator zu sehen!
+
+User Behavior: Sieht Chrome Extension → "Ah, muss Extension installieren" → Verlässt
+```
+
+### KONKRETE FIXES:
+
+**FIX #1: Demo-Page CTA ändern (QUICK WIN!)**
+```
+ALT: "Go to Dashboard →"
+NEU: "Generate Your Own Responses →" → Link zu /dashboard#generator
+```
+
+**FIX #2: Dashboard Layout für neue User**
+```
+ENTWEDER:
+A) Generator OBEN, Chrome Extension UNTEN
+B) Für neue User: Direkt zu /generator (separierte Seite)
+C) "Set Up Profile" und "Chrome Extension" erst NACH erster Generierung zeigen
+```
+
+**FIX #3: Welcome Email (falls noch nicht)**
+```
+Subject: "Generate your first AI response - it's free!"
+CTA: Direct link zu /dashboard#generator oder /generator
+```
+
+### EXPECTED IMPACT:
+- Activation Rate: 0% → 20-30%
+- Conversion: Wenn User 1x Generator nutzt, versteht er den Wert
 
 ---
 

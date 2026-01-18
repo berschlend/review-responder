@@ -19,8 +19,9 @@ if ($Verbose) { Write-Host "[Sync] Starting sticky tasks sync..." -ForegroundCol
 
 try {
     # 1. Fetch pending calls from DB (priority 4+)
+    # TimeoutSec=10: Render kann schlafen, wir wollen nicht ewig warten
     $headers = @{ "X-Admin-Key" = $ADMIN_KEY }
-    $callsResponse = Invoke-RestMethod -Uri "$API_BASE/api/admin/call-preps" -Headers $headers -Method GET -ErrorAction Stop
+    $callsResponse = Invoke-RestMethod -Uri "$API_BASE/api/admin/call-preps" -Headers $headers -Method GET -TimeoutSec 10 -ErrorAction Stop
 
     $pendingCalls = $callsResponse.calls | Where-Object {
         $_.status -eq 'pending' -and $_.priority_score -ge 4

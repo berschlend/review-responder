@@ -404,6 +404,17 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Playwright MCP: CDP-Endpoint fuer bestehenden Chrome (18.01.2026)
+**Problem:** Playwright/Puppeteer MCPs starten EIGENE Browser-Instanzen (leer, ohne Extensions, ohne Logins). Das ist by design fuer Test-Isolation.
+**Root Cause:** Test-Tools wollen saubere, reproduzierbare Umgebungen - keine User-Daten.
+**Loesung:**
+1. Chrome mit `--remote-debugging-port=9222` starten
+2. Playwright MCP Config: `"args": ["-y", "@playwright/mcp", "--cdp-endpoint", "http://localhost:9222"]`
+3. Chrome-Shortcuts anpassen (Taskbar etc.) sodass sie IMMER mit Debug-Port starten
+**Files:** `~/.claude/settings.json`, `~/fix-chrome-shortcuts.ps1`, `~/start-chrome-debug.ps1`
+**Wichtig:** Nach Config-Aenderung muessen ALLE Claude-Sessions neu gestartet werden - sie laden die Config nur beim Start!
+**Lesson:** CDP (Chrome DevTools Protocol) ist die Bruecke zwischen Test-Tools und bestehendem Browser. Ohne Debug-Port keine Verbindung moeglich.
+
 ### Chrome Web Store: Review abbrechen ohne Datenverlust (18.01.2026)
 **Problem:** Ausstehende Extension-Review (v1.6.2) blockierte Upload von neuer Version (v1.7.0). "Neues Paket hochladen" Button ausgegraut.
 **Loesung:** Im Developer Dashboard → Drei-Punkte-Menü (⋮) oben rechts → **"Überprüfung abbrechen"**
