@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 18.01.2026 18:45 (RR wrap-up - Chrome MCP CDP Fix)
+> Letzte Aktualisierung: 18.01.2026 22:30 (RR wrap-up - Chrome MCP Lead Scraper implementiert)
 
 ---
 
