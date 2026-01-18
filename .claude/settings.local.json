@@ -1,0 +1,15 @@
+{
+  "enabledMcpjsonServers": [
+    "gemini",
+    "memory",
+    "sequential-thinking",
+    "filesystem",
+    "playwright",
+    "puppeteer",
+    "fetch",
+    "github",
+    "notion",
+    "postgres"
+  ],
+  "enableAllProjectMcpServers": true
+}
