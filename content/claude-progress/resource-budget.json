@@ -21,28 +21,28 @@
                          "serpapi_calls":  {
                                                "used":  0,
                                                "limit":  100,
-                                               "reset_at":  "2026-01-18T00:00:00Z"
+                                               "reset_at":  "2026-01-19T00:00:00Z"
                                            },
                          "openai_tokens":  {
                                                "used":  0,
                                                "limit":  1000000,
-                                               "reset_at":  "2026-01-18T00:00:00Z"
+                                               "reset_at":  "2026-01-19T00:00:00Z"
                                            },
                          "outscraper_calls":  {
                                                   "used":  0,
                                                   "limit":  500,
-                                                  "reset_at":  "2026-01-18T00:00:00Z"
+                                                  "reset_at":  "2026-01-19T00:00:00Z"
                                               },
                          "anthropic_tokens":  {
                                                   "used":  0,
                                                   "limit":  5000000,
-                                                  "reset_at":  "2026-01-18T00:00:00Z"
+                                                  "reset_at":  "2026-01-19T00:00:00Z"
                                               },
                          "resend_emails":  {
                                                "used":  0,
                                                "limit":  100,
-                                               "reset_at":  "2026-01-18T00:00:00Z"
+                                               "reset_at":  "2026-01-19T00:00:00Z"
                                            }
                      },
-    "last_updated":  "2026-01-17T08:44:52Z"
+    "last_updated":  "2026-01-18T01:47:18Z"
 }

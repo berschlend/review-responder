@@ -2,17 +2,8 @@
     "locks":  {
 
               },
-    "lastUpdated":  "2026-01-18T01:19:45.2511819+00:00",
+    "lastUpdated":  "2026-01-18T02:00:58.7289551+00:00",
     "sessions":  {
-                     "TEST-CMD":  {
-                                      "workingOn":  {
 
-                                                    },
-                                      "lastHeartbeat":  "2026-01-18T01:19:11.2141071+00:00",
-                                      "startedAt":  "2026-01-18T01:19:11.1828086+00:00",
-                                      "currentTask":  "",
-                                      "activity":  "Session started",
-                                      "pid":  3404
-                                  }
                  }
 }

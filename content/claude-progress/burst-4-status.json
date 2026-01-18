@@ -1,32 +1,31 @@
 ﻿{
     "loop_interval":  "4h",
     "learnings_applied":  [
-        "V4.5 Pause: 0 echte Hot Leads, Cold Email funktioniert nicht"
-    ],
-    "current_loop":  1,
-    "started_at":  "2026-01-17T08:44:52Z",
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-18T01:47:18Z",
     "version":  "3.0",
     "agent":  "burst-4-demo-generator",
-    "escalations_pending":  [],
+    "escalations_pending":  [
+
+                            ],
     "checkpoints":  {
-        "resume_from":  "waiting_for_real_hot_leads",
-        "last_successful_action":  "2026-01-17T19:15:00Z",
-        "last_processed_id":  null
-    },
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
     "health":  {
-        "api_budget_ok":  true,
-        "memory_ok":  true,
-        "stuck_detected":  false,
-        "last_error":  null
-    },
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
     "metrics":  {
-        "success_rate":  100,
-        "errors_count":  0,
-        "actions_taken":  1,
-        "demos_generated":  0,
-        "handoffs_created":  1
-    },
-    "status":  "paused",
-    "pause_reason":  "V4.5: No real hot leads - all 38 clicks were bots. 2 LIKELY_REAL users need activation (Burst-5/6 territory), not demos",
-    "last_heartbeat":  "2026-01-17T19:15:00Z"
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

@@ -46,7 +46,7 @@ powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent [X] -Dat
 powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
 powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent [X] -Data "Learning hier"
 
-# Handoffs
+# Handoffs (Legacy)
 powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent [X] -Data '{"to":"burst-Y","data":{}}'
 powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
 
@@ -58,6 +58,42 @@ powershell -File scripts/agent-helpers.ps1 -Action budget-use -Key resend -Amoun
 powershell -File scripts/agent-helpers.ps1 -Action check-blocked -Agent [X] -Resource email_lock
 powershell -File scripts/agent-helpers.ps1 -Action task-switch -Agent [X] -Data '{"to":"backup"}'
 ```
+
+---
+
+## PARALLEL SESSIONS (NEU!)
+
+> Agents können sich sehen, kommunizieren und NEUE AGENTS SPAWNEN!
+
+```bash
+# Alle aktiven Sessions sehen
+powershell -File "$env:USERPROFILE\parallel-session-manager.ps1" -Action status
+
+# Task an anderen Agent übergeben
+powershell -File "$env:USERPROFILE\parallel-session-manager.ps1" -Action handoff `
+  -Session "BURST2" -TargetAgent "BURST-5" -TaskType "hot-lead" -Priority "high" `
+  -Message "Lead will kaufen!"
+
+# Broadcast an alle Agents
+powershell -File "$env:USERPROFILE\parallel-session-manager.ps1" -Action broadcast `
+  -Session "BURST2" -Message "DB Schema ändert sich!"
+
+# NEUEN AGENT SPAWNEN (eigenes Terminal!)
+powershell -File "$env:USERPROFILE\spawn-agent.ps1" -AgentName "BURST-5"
+powershell -File "$env:USERPROFILE\spawn-agent.ps1" -AgentName "BURST-5" -Task "Process hot leads"
+powershell -File "$env:USERPROFILE\spawn-agent.ps1" -AgentName "CHROME-1" -Chrome
+
+# Task-Queue checken
+powershell -File "$env:USERPROFILE\parallel-session-manager.ps1" -Action task-queue
+
+# Task aus Queue übernehmen
+powershell -File "$env:USERPROFILE\parallel-session-manager.ps1" -Action claim-task -Session "BURST5"
+```
+
+**Wann Agent spawnen?**
+- Hot Lead braucht sofortige Bearbeitung → Spawn BURST-5
+- Chrome-Task nötig aber du hast kein Chrome → Spawn mit -Chrome
+- Zu viele Tasks für einen Agent → Spawn Backup
 
 ---
 

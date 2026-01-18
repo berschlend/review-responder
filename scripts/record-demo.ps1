@@ -4,11 +4,12 @@
 
 .DESCRIPTION
     Dieses Script macht ALLES:
-    1. Prueft OBS Installation
-    2. Oeffnet Demo-Seite im Browser
-    3. Zeigt Anweisungen
-    4. Wartet auf Recording-Datei
-    5. Fuehrt automatisches Post-Processing aus
+    1. Prueft alle Dependencies (OBS, FFmpeg, Python)
+    2. Konfiguriert OBS automatisch
+    3. Oeffnet Demo-Seite im Browser
+    4. Zeigt Anweisungen
+    5. Wartet auf Recording-Datei
+    6. Fuehrt automatisches Post-Processing aus
 
 .USAGE
     .\scripts\record-demo.ps1
@@ -22,6 +23,53 @@ $DemoUrl = "https://tryreviewresponder.com/demo-video-page.html?hideControls=tru
 $RecordingDir = "$env:USERPROFILE\Videos"
 $OutputDir = "$ProjectDir\content\video-scripts"
 $CheatsheetPath = "$ProjectDir\content\video-scripts\15s-cheatsheet.md"
+
+# ========== EDGE CASE HANDLERS ==========
+
+function Test-AllDependencies {
+    $errors = @()
+
+    # 1. FFmpeg Check
+    $ffmpeg = Get-Command ffmpeg -ErrorAction SilentlyContinue
+    if (-not $ffmpeg) {
+        $errors += "FFmpeg nicht gefunden! Installiere mit: winget install ffmpeg"
+    }
+
+    # 2. Python Check
+    $python = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $python) {
+        $errors += "Python nicht gefunden! Installiere von python.org"
+    }
+
+    # 3. Videos Folder Check
+    if (-not (Test-Path $RecordingDir)) {
+        New-Item -ItemType Directory -Force -Path $RecordingDir | Out-Null
+        Write-Color "  Videos Ordner erstellt: $RecordingDir" "Yellow"
+    }
+
+    # 4. Output Folder Check
+    if (-not (Test-Path $OutputDir)) {
+        New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+        Write-Color "  Output Ordner erstellt: $OutputDir" "Yellow"
+    }
+
+    # 5. Post-Processing Script Check
+    $postScript = "$ProjectDir\scripts\demo-video-postprocess.py"
+    if (-not (Test-Path $postScript)) {
+        $errors += "Post-Processing Script fehlt: $postScript"
+    }
+
+    return $errors
+}
+
+function Test-InternetConnection {
+    try {
+        $response = Invoke-WebRequest -Uri "https://tryreviewresponder.com" -TimeoutSec 5 -UseBasicParsing
+        return $response.StatusCode -eq 200
+    } catch {
+        return $false
+    }
+}
 
 # Farben
 function Write-Color {
@@ -43,6 +91,21 @@ function Test-OBSInstalled {
         $obsPath = Get-ChildItem "C:\Program Files\obs-studio\bin\64bit\obs64.exe" -ErrorAction SilentlyContinue
     }
     return $obsPath
+}
+
+function Test-OBSConfigured {
+    $scenePath = "$env:APPDATA\obs-studio\basic\scenes\ReviewResponder Demo.json"
+    return (Test-Path $scenePath)
+}
+
+function Setup-OBS {
+    $setupScript = "$ProjectDir\scripts\setup-obs.ps1"
+    if (Test-Path $setupScript) {
+        Write-Color "Starte OBS Auto-Setup..." "Yellow"
+        & $setupScript
+        return $true
+    }
+    return $false
 }
 
 function Show-Checklist {
@@ -153,6 +216,30 @@ function Process-Video {
 
 Write-Banner
 
+# 0. Dependency Check (EDGE CASES!)
+Write-Color "Pruefe Dependencies..." "Gray"
+$depErrors = Test-AllDependencies
+if ($depErrors.Count -gt 0) {
+    Write-Color "`nFEHLENDE DEPENDENCIES:" "Red"
+    foreach ($err in $depErrors) {
+        Write-Host "  - $err"
+    }
+    Write-Host ""
+    Write-Color "Bitte installiere fehlende Dependencies und starte neu." "Yellow"
+    Read-Host "Druecke Enter zum Beenden"
+    exit 1
+}
+Write-Color "  Alle Dependencies OK!" "Green"
+
+# 0b. Internet Check
+Write-Color "Pruefe Internet-Verbindung..." "Gray"
+if (-not (Test-InternetConnection)) {
+    Write-Color "  WARNUNG: Demo-Seite nicht erreichbar!" "Yellow"
+    Write-Host "  Die Demo-Seite wird moeglicherweise nicht laden."
+    Write-Host "  Fortfahren trotzdem? (Enter = Ja, Ctrl+C = Abbrechen)"
+    Read-Host
+}
+
 # 1. OBS Check
 Write-Color "Pruefe OBS Installation..." "Gray"
 $obs = Test-OBSInstalled
@@ -162,13 +249,26 @@ if (-not $obs) {
     Write-Host "Bitte installiere OBS Studio:"
     Write-Host "  https://obsproject.com/download"
     Write-Host ""
-    Write-Host "Nach Installation:"
-    Write-Host "  1. OBS oeffnen"
-    Write-Host "  2. Sources -> Video Capture Device (Webcam)"
-    Write-Host "  3. Sources -> Window Capture (Chrome)"
-    Write-Host "  4. Webcam unten links positionieren"
+    Read-Host "Druecke Enter wenn OBS installiert ist"
+    $obs = Test-OBSInstalled
+}
+
+# 1b. OBS Setup Check
+if ($obs -and -not (Test-OBSConfigured)) {
+    Write-Color "OBS noch nicht konfiguriert - starte Auto-Setup..." "Yellow"
+    Setup-OBS
     Write-Host ""
-    Read-Host "Druecke Enter wenn OBS eingerichtet ist"
+    Write-Color "WICHTIG: Waehle in OBS jetzt Chrome Window und Webcam aus!" "Yellow"
+    Write-Host "  1. Rechtsklick auf 'Chrome Window' -> Properties -> Fenster waehlen"
+    Write-Host "  2. Rechtsklick auf 'Webcam' -> Properties -> Kamera waehlen"
+    Write-Host "  3. Webcam verkleinern und nach unten-links ziehen"
+    Write-Host ""
+    Read-Host "Druecke Enter wenn OBS fertig eingerichtet ist"
+} elseif ($obs) {
+    Write-Color "OBS bereits konfiguriert!" "Green"
+    # OBS mit richtiger Scene Collection starten
+    $obsPath = "C:\Program Files\obs-studio\bin\64bit\obs64.exe"
+    Start-Process $obsPath -ArgumentList "--collection `"ReviewResponder Demo`""
 }
 
 # 2. Demo-Seite oeffnen
