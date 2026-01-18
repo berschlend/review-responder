@@ -1,31 +1,40 @@
 ﻿{
     "loop_interval":  "4h",
     "learnings_applied":  [
-
+                              "All review-scraping APIs exhausted (Serper, Outscraper, Google Places failing)"
                           ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
+    "current_loop":  2,
+    "started_at":  "2026-01-18T06:42:26Z",
     "version":  "3.0",
     "agent":  "burst-4-demo-generator",
     "escalations_pending":  [
-
+                                {
+                                    "type":  "api_credits",
+                                    "severity":  "critical",
+                                    "message":  "ALL review APIs exhausted - Serper out of credits, Outscraper needs billing fix, Google Places not finding businesses",
+                                    "created_at":  "2026-01-18T07:48:00Z"
+                                }
                             ],
     "checkpoints":  {
                         "resume_from":  null,
-                        "last_successful_action":  null,
+                        "last_successful_action":  "diagnosed_api_issue",
                         "last_processed_id":  null
                     },
     "health":  {
-                   "api_budget_ok":  true,
+                   "api_budget_ok":  false,
                    "memory_ok":  true,
                    "stuck_detected":  false,
-                   "last_error":  null
+                   "last_error":  "All review scraping APIs exhausted or failing"
                },
     "metrics":  {
                     "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
+                    "errors_count":  3,
+                    "actions_taken":  5,
+                    "demos_generated":  0,
+                    "api_calls_attempted":  8,
+                    "api_failures":  8
                 },
-    "status":  "initializing",
-    "last_heartbeat":  null
+    "status":  "running",
+    "blocked_reason":  "API credits exhausted - waiting for Berend to fix",
+    "last_heartbeat":  "2026-01-18T07:41:11Z"
 }

@@ -1,380 +1,397 @@
 {
-  "last_updated": "2026-01-16T22:45:00Z",
+  "last_updated": "2026-01-18T15:30:00Z",
   "scoring_run": "burst-14-loop-2",
-  "total_scored": 67,
+  "total_demos": 1315,
+  "total_emails_sent": 873,
+  "demo_views": 147,
+  "conversions": 3,
   "segments": {
-    "hot": 24,
-    "warm": 33,
-    "cool": 8,
-    "cold": 2
+    "hot": 1,
+    "warm": 8,
+    "cool": 138,
+    "cold": 1168
   },
-  "top_10": [
-    {
-      "email": "office@rollercoasterrestaurant.com",
-      "business": "ROLLERCOASTERRESTAURANT Vienna",
-      "city": "Wien",
-      "reviews": 23164,
-      "score": 95,
-      "breakdown": {
-        "engagement": 40,
-        "fit": 20,
-        "behavior": 35
-      },
-      "clicked_at": "2026-01-16T09:43:22Z",
-      "hours_since_click": 13,
-      "segment": "hot",
-      "registered": false,
-      "reason": "MEGA-HOT: 23K reviews (MASSIVE volume), clicked TODAY, unique attraction concept = viral case study potential"
-    },
-    {
-      "email": "info@treudelberg.com",
-      "business": "IntercityHotel Hamburg Dammtor-Messe",
-      "city": "Hamburg",
-      "reviews": 2752,
-      "score": 92,
-      "breakdown": {
-        "engagement": 37,
-        "fit": 20,
-        "behavior": 35
-      },
-      "clicked_at": "2026-01-15T09:04:34Z",
-      "hours_since_click": 37,
-      "segment": "hot",
-      "registered": true,
-      "reason": "MEGA-HOT: Deutsche Hospitality Group (50+ Hotels), REGISTERED USER, DACH region = high LTV potential"
-    },
-    {
-      "email": "advantageclub@leonardo-hotels.com",
-      "business": "Leonardo Royal Hotel Berlin Alexanderplatz",
-      "city": "Berlin",
-      "reviews": 5787,
-      "score": 90,
-      "breakdown": {
-        "engagement": 35,
-        "fit": 20,
-        "behavior": 35
-      },
-      "clicked_at": "2026-01-15T07:01:37Z",
-      "hours_since_click": 39,
-      "segment": "hot",
-      "registered": false,
-      "reason": "MEGA-HOT: Leonardo Hotels = 220+ hotels in Europe, Berlin premium market, enterprise potential"
-    },
-    {
-      "email": "ask.berlinap@staygenerator.com",
-      "business": "Generator Berlin Alexanderplatz",
-      "city": "Berlin",
-      "reviews": 5194,
-      "score": 88,
-      "breakdown": {
-        "engagement": 38,
-        "fit": 18,
-        "behavior": 32
-      },
-      "clicked_at": "2026-01-16T00:15:10Z",
-      "hours_since_click": 22,
-      "segment": "hot",
-      "registered": false,
-      "reason": "Generator Hostels = 14 European locations, clicked yesterday, hostel chain = volume play"
-    },
-    {
-      "email": "H1163@accor.com",
-      "business": "Mercure Hotel Hamburg City",
-      "city": "Hamburg",
-      "reviews": 3199,
-      "score": 87,
-      "breakdown": {
-        "engagement": 38,
-        "fit": 17,
-        "behavior": 32
-      },
-      "clicked_at": "2026-01-16T00:18:57Z",
-      "hours_since_click": 22,
-      "segment": "hot",
-      "registered": false,
-      "reason": "Accor Group = 5,500+ hotels worldwide! Mercure brand, Hamburg market, clicked yesterday"
-    },
-    {
-      "email": "h5413@sofitel.com",
-      "business": "Sofitel Munich Bayerpost",
-      "city": "Muenchen",
-      "reviews": 4496,
-      "score": 86,
-      "breakdown": {
-        "engagement": 38,
-        "fit": 16,
-        "behavior": 32
-      },
-      "clicked_at": "2026-01-16T00:15:21Z",
-      "hours_since_click": 22,
-      "segment": "hot",
-      "registered": false,
-      "reason": "Sofitel = Accor luxury brand, Muenchen top market, clicked yesterday"
-    },
-    {
-      "email": "wien@25hours-hotels.com",
-      "business": "25hours Hotel Vienna at MuseumsQuartier",
-      "city": "Wien",
-      "reviews": 4698,
-      "score": 85,
-      "breakdown": {
-        "engagement": 38,
-        "fit": 15,
-        "behavior": 32
-      },
-      "clicked_at": "2026-01-16T00:19:03Z",
-      "hours_since_click": 22,
-      "segment": "hot",
-      "registered": false,
-      "reason": "25hours Hotels = 15 boutique hotels, design-focused brand, Vienna, clicked yesterday"
-    },
-    {
-      "email": "H0796@accor.com",
-      "business": "ibis Wien Mariahilf",
-      "city": "Wien",
-      "reviews": 4234,
-      "score": 84,
-      "breakdown": {
-        "engagement": 35,
-        "fit": 15,
-        "behavior": 34
-      },
-      "clicked_at": "2026-01-15T03:07:58Z",
-      "hours_since_click": 43,
-      "segment": "hot",
-      "registered": true,
-      "reason": "Accor Group ibis brand (biggest budget chain), Vienna, REGISTERED USER"
-    },
-    {
-      "email": "info@manchesterarndale.com",
-      "business": "Manchester Arndale Shopping Centre",
-      "city": "Manchester",
-      "reviews": 43019,
-      "score": 83,
-      "breakdown": {
-        "engagement": 38,
-        "fit": 10,
-        "behavior": 35
-      },
-      "clicked_at": "2026-01-16T00:15:08Z",
-      "hours_since_click": 22,
-      "segment": "hot",
-      "registered": false,
-      "reason": "43K reviews = MASSIVE volume, shopping centre = many tenant businesses, UK major market"
-    },
-    {
-      "email": "community@bullring.co.uk",
-      "business": "Bullring",
-      "city": "Birmingham",
-      "reviews": 56381,
-      "score": 82,
-      "breakdown": {
-        "engagement": 32,
-        "fit": 15,
-        "behavior": 35
-      },
-      "clicked_at": "2026-01-14T22:05:26Z",
-      "hours_since_click": 48,
-      "segment": "hot",
-      "registered": true,
-      "reason": "56K reviews = HIGHEST volume in dataset, UK major shopping centre, REGISTERED"
-    }
-  ],
-  "new_clicks_since_last_update": [
-    {
-      "email": "londoncityroad@travelodge.co.uk",
-      "business": "Travelodge London Central City Road",
-      "city": "London",
-      "reviews": 4790,
-      "clicked_at": "2026-01-16T01:27:45Z",
-      "score": 80,
-      "segment": "hot",
-      "note": "Travelodge = 580+ hotels UK/Ireland, budget hotel chain, high volume potential"
-    }
-  ],
-  "mega_hot_leads": [
-    {
-      "email": "office@rollercoasterrestaurant.com",
-      "business": "ROLLERCOASTERRESTAURANT Vienna",
-      "city": "Wien",
-      "score": 95,
-      "reason": "Score 95: 23K reviews, clicked TODAY, unique concept = viral potential",
-      "action": "IMMEDIATE personal follow-up recommended"
-    },
-    {
-      "email": "info@treudelberg.com",
-      "business": "IntercityHotel Hamburg Dammtor-Messe",
-      "city": "Hamburg",
-      "score": 92,
-      "reason": "Score 92: Deutsche Hospitality Group (50+ Hotels), REGISTERED user",
-      "action": "Already registered but 0 responses - needs activation push"
-    },
-    {
-      "email": "advantageclub@leonardo-hotels.com",
-      "business": "Leonardo Royal Hotel Berlin Alexanderplatz",
-      "city": "Berlin",
-      "score": 90,
-      "reason": "Score 90: Leonardo Hotels (220+ hotels in Europe), Berlin premium market",
-      "action": "Enterprise outreach - highlight chain-wide potential"
-    }
-  ],
-  "registered_but_inactive": [
-    {"email": "info@treudelberg.com", "business": "IntercityHotel Hamburg", "score": 92, "days_since_signup": 1},
-    {"email": "H0796@accor.com", "business": "ibis Wien Mariahilf", "score": 84, "days_since_signup": 2},
-    {"email": "community@bullring.co.uk", "business": "Bullring", "score": 82, "days_since_signup": 2},
-    {"email": "langstrasse@25hours-hotels.com", "business": "25hours Zuerich", "score": 80, "days_since_signup": 2},
-    {"email": "h9057@accor.com", "business": "Novotel London Canary Wharf", "score": 79, "days_since_signup": 2},
-    {"email": "hello@stjamesquarter.com", "business": "St James Quarter", "score": 77, "days_since_signup": 1},
-    {"email": "info@thedoldergrand.com", "business": "The Dolder Grand", "score": 75, "days_since_signup": 2},
-    {"email": "info@marriott.com", "business": "Munich Marriott Hotel", "score": 76, "days_since_signup": 2},
-    {"email": "awayspa.edinburgh@whotels.com", "business": "AWAY SPA W Hotels", "score": 76, "days_since_signup": 2},
-    {"email": "info@terrasse-zuerich.ch", "business": "terrasse Restaurant", "score": 69, "days_since_signup": 1},
-    {"email": "zuerich@trattoria-sempre.ch", "business": "Trattoria Sempre", "score": 68, "days_since_signup": 1}
-  ],
-  "all_scored": [
-    {"email": "office@rollercoasterrestaurant.com", "business": "ROLLERCOASTERRESTAURANT Vienna", "score": 95, "segment": "hot", "reviews": 23164, "registered": false},
-    {"email": "info@treudelberg.com", "business": "IntercityHotel Hamburg", "score": 92, "segment": "hot", "reviews": 2752, "registered": true},
-    {"email": "advantageclub@leonardo-hotels.com", "business": "Leonardo Royal Berlin", "score": 90, "segment": "hot", "reviews": 5787, "registered": false},
-    {"email": "ask.berlinap@staygenerator.com", "business": "Generator Berlin", "score": 88, "segment": "hot", "reviews": 5194, "registered": false},
-    {"email": "H1163@accor.com", "business": "Mercure Hamburg City", "score": 87, "segment": "hot", "reviews": 3199, "registered": false},
-    {"email": "h5413@sofitel.com", "business": "Sofitel Munich Bayerpost", "score": 86, "segment": "hot", "reviews": 4496, "registered": false},
-    {"email": "wien@25hours-hotels.com", "business": "25hours Vienna", "score": 85, "segment": "hot", "reviews": 4698, "registered": false},
-    {"email": "H0796@accor.com", "business": "ibis Wien Mariahilf", "score": 84, "segment": "hot", "reviews": 4234, "registered": true},
-    {"email": "info@manchesterarndale.com", "business": "Manchester Arndale", "score": 83, "segment": "hot", "reviews": 43019, "registered": false},
-    {"email": "community@bullring.co.uk", "business": "Bullring Birmingham", "score": 82, "segment": "hot", "reviews": 56381, "registered": true},
-    {"email": "info@arnotts.ie", "business": "Arnotts Dublin", "score": 81, "segment": "hot", "reviews": 8893, "registered": false},
-    {"email": "londoncityroad@travelodge.co.uk", "business": "Travelodge London", "score": 80, "segment": "hot", "reviews": 4790, "registered": false},
-    {"email": "langstrasse@25hours-hotels.com", "business": "25hours Zuerich", "score": 80, "segment": "hot", "reviews": 3387, "registered": true},
-    {"email": "h9057@accor.com", "business": "Novotel London Canary Wharf", "score": 79, "segment": "hot", "reviews": 4589, "registered": true},
-    {"email": "info@meininger-hotels.com", "business": "MEININGER Berlin", "score": 78, "segment": "hot", "reviews": 3269, "registered": false},
-    {"email": "hello@stjamesquarter.com", "business": "St James Quarter Edinburgh", "score": 77, "segment": "hot", "reviews": 9691, "registered": true},
-    {"email": "info@radissonhotels.com", "business": "Hotel Berlin Radisson", "score": 77, "segment": "hot", "reviews": 8990, "registered": false},
-    {"email": "awayspa.edinburgh@whotels.com", "business": "AWAY SPA W Hotels", "score": 76, "segment": "hot", "reviews": 37, "registered": true},
-    {"email": "info@marriott.com", "business": "Munich Marriott Hotel", "score": 76, "segment": "hot", "reviews": 2753, "registered": true},
-    {"email": "info@godfreyhotelhollywood.com", "business": "The Godfrey Hollywood", "score": 75, "segment": "hot", "reviews": 1094, "registered": false},
-    {"email": "info@hotel-adler.ch", "business": "Hotel Adler Zuerich", "score": 75, "segment": "hot", "reviews": 1322, "registered": false},
-    {"email": "essen@cafe-bar-celona.de", "business": "Cafe & Bar Celona Essen", "score": 75, "segment": "hot", "reviews": 3104, "registered": false},
-    {"email": "info@thedoldergrand.com", "business": "The Dolder Grand", "score": 75, "segment": "hot", "reviews": 3838, "registered": true},
-    {"email": "info@hilton.com", "business": "DoubleTree Hilton LA", "score": 74, "segment": "warm", "reviews": 3448, "registered": false},
-    {"email": "hollywoodcityinn@hotmail.com", "business": "Hollywood City Inn", "score": 72, "segment": "warm", "reviews": 923, "registered": false},
-    {"email": "info@simon.com", "business": "Mall of New Hampshire", "score": 72, "segment": "warm", "reviews": 7569, "registered": false},
-    {"email": "info@tkmaxx.com", "business": "TK Maxx Manchester", "score": 71, "segment": "warm", "reviews": 3415, "registered": false},
-    {"email": "fabian.reinhardt@zunfthaus-zur-waag.ch", "business": "Zunfthaus zur Waag", "score": 70, "segment": "warm", "reviews": 1106, "registered": false},
-    {"email": "denverjewellsheridan@vasafitness.com", "business": "VASA Fitness Denver", "score": 70, "segment": "warm", "reviews": 2660, "registered": false},
-    {"email": "willkommen@augustiner-klosterwirt.de", "business": "Augustiner Klosterwirt", "score": 70, "segment": "warm", "reviews": 13395, "registered": true},
-    {"email": "info@wirtshausinderau.de", "business": "Wirtshaus in der Au", "score": 70, "segment": "warm", "reviews": 5624, "registered": false},
-    {"email": "info@terrasse-zuerich.ch", "business": "terrasse Restaurant", "score": 69, "segment": "warm", "reviews": 2339, "registered": true},
-    {"email": "office@apotheke-gruenemitte.at", "business": "Apotheke Gruene Mitte", "score": 68, "segment": "warm", "reviews": 57, "registered": false},
-    {"email": "zuerich@trattoria-sempre.ch", "business": "Trattoria Sempre Zuerich", "score": 68, "segment": "warm", "reviews": 2437, "registered": true},
-    {"email": "welcome@sonnenberg-zurich.ch", "business": "Restaurant Sonnenberg", "score": 68, "segment": "warm", "reviews": 1053, "registered": true},
-    {"email": "conciergebirmingham@s5a.com", "business": "Saks Fifth Avenue", "score": 67, "segment": "warm", "reviews": 338, "registered": false},
-    {"email": "info@porsche-basel.ch", "business": "Porsche Zentrum Basel", "score": 67, "segment": "warm", "reviews": 234, "registered": false},
-    {"email": "info@misenso.ch", "business": "Misenso Bern", "score": 66, "segment": "warm", "reviews": 140, "registered": false},
-    {"email": "bern.kramgasse@kochoptik.ch", "business": "Kochoptik Bern", "score": 66, "segment": "warm", "reviews": 28, "registered": false},
-    {"email": "info@manufactum.de", "business": "Manufactum Bremen", "score": 65, "segment": "warm", "reviews": 158, "registered": false},
-    {"email": "info@vets-now.com", "business": "Vets Now Edinburgh", "score": 65, "segment": "warm", "reviews": 481, "registered": false},
-    {"email": "nye@komodomiami.com", "business": "Komodo Miami", "score": 65, "segment": "warm", "reviews": 7240, "registered": true},
-    {"email": "i.schmidt@tv-turm.de", "business": "Sphere Tim Raue", "score": 65, "segment": "warm", "reviews": 8474, "registered": true},
-    {"email": "dining@edgewaterhotel.com", "business": "Six Seven Restaurant", "score": 64, "segment": "warm", "reviews": 2184, "registered": true},
-    {"email": "hello@tulio.com", "business": "Tulio Seattle", "score": 64, "segment": "warm", "reviews": 1129, "registered": false},
-    {"email": "info@thesmithrestaurant.com", "business": "The Smith Chicago", "score": 63, "segment": "warm", "reviews": 2300, "registered": true},
-    {"email": "guestservices@steak44.com", "business": "Steak 44 Phoenix", "score": 63, "segment": "warm", "reviews": null, "registered": true},
-    {"email": "info@wildginger.net", "business": "Wild Ginger Seattle", "score": 62, "segment": "warm", "reviews": null, "registered": true},
-    {"email": "onlinebestellung@pearle.at", "business": "Pearle-Optik Graz", "score": 62, "segment": "warm", "reviews": 36, "registered": false},
-    {"email": "hello@shopviu.com", "business": "VIU flagship store", "score": 62, "segment": "warm", "reviews": 119, "registered": true},
-    {"email": "info@kentwood.com", "business": "Kentwood Real Estate", "score": 61, "segment": "warm", "reviews": 115, "registered": true},
-    {"email": "info@romanolaw.com", "business": "Romano Law NYC", "score": 61, "segment": "warm", "reviews": 325, "registered": true},
-    {"email": "info@alderandashsea.com", "business": "Alder & Ash Seattle", "score": 60, "segment": "warm", "reviews": 655, "registered": false},
-    {"email": "orders@petitpierrebakery.com", "business": "Petit Pierre Bakery", "score": 60, "segment": "warm", "reviews": 772, "registered": false},
-    {"email": "pmuszynski@thecapitalgrille.com", "business": "The Capital Grille", "score": 60, "segment": "warm", "reviews": 2096, "registered": false},
-    {"email": "leasing@kprcenters.com", "business": "Vestavia Hills City Center", "score": 60, "segment": "warm", "reviews": 1748, "registered": false},
-    {"email": "info@bostoniapublichouse.com", "business": "Bostonia Public House", "score": 58, "segment": "cool", "reviews": null, "registered": true},
-    {"email": "lgho@ldry.com", "business": "La Griglia Houston", "score": 55, "segment": "cool", "reviews": null, "registered": false},
-    {"email": "bren@ldry.com", "business": "Brenner's Steakhouse", "score": 55, "segment": "cool", "reviews": null, "registered": false},
-    {"email": "reservation.web@madamebrasserie.com", "business": "Madame Brasserie", "score": 52, "segment": "cool", "reviews": null, "registered": true},
-    {"email": "afif@alicetoronto.com", "business": "Alice Restaurant Toronto", "score": 50, "segment": "cool", "reviews": null, "registered": false},
-    {"email": "dph.press@sfdph.org", "business": "Southeast Family Health Center", "score": 45, "segment": "cool", "reviews": 37, "registered": false},
-    {"email": "info@hummelklappen.se", "business": "Hummelklappen Stockholm", "score": 42, "segment": "cool", "reviews": 10, "registered": true},
-    {"email": "info@pia.be", "business": "DBM Tax & Accounting", "score": 40, "segment": "cool", "reviews": 8, "registered": true},
-    {"email": "privacy@vimeo.com", "business": "Servus Heidi (SPAM?)", "score": 35, "segment": "cold", "reviews": null, "registered": true},
-    {"email": "user@domain.com", "business": "Ivar's Acres of Clams", "score": 35, "segment": "cold", "reviews": 9243, "registered": false},
-    {"email": "xxx@xxx.com", "business": "Unknown", "score": 20, "segment": "cold", "reviews": null, "registered": false}
-  ],
+  "critical_finding": {
+    "title": "Demo Views = Real Engagement Signal",
+    "detail": "147 demos were viewed (11.2% view rate from 1315 demos). Only 1 converted (BLOCK HOUSE). 8 demo viewers didn't convert yet = WARM leads for follow-up.",
+    "demo_view_rate": "11.2%",
+    "conversion_from_view": "0.68%",
+    "lesson": "Demo views are the ONLY reliable engagement signal. Click tracking is 100% bots."
+  },
   "scoring_model": {
-    "version": "1.5",
-    "updated": "2026-01-16T22:45:00Z",
+    "version": "2.1",
+    "updated": "2026-01-18T15:30:00Z",
+    "change_log": "Scoring v2.1: Demo view timing now factors in (TODAY = +10, YESTERDAY = +5). Added hotel chain detection.",
     "engagement": {
-      "email_clicked": 15,
-      "clicked_today": 10,
-      "clicked_yesterday": 5,
-      "clicked_48h": 3
+      "demo_viewed": 25,
+      "demo_converted": 20,
+      "viewed_today": 10,
+      "viewed_yesterday": 5
     },
     "fit": {
-      "reviews_5_50": 15,
-      "reviews_50_200": 12,
-      "reviews_200_1000": 10,
-      "reviews_1000_5000": 8,
-      "reviews_5000_plus": 5,
-      "reviews_20000_plus": 10,
-      "chain_potential": 15,
-      "luxury_brand": 10,
-      "dach_region": 5
+      "reviews_500_2000": 15,
+      "reviews_2000_5000": 20,
+      "reviews_5000_plus": 10,
+      "rating_below_4": 10,
+      "rating_4_plus": 5,
+      "hotel_chain_penalty": -10
     },
     "behavior": {
-      "registered_user": 20,
-      "registered_never_used": -5
+      "registered_user": 15,
+      "has_phone": 5,
+      "personal_email": 10
     }
   },
   "thresholds": {
     "mega_hot": 90,
     "hot": 75,
-    "warm": 60,
-    "cool": 40,
+    "warm": 55,
+    "cool": 35,
     "cold": 0
   },
-  "insights": {
-    "total_clicks": 67,
-    "click_rate": "3.9%",
-    "new_clicks_today": 2,
-    "registered_clickers": 27,
-    "registered_but_inactive": 27,
-    "activation_rate": "0%",
-    "hotel_chains_engaged": [
-      "Accor Group (4 properties: ibis, Mercure, Novotel, Sofitel)",
-      "25hours Hotels (2 properties: Wien, Zuerich)",
-      "Deutsche Hospitality / IntercityHotel",
-      "Leonardo Hotels",
-      "Generator Hostels",
-      "Travelodge",
-      "Radisson",
-      "MEININGER",
-      "Marriott",
-      "W Hotels / Away Spa",
-      "Hilton/DoubleTree"
-    ],
-    "geographic_hotspots": {
-      "DACH": ["Hamburg", "Berlin", "Muenchen", "Wien", "Zuerich", "Basel", "Bern", "Linz", "Graz"],
-      "UK": ["London", "Manchester", "Birmingham", "Edinburgh", "Dublin"],
-      "US": ["Los Angeles", "Seattle", "Denver", "Miami", "NYC", "Boston", "Phoenix", "Houston"]
+  "top_10": [
+    {
+      "business": "BLOCK HOUSE Dusseldorf",
+      "city": "Dusseldorf",
+      "reviews": 4060,
+      "rating": 4.4,
+      "score": 95,
+      "segment": "hot",
+      "status": "CONVERTED",
+      "viewed_at": "2026-01-17T06:29:29.432Z",
+      "converted_at": "2026-01-17T06:29:42.555Z",
+      "breakdown": {
+        "engagement": 45,
+        "fit": 30,
+        "behavior": 20
+      },
+      "reason": "ONLY CONVERSION! Viewed demo + entered email within 13 seconds. 4060 reviews = established restaurant with pain."
     },
-    "critical_insight": "27 clickers registered but 0% activated. Priority: Get these users to generate first response!"
+    {
+      "business": "Cantinetta Antinori",
+      "city": "Zurich",
+      "reviews": 2466,
+      "rating": 4.4,
+      "score": 75,
+      "segment": "warm",
+      "status": "DEMO_VIEWED",
+      "viewed_at": "2026-01-18T02:16:55.568Z",
+      "breakdown": {
+        "engagement": 35,
+        "fit": 25,
+        "behavior": 15
+      },
+      "reason": "Viewed demo TODAY. Zurich upscale Italian = decision maker likely involved. HIGH PRIORITY FOLLOW-UP."
+    },
+    {
+      "business": "Capitol Chevrolet",
+      "city": "San Jose",
+      "reviews": 2506,
+      "rating": 4.3,
+      "score": 75,
+      "segment": "warm",
+      "status": "DEMO_VIEWED",
+      "viewed_at": "2026-01-18T02:14:51.756Z",
+      "breakdown": {
+        "engagement": 35,
+        "fit": 25,
+        "behavior": 15
+      },
+      "reason": "Viewed demo TODAY. Auto dealership with high review volume = pain with review management."
+    },
+    {
+      "business": "Mercure Grand Hotel Biedermeier Wien",
+      "city": "Wien",
+      "reviews": 2553,
+      "rating": 4.3,
+      "score": 70,
+      "segment": "warm",
+      "status": "DEMO_VIEWED",
+      "viewed_at": "2026-01-18T02:14:27.147Z",
+      "breakdown": {
+        "engagement": 35,
+        "fit": 20,
+        "behavior": 15
+      },
+      "reason": "Viewed demo TODAY. Accor hotel chain = enterprise potential but harder sell. -10 for chain."
+    },
+    {
+      "business": "The Caledonian Edinburgh",
+      "city": "Edinburgh",
+      "reviews": 2997,
+      "rating": 4.5,
+      "score": 68,
+      "segment": "warm",
+      "status": "DEMO_VIEWED",
+      "viewed_at": "2026-01-18T02:05:28.494Z",
+      "breakdown": {
+        "engagement": 35,
+        "fit": 18,
+        "behavior": 15
+      },
+      "reason": "Viewed demo TODAY. Hilton luxury property. High rating = less urgent need. -10 for chain."
+    },
+    {
+      "business": "Park Inn by Radisson Berlin Alexanderplatz",
+      "city": "Berlin",
+      "reviews": 28157,
+      "rating": 4.1,
+      "score": 65,
+      "segment": "warm",
+      "status": "DEMO_VIEWED",
+      "viewed_at": "2026-01-18T01:41:27.791Z",
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 15
+      },
+      "reason": "MASSIVE volume (28K reviews). Enterprise lead = hard sell but high value if converted. -10 for chain."
+    },
+    {
+      "business": "Boots",
+      "city": "London",
+      "reviews": 1438,
+      "rating": 4.0,
+      "score": 68,
+      "segment": "warm",
+      "status": "DEMO_VIEWED",
+      "viewed_at": "2026-01-18T02:09:06.300Z",
+      "breakdown": {
+        "engagement": 35,
+        "fit": 20,
+        "behavior": 13
+      },
+      "reason": "Viewed demo TODAY. UK retail chain = unique use case. 4.0 rating = moderate need."
+    },
+    {
+      "business": "IntercityHotel Wien",
+      "city": "Wien",
+      "reviews": 2000,
+      "rating": 4.1,
+      "score": 62,
+      "segment": "warm",
+      "status": "DEMO_VIEWED",
+      "viewed_at": "2026-01-17T20:02:49.958Z",
+      "email": "wien@intercityhotel.at",
+      "breakdown": {
+        "engagement": 30,
+        "fit": 20,
+        "behavior": 12
+      },
+      "reason": "Viewed demo YESTERDAY. Deutsche Hospitality chain = multi-property potential. Has direct email!"
+    },
+    {
+      "business": "Bocconcino Dusseldorf",
+      "city": "Dusseldorf",
+      "reviews": 1043,
+      "rating": 4.7,
+      "score": 58,
+      "segment": "warm",
+      "status": "DEMO_VIEWED",
+      "viewed_at": "2026-01-17T20:10:52.629Z",
+      "breakdown": {
+        "engagement": 30,
+        "fit": 18,
+        "behavior": 10
+      },
+      "reason": "Italian restaurant in Dusseldorf. High rating = less urgent need but SMB = easier sell."
+    },
+    {
+      "business": "Trattoria Sempre Zurich",
+      "city": "Zurich",
+      "reviews": 2437,
+      "rating": 4.5,
+      "score": 70,
+      "segment": "warm",
+      "status": "REGISTERED_VIA_MAGIC_LINK",
+      "registered_at": "2026-01-16T00:15:15.454Z",
+      "email": "zuerich@trattoria-sempre.ch",
+      "phone": "+41 44 262 54 62",
+      "breakdown": {
+        "engagement": 25,
+        "fit": 25,
+        "behavior": 20
+      },
+      "reason": "REAL USER! Registered via Magic Link AND has phone number for direct outreach! Swiss restaurant = quality lead."
+    }
+  ],
+  "mega_hot_leads": [
+    {
+      "business": "BLOCK HOUSE Dusseldorf",
+      "score": 95,
+      "reason": "ONLY lead to convert! Viewed demo AND entered email. Restaurant with 4K reviews.",
+      "action": "Find contact info and do personal follow-up. This is our BEST lead."
+    }
+  ],
+  "demo_viewers_not_converted": [
+    {
+      "business": "Cantinetta Antinori",
+      "city": "Zurich",
+      "viewed_at": "2026-01-18T02:16:55.568Z",
+      "hours_since_view": 13,
+      "priority": 1,
+      "action": "SEND FOLLOW-UP EMAIL NOW - Viewed TODAY, high-end Zurich restaurant"
+    },
+    {
+      "business": "Capitol Chevrolet",
+      "city": "San Jose",
+      "viewed_at": "2026-01-18T02:14:51.756Z",
+      "hours_since_view": 13,
+      "priority": 1,
+      "action": "SEND FOLLOW-UP EMAIL NOW - Auto dealership with 2.5K reviews"
+    },
+    {
+      "business": "Mercure Grand Hotel Biedermeier Wien",
+      "city": "Wien",
+      "viewed_at": "2026-01-18T02:14:27.147Z",
+      "hours_since_view": 13,
+      "priority": 2,
+      "action": "WARM - Accor property = enterprise, needs longer sales cycle"
+    },
+    {
+      "business": "The Caledonian Edinburgh",
+      "city": "Edinburgh",
+      "viewed_at": "2026-01-18T02:05:28.494Z",
+      "hours_since_view": 13,
+      "priority": 2,
+      "action": "WARM - Hilton property = enterprise"
+    },
+    {
+      "business": "Park Inn by Radisson Berlin Alexanderplatz",
+      "city": "Berlin",
+      "viewed_at": "2026-01-18T01:41:27.791Z",
+      "hours_since_view": 14,
+      "priority": 3,
+      "action": "COOL - Enterprise chain, very large volume"
+    },
+    {
+      "business": "Boots",
+      "city": "London",
+      "viewed_at": "2026-01-18T02:09:06.300Z",
+      "hours_since_view": 13,
+      "priority": 2,
+      "action": "WARM - UK retail unique case"
+    },
+    {
+      "business": "IntercityHotel Wien",
+      "city": "Wien",
+      "viewed_at": "2026-01-17T20:02:49.958Z",
+      "hours_since_view": 19,
+      "priority": 2,
+      "action": "WARM - Deutsche Hospitality chain, has direct email"
+    },
+    {
+      "business": "Bocconcino Dusseldorf",
+      "city": "Dusseldorf",
+      "viewed_at": "2026-01-17T20:10:52.629Z",
+      "hours_since_view": 19,
+      "priority": 3,
+      "action": "COOL - High rating, less urgent need"
+    }
+  ],
+  "registered_users_analysis": {
+    "total_registered": 16,
+    "via_magic_link": 7,
+    "likely_bots": 3,
+    "real_users": 4,
+    "breakdown": [
+      {
+        "email": "conciergebirmingham@s5a.com",
+        "business": "Saks Fifth Avenue",
+        "registered_at": "2026-01-18",
+        "source": "magic_link",
+        "verdict": "LIKELY_BOT",
+        "reason": "Registered TODAY via Magic Link but 0 generations = probably security scanner"
+      },
+      {
+        "email": "info@godfreyhotelhollywood.com",
+        "business": "The Godfrey Hotel Hollywood",
+        "registered_at": "2026-01-18",
+        "source": "magic_link",
+        "verdict": "LIKELY_BOT",
+        "reason": "Registered TODAY via Magic Link but 0 generations"
+      },
+      {
+        "email": "office@rollercoasterrestaurant.com",
+        "business": "ROLLERCOASTERRESTAURANT Vienna",
+        "registered_at": "2026-01-18",
+        "source": "magic_link",
+        "verdict": "POTENTIAL_REAL",
+        "reason": "Unique business, worth monitoring"
+      },
+      {
+        "email": "zuerich@trattoria-sempre.ch",
+        "business": "Trattoria Sempre Zurich",
+        "phone": "+41 44 262 54 62",
+        "registered_at": "2026-01-16",
+        "verdict": "REAL_USER",
+        "reason": "Has phone number, Swiss restaurant, registered 2 days ago"
+      },
+      {
+        "email": "info@terrasse-zuerich.ch",
+        "business": "terrasse Restaurant",
+        "registered_at": "2026-01-16",
+        "verdict": "REAL_USER",
+        "reason": "Swiss restaurant, registered 2 days ago"
+      },
+      {
+        "email": "info@treudelberg.com",
+        "business": "IntercityHotel Hamburg Dammtor-Messe",
+        "registered_at": "2026-01-16",
+        "verdict": "REAL_USER",
+        "reason": "Hamburg hotel chain"
+      }
+    ]
   },
   "handoff_to_agents": {
     "burst-5": {
-      "action": "Follow up MEGA-HOT leads immediately with personal touch",
-      "leads": ["office@rollercoasterrestaurant.com", "info@treudelberg.com", "advantageclub@leonardo-hotels.com"]
-    },
-    "burst-6": {
-      "action": "CRITICAL: 27 registered users never used product - activate them!",
-      "top_priority": ["info@treudelberg.com", "H0796@accor.com", "community@bullring.co.uk", "langstrasse@25hours-hotels.com", "h9057@accor.com"]
-    },
-    "burst-7": {
-      "action": "Prepare discount offers for mega-hot leads if they show pricing interest",
-      "leads": ["office@rollercoasterrestaurant.com", "info@treudelberg.com", "advantageclub@leonardo-hotels.com"]
+      "priority": 1,
+      "action": "IMMEDIATE FOLLOW-UP for demo viewers who haven't converted",
+      "leads": [
+        {"business": "Cantinetta Antinori", "city": "Zurich", "reason": "High-end restaurant, viewed TODAY"},
+        {"business": "Capitol Chevrolet", "city": "San Jose", "reason": "Auto dealership, viewed TODAY"}
+      ]
     },
     "burst-2": {
-      "action": "Focus cold outreach on HOT segment leads that haven't registered yet",
-      "priority_leads": ["ask.berlinap@staygenerator.com", "H1163@accor.com", "h5413@sofitel.com", "wien@25hours-hotels.com", "info@manchesterarndale.com", "londoncityroad@travelodge.co.uk"]
+      "priority": 2,
+      "action": "Send follow-up sequence to demo viewers",
+      "leads": [
+        {"business": "Boots", "city": "London"},
+        {"business": "IntercityHotel Wien", "city": "Wien", "email": "wien@intercityhotel.at"},
+        {"business": "Bocconcino Dusseldorf", "city": "Dusseldorf"}
+      ]
+    },
+    "berend": {
+      "priority": 0,
+      "action": "CALL Trattoria Sempre Zurich - Only REAL registered user with phone!",
+      "phone": "+41 44 262 54 62",
+      "email": "zuerich@trattoria-sempre.ch",
+      "business": "Trattoria Sempre Zurich"
     }
-  }
+  },
+  "insights": {
+    "demo_effectiveness": "11.2% of demos are actually viewed by humans. 0.68% convert to email entry.",
+    "today_demo_viewers": "6 businesses viewed demos TODAY - priority follow-up targets!",
+    "new_registrations_today": "7 new registrations via Magic Link TODAY - most likely bots (need to wait 24h to verify)",
+    "activation_bottleneck": "16 registered users, 0 have generated responses via logged-in generator. Registration != Activation.",
+    "best_lead": "BLOCK HOUSE Dusseldorf - only lead to actually convert on demo page.",
+    "next_steps": [
+      "1. Burst-5: Follow up with Cantinetta Antinori + Capitol Chevrolet (viewed TODAY)",
+      "2. Berend: Call Trattoria Sempre Zurich (+41 44 262 54 62)",
+      "3. Burst-2: Send follow-up emails to all 8 demo viewers who didn't convert",
+      "4. Monitor new Magic Link registrations for 24h before marking as real"
+    ]
+  },
+  "new_learnings": [
+    {
+      "date": "2026-01-18",
+      "learning": "Magic Link registrations TODAY are likely bots - wait 24h and check for demo generation before counting as real",
+      "evidence": "7 new ML registrations today, all have 0 generations so far"
+    },
+    {
+      "date": "2026-01-18",
+      "learning": "Demo view timing matters: TODAY = higher intent than YESTERDAY",
+      "evidence": "6 demos viewed TODAY vs 2 YESTERDAY - today's viewers are hotter"
+    }
+  ]
 }

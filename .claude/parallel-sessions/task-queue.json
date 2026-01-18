@@ -1,18 +1,5 @@
 [
     {
-        "message":  "Lead hat Demo angesehen, 3x geklickt!",
-        "id":  "13342554",
-        "type":  "hot-lead",
-        "createdAt":  "2026-01-18T00:54:16.8215773+00:00",
-        "leadId":  "lead_123",
-        "target":  "BURST-5",
-        "from":  "BURST-2",
-        "priority":  "high",
-        "status":  "claimed",
-        "claimedBy":  "BURST-5",
-        "claimedAt":  "2026-01-18T01:02:37.7647862+00:00"
-    },
-    {
         "message":  "Dringend! Lead will kaufen!",
         "id":  "e4172c03",
         "type":  "hot-lead",

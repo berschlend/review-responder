@@ -1,31 +1,27 @@
-{
+﻿{
     "tasks":  [
                   {
-                      "id":  0,
-                      "text":  "🖥️ PC NEUSTART → Desktop: PC-Schneller-Machen.bat (Rechtsklick → Als Admin) → ~2.5 GB RAM frei für 10 Claude Sessions"
-                  },
-                  {
                       "id":  1,
-                      "text":  "⏳ AWS SES Production Access PENDING - Sandbox aktiv (200/Tag, nur verifizierte Empfänger). Prüfen: AWS Console → SES → Account Dashboard"
-                  },
-                  {
-                      "id":  1,
-                      "text":  "🔥 HOT LEAD #1: Tí Cafe Denver +1-720-440-2864 (geklickt 17.01!) → call-prep/ti-cafe-denver.md | Anrufen 18-19:30 CET"
+                      "text":  "🔥 ANRUFEN: Tí Cafe Denver +1-720-440-2864 (HOT - Gestern auf Demo geklick...)"
                   },
                   {
                       "id":  2,
-                      "text":  "🔥 HOT LEAD #2: Trattoria Sempre Zürich +41-44-262-5462 (Magic Link!) → call-prep/trattoria-sempre-zuerich.md"
+                      "text":  "🔥 ANRUFEN: Trattoria Sempre Zürich +41-44-262-5462 (Magic Link genutzt - interessi...)"
                   },
                   {
                       "id":  3,
-                      "text":  "🔥 HOT LEAD #3: Sphere Tim Raue Berlin 030-247575875 (12k Reviews!) → call-prep/sphere-tim-raue-berlin.md"
+                      "text":  "🔥 ANRUFEN: Sphere Tim Raue Berlin 030-247575875 (Registriert, Michelin Restaura...)"
                   },
                   {
                       "id":  4,
-                      "text":  "📖 VALUE CONVICTION: Vor Calls lesen → content/call-prep/VALUE-CONVICTION-PLAN.md"
+                      "text":  "🟢 ANRUFEN: Bocconcino - Restaurant Duesseldorf Medienhafen 0211 56681482 (1-Stern Review ueber Silvester...)"
                   },
                   {
                       "id":  5,
+                      "text":  "📧 EMAILS an registrierte User senden (Drafts in outreach-materials-18-01.md)"
+                  },
+                  {
+                      "id":  6,
                       "text":  "🎬 Demo-Video aufnehmen (Guide in content/BEREND-VIDEO-RECORDING-GUIDE.md)"
                   }
               ]

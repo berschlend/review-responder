@@ -6,7 +6,7 @@
       "browser": "Firefox",
       "subscribed": "2026-01-10",
       "renewalDate": "2026-02-10",
-      "monthlyPrice": 20,
+      "monthlyPrice": 100,
       "currency": "USD",
       "status": "active",
       "notes": ""
@@ -17,7 +17,7 @@
       "browser": "Edge",
       "subscribed": "2026-01-12",
       "renewalDate": "2026-02-12",
-      "monthlyPrice": 20,
+      "monthlyPrice": 100,
       "currency": "USD",
       "status": "active",
       "notes": "Haupt-Gmail"
@@ -28,7 +28,7 @@
       "browser": "Chrome (Default)",
       "subscribed": "2026-01-14",
       "renewalDate": "2026-02-14",
-      "monthlyPrice": 20,
+      "monthlyPrice": 100,
       "currency": "USD",
       "status": "active",
       "notes": ""
@@ -39,13 +39,13 @@
       "browser": "Chrome (Profile 2)",
       "subscribed": "2026-01-18",
       "renewalDate": "2026-02-18",
-      "monthlyPrice": 20,
+      "monthlyPrice": 100,
       "currency": "USD",
       "status": "active",
       "notes": "Neu erstellt für mehr parallele Kapazität"
     }
   ],
-  "totalMonthly": 80,
-  "totalMonthlyEUR": 76,
+  "totalMonthly": 400,
+  "totalMonthlyEUR": 380,
   "lastUpdated": "2026-01-18"
 }

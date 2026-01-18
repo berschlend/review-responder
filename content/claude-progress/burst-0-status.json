@@ -1,0 +1,16 @@
+﻿{
+    "current_loop":  1,
+    "version":  "3.3",
+    "agent":  "burst-0",
+    "health":  {
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "started_at":  "2026-01-18T07:33:18Z",
+    "status":  "running",
+    "last_heartbeat":  "2026-01-18T07:33:18Z",
+    "metrics":  {
+                    "errors_count":  0,
+                    "actions_taken":  0
+                }
+}

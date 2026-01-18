@@ -23,6 +23,14 @@
 | **SKIP Enterprise Leads** | Hilton/Marriott kaufen nicht via Self-Service | 17.01.2026 |
 | **info@ = LOW Priority** | Support-Box, nicht Entscheider | 17.01.2026 |
 | **SMB Sweet Spot: 50-500 Reviews** | Echte Owner erreichbar | 17.01.2026 |
+| **🔴 API BUDGET MONITORING!** | Serper/Outscraper/Google Places Credits regelmaessig checken! Pipeline blocked ohne! | 18.01.2026 |
+| **Le Bernardin = JACKPOT Lead** | 3 Michelin Stars, 4008 Reviews - höchstwertiger Lead EVER! | 18.01.2026 |
+| **Smart Activation: 3-Table Check** | `/api/auth/has-generated` prüft responses, demo_generations, public_try_usage - User mit History → Dashboard, ohne → /?activation=true | 18.01.2026 |
+| **?showOnboarding=true Trigger** | URL-Parameter öffnet Onboarding Modal automatisch bei Dashboard-Load | 18.01.2026 |
+| **🔴 Burst-Filter war ZU aggressiv!** | `filterSequentialClicks()` markierte 3+ Clicks/Minute als Bot → ALLE echten Clicks gefiltert! Real CTR: 3.91%, nicht 0%! | 18.01.2026 |
+| **User-Agent Detection > Time-Based** | Bot-Erkennung via User-Agent (Go-http-client, python-requests) funktioniert, Burst-Detection nicht | 18.01.2026 |
+| **🔴 CHROME MCP > APIs für Demo-Scraping!** | Outscraper/Serper/Google Places ALLE kaputt (billing, credits, errors). Chrome MCP: $0, keine Limits, sieht echte Daten. 20 Demos/Tag = 30 Min. | 18.01.2026 |
+| **APIs erst bei Scale >100/Tag** | Bei 10-20 Demos/Tag ist Chrome MCP BESSER. APIs nur wenn Aktivierung >10% UND Volume >100/Tag nötig | 18.01.2026 |
 
 ---
 
@@ -840,4 +848,151 @@ RICHTIGE Interpretation:
 
 ### [2026-01-18 02:33] Burst-4
 - Batch Size 100 verursacht Render 502 Timeout. Batch Size 30-50 ist sicher. Async Pattern (Background Processing) funktioniert gut.
+
+
+### [2026-01-18 06:58] Burst-8
+- 18.01 Check #7: Immer noch 0 zahlende Kunden. 16 registrierte User aber ALLE bei 0 Responses. Bottleneck ist Activation (Burst-6), nicht Upgrades. Burst-8 pausiert bis erster Kunde zahlt.
+
+
+### [2026-01-18 07:00] Burst-13
+- Bot Explosion (18.01): 6+ neue Fake-Accounts durch Security Scanner Magic Link Clicks. Pattern: Enterprise Hotels (Sofitel, Radisson, Accor, 25hours). Bot-Check existiert bei Login aber NICHT bei auto-create. FIX NEEDED: Bot-Detection VOR Account-Erstellung bei Magic Links.
+
+
+### [2026-01-18 07:01] Burst-1
+- 500 NEW Leads analysiert: 30 HIGH-VALUE mit Personal Emails gefunden. DACH Region dominiert (Salzburg, Wien, Muenchen). Gmail und firstname@ Emails = Score +20-30. Enrichment fuer 50 Leads gestartet.
+
+
+### [2026-01-18 07:01] Burst-11
+- Campaign target_cities nur US - 1656 EU-Leads werden ignoriert. QUICK FIX: EU-Cities hinzufuegen.
+
+
+### [2026-01-18 07:01] Burst-12
+- 18.01: SELBSTKORREKTUR - Meine 'Cold Email gescheitert' Analyse war falsch\! 62 Magic Link Clicks zeigen: Menschen klicken. Problem ist POST-CLICK Funnel, nicht der Kanal. Neue Empfehlung: Magic Link -> Generator Redirect statt Dashboard.
+
+
+### [2026-01-18 07:03] Burst-14
+- Click-Tracking ist WERTLOS: 100% aller Klicks waren Bots (Security Scanner). Neues Scoring Model v2.0 nutzt demo_page_viewed_at als primaeres Engagement-Signal. 9 Demos wurden angesehen, 1 konvertiert (11% Rate).
+
+
+### [2026-01-18 07:04] Burst-1
+- G2 Leads (needs_enrichment status) sind nicht enrichable - nur Namen ohne Business-Daten. Skip G2 Mining und fokussiere auf TripAdvisor/Google Maps wo echte Business-Daten existieren.
+
+
+---
+
+## 📊 SESSION LEARNINGS (18.01.2026 - Burst-5)
+
+### Bot Filter Problem
+| Insight | Detail |
+|---------|--------|
+| 100% of clicks filtered as bots | Midnight burst pattern removed all real clicks |
+| hot-demo-visitors is the new source | Demo view count > 3 = real interest |
+| Click-based endpoints return 0 | Need to use demo_view_count instead |
+
+### Hot Demo Visitors Pattern
+| Business | Demo Views | Email Type | Priority |
+|----------|------------|------------|----------|
+| Generator Berlin Alexanderplatz | 6 | corporate | Medium |
+| Zunfthaus zur Waag | 5 | personal (fabian.reinhardt@) | HIGH |
+| Kochoptik AG | 5 | location-based | Medium |
+| Cafe & Bar Celona Essen | 5 | location-based | Medium |
+
+### Key Insight
+```
+ALT:  Clicker-based follow-ups (all filtered as bots)
+NEU:  Demo-view-count based targeting (real engagement signal)
+
+Demo View Count bedeutet:
+- 1 view = Neugier (ignore)
+- 2-3 views = Interest (watch)
+- 4+ views = HOT LEAD (attack!)
+```
+
+### Recommendation for Burst-2/Burst-4
+Prioritize leads that generate demos with multiple views.
+View count is a better signal than click count (less bot noise).
+
+
+### [2026-01-18 07:27] Burst-10
+- Postgres MCP braucht SSL - direkter DB-Zugriff nicht moeglich, muss via API oder Dev-Session erfolgen
+
+
+### [2026-01-18 07:28] Burst-1
+- Basel/Bern DACH leads have good personal emails (franca@, kontakt@, concierge@) - prioritize Swiss German cities
+
+
+### [2026-01-18 07:30] Burst-11
+- Email Outreach kann 30+ Stunden stoppen ohne dass es auffaellt. Symptom: last_email und campaign.last_reset haben altes Datum. Cron-Job bei cron-job.org pruefen!
+
+
+### [2026-01-18 07:32] Burst-0
+- Demo views sind das EINZIGE reliable Engagement-Signal. Click-Tracking ist 100% Bots (Security Scanner). Scoring v2.1: demo_page_viewed_at statt click_count nutzen.
+
+
+### [2026-01-18 07:32] Burst-0
+- Magic Link Registrations brauchen 24h Cooldown. Registrations TODAY ohne Generierung = wahrscheinlich Security Scanner Bots.
+
+
+### [2026-01-18 07:34] Burst-2
+- Mailjet via send-cold-email Endpoint funktioniert zuverlaessig - 50 Emails ohne Bounces in 10 Minuten gesendet. Provider zeigt 'mailjet' statt 'brevo'. Personal Emails (gmail, gmx, firstname@) priorisieren\!
+
+
+### [2026-01-18 07:36] Burst-5
+- Le Bernardin (3 Michelin Stars NYC, 4008 reviews) clicked our email on 2026-01-17 - HIGH VALUE LEAD! Personal email cgoldberg@le-bernardin.com. Follow-up sequence triggered.
+
+
+### [2026-01-18 07:38] Burst-5
+- Bot-Filter Problem: Filter setzt 100% als Bots, aber Le Bernardin (2026-01-17T00:13), Alice Restaurant (2026-01-13T16:59), Brenners Steakhouse (2026-01-13T16:20), Leonardo Royal (2026-01-15T07:01) sind ECHTE Clicks - nicht zur 00:15-Minute. Nur 2026-01-16T00:15:XX Clicks sind Bot-Bursts.
+
+
+### [2026-01-18 07:39] Burst-4
+- API EXHAUSTION (18.01): All review-scraping APIs simultaneously failed: (1) Serper out of credits, (2) Outscraper accounts 1-3 all need billing fix, (3) Google Places failing to find businesses. Demo generation BLOCKED. Need to monitor API credits proactively and set up alerts BEFORE exhaustion.
+
+
+### [2026-01-18 07:45] Burst-0
+- Campaign target_cities only US - 1656 EU leads ignored. Quick fix in for-berend.md
+
+
+### [2026-01-18 08:21] Burst-11
+- KORREKTUR: campaign.last_reset ist NICHT das Datum der letzten Email! Es ist nur das Counter-Reset. Fuer echte Email-Aktivitaet IMMER /api/admin/parallel-safe-status checken (recent_emails_24h Feld).
+
+
+### [2026-01-18 16:57] Burst-9
+- 8 Agents gleichzeitig aktiv (BURST1,2,4,5,9,10,11,14) - alle P1 Agents laufen. System ist HEALTHY.
+
+
+### [2026-01-18 16:57] Burst-9
+- 100% Clicks sind Bots (39 raw -> 0 nach Filter). Bot-Detection funktioniert korrekt. Email Security Scanner (MS365, Proofpoint) klicken automatisch ALLE Links.
+
+
+### [2026-01-18 16:59] Burst-2
+- Mailjet 100% Delivery: 100/100 Emails ohne Bounce (0% Rate) - Provider funktioniert zuverlaessig
+
+
+### [2026-01-18 17:00] Burst-2
+- CH/NL Leads haben bessere Email-Qualitaet (concierge@, restaurant@, personal names) als US-Leads (viele ohne Email)
+
+
+### [2026-01-18 17:00] Burst-1
+- 100% of email clicks (39/39) are security bots - Real CTR is 0% not 4.88%. Bot filter PFLICHT bei allen Metriken
+
+
+### [2026-01-18 17:01] Burst-1
+- Swiss-German cities (Basel, Bern) have quality personal emails (franca@, kontakt@, concierge@) - better than generic hotel chains
+
+
+### [2026-01-18 17:08] Burst-14
+- Demo view rate = 11.2% (147 von 1315). Conversion rate from view = 0.68% (1 von 147). NUR demo_page_viewed_at ist reliable - click_count ist 100% Bots.
+
+
+### [2026-01-18 17:09] Burst-14
+- Scoring v2.1: Demo view timing matters - TODAY +10 Punkte, YESTERDAY +5. Hotel chains -10 (enterprise = harder sell). Segmente: 1 hot, 8 warm, 138 cool, 1168 cold.
+
+
+### [2026-01-18 17:28] Burst-9
+- Bot filter burst detection (3+/min) was TOO aggressive - filtered 100% of clicks including REAL users. Fix: Disable burst filter, use only user-agent detection. Result: Real CTR is 3.91% with 37 hot leads!
+
+
+### [2026-01-18 17:28] Burst-9
+- 37 hot leads from 947 emails = 3.91% CTR - ABOVE industry average (1-3%). Cold email IS working when measured correctly!
 

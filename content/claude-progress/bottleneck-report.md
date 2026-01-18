@@ -1,4 +1,4 @@
-# Bottleneck Report - 2026-01-16 23:25 UTC
+# Bottleneck Report - 2026-01-18 07:50 UTC
 
 > Generiert von Burst-11 (Bottleneck Analyzer) alle 2 Stunden.
 > Alle Agents lesen diese Datei fuer Priorisierung.
@@ -7,356 +7,375 @@
 
 ## Executive Summary
 
-**Letztes Update:** 2026-01-16 23:25 UTC
+**Letztes Update:** 2026-01-18 07:50 UTC (Loop 2 - KORREKTUR)
 
-### TOP BOTTLENECK:
+### TOP BOTTLENECK (KRITISCH!):
 
-| Rank | Bottleneck | Conv% | Impact | Status |
-|------|------------|-------|--------|--------|
-| **#1** | **Reg -> Active** | **0%** | **27 ECHTE USER, 0 NUTZEN PRODUKT!** | **CRITICAL** |
+| Rank | Bottleneck | Impact | Status |
+|------|------------|--------|--------|
+| **#1 NEU** | **ALLE Review-APIs EXHAUSTED** | **Keine neuen Demos moeglich!** | **CRITICAL** |
+| **#2** | **Campaign nur US-Cities** | **1656 EU-Leads werden ignoriert!** | **QUICK FIX** |
+| **#3** | **Demo → Activation = 0%** | **8 "Real Users", 0 nutzen Generator** | **CRITICAL** |
+| ~~#4~~ | ~~Email Outreach~~ | ~~KORRIGIERT: Funktioniert!~~ | **OK** |
 
-### KRITISCHE ERKENNTNIS (UNVERAENDERT!):
+### KORREKTUR (07:50 UTC):
 
 ```
-STATUS SEIT LETZTEM CHECK (+1.5h):
-- Neue Leads: +21 (2519 → 2540)
-- Neue Emails: +30 (1680 → 1710)
-- Neue Clicks: +0 (67 → 67)
-- Neue Active: +0 (0 → 0)
+FALSCHE ANALYSE (07:30 UTC):
+- "Email Outreach ist gestoppt" → FALSCH!
 
-BOTTLENECK IST UNVERAENDERT!
-0% Activation - ALLE 27 echten User haben NIE das Produkt genutzt!
+KORREKTUR:
+- Email System IST AKTIV
+- 49 Emails in letzten 24h
+- Cron dry_run: {"ok":true}
+- Burst-10 hat korrigiert
+
+NEUES KRITISCHES PROBLEM (von Burst-4):
+- ALLE Review-Scraping APIs sind erschoepft!
+- Keine neuen Demos generierbar!
+```
+
+### KRITISCHE ZAHLEN:
+
+```
+STATUS JETZT (18.01.2026 07:50 UTC):
+- Leads: 2,958 (+12)
+- Emails Sent: 799 → steigt wieder (+49 heute)
+- Email System: HEALTHY
+- Clicks (raw): 39, (filtered): 0
+- Real Users: 8 (via Demo)
+- Active (Generator): 0
+- Paying: 0
+
+NEUES KRITISCHES PROBLEM:
+ALLE Review-APIs sind EXHAUSTED!
+- Google Places: FAILING
+- Serper: OUT OF CREDITS
+- Outscraper (alle 3 Keys): BILLING ISSUES
+Keine neuen Demos generierbar!
 ```
 
 ### Funnel Health Check:
 
 | Step | Status | Note |
 |------|--------|------|
-| Lead Gen | OK | +21 neue Leads |
-| Email Outreach | OK | +30 neue Emails |
-| Click Rate | EXCELLENT | 3.9% CTR |
-| Registration | OK | 40% Conv |
-| **ACTIVATION** | **DEAD** | **0%** |
-| Payment | BLOCKED | (no active users) |
+| Lead Gen | OK | 2,958 Leads |
+| Email Outreach | **OK** | 49 Emails heute, System healthy |
+| **Demo Generation** | **BLOCKED** | **ALLE APIs exhausted!** |
+| Click Rate | UNKNOWN | 100% als Bots gefiltert |
+| Registration | OK | 11 total |
+| ACTIVATION | DEAD | 0% |
+| Payment | BLOCKED | |
 
 ---
 
-## Funnel Analysis (Live Data 23:25 UTC)
+## ROOT CAUSE #1: ALL Review-Scraping APIs EXHAUSTED (NEU!)
 
-| Step | Count | Conv% | Status | vs Last Check |
-|------|-------|-------|--------|---------------|
-| **Leads** | 2,540 | - | OK | +21 |
-| Mit Email | 1,203 | 47.4% | OK | +3 |
-| **Emails Sent** | 1,710 | - | OK | +30 |
-| **Clicks** | 67 | **3.9%** | EXCELLENT | +0 |
-| **Click→Reg** | 27 | **40.3%** | OK | +0 |
-| **Reg→Active** | **0** | **0%** | **DEAD** | +0 |
-| Active→Pay | 0 | N/A | BLOCKED | - |
+### Evidence (von Burst-4, 07:48 UTC):
 
-### User-Daten (OHNE Test-Accounts):
+| API | Status | Error |
+|-----|--------|-------|
+| **Google Places** | FAILING | "Place not found" fuer ALLE Businesses |
+| **Serper** | OUT OF CREDITS | "Not enough credits" |
+| **Outscraper (Key 1)** | BILLING | "verify credit card / add credits" |
+| **Outscraper (Key 2)** | BILLING | "verify credit card / add credits" |
+| **Outscraper (Key 3)** | BILLING | "verify credit card / add credits" |
 
-```
-Total Users (raw):     56
-Test Accounts:         29  (excluded)
-REAL Users:            27
-------------------------------
-Never Used:            27  (100%)
-Low Usage (1-3):        0  (0%)
-Medium Usage (4-10):    0  (0%)
-High Usage (11+):       0  (0%)
-------------------------------
-Activation Rate:        0%
-```
-
----
-
-## BOTTLENECK: Registration -> Activation = 0%
-
-### Das Problem im Detail
+### Impact:
 
 ```
-FUNNEL FLOW:
-67 Leute klicken auf unsere Email     ✅ FUNKTIONIERT
-27 registrieren sich                  ✅ FUNKTIONIERT
- 0 generieren eine Response           💀 KOMPLETT KAPUTT
-
-Der KOMPLETTE Funnel stoppt nach Registration!
+OHNE REVIEW-APIs:
+- Keine neuen Demos generierbar
+- 10+ High-Value Leads (500+ Reviews) BLOCKED
+- Demo-Pipeline ist KOMPLETT GESTOPPT
+- Kein Wert demonstrierbar = Keine Conversions
 ```
 
-### User-Breakdown nach Signup-Typ:
+### SOFORT-MASSNAHMEN:
 
-| Signup Type | Total | Active | Activation |
-|-------------|-------|--------|------------|
-| Normal Signup | 23 | 0 | 0% |
-| Magic Link | 4 | 0 | 0% |
-| **TOTAL REAL** | **27** | **0** | **0%** |
+1. **Serper Credits aufstocken:**
+   - https://serper.dev/dashboard
+   - Credits kaufen
 
-### Die 27 echten User (chronologisch):
+2. **Outscraper Billing fixen:**
+   - https://app.outscraper.com
+   - Credit Card verifizieren / Credits hinzufuegen
 
-**Magic Link Users (4):**
-- `info@terrasse-zuerich.ch` (terrasse Restaurant) - 1 Tag
-- `zuerich@trattoria-sempre.ch` (Trattoria Sempre Zürich) - 1 Tag
-- `info@treudelberg.com` (IntercityHotel Hamburg) - 1 Tag
-- `hello@stjamesquarter.com` (St James Quarter) - 1 Tag
+3. **Google Places API pruefen:**
+   - Google Cloud Console → APIs → Places API
+   - Quota/Billing Status checken
 
-**Normal Signup Users (23):**
-- Hotels: ibis Wien, Novotel London, Dolder Grand, 25hours Zürich
-- Restaurants: Six Seven, Wild Ginger, Steak 44, The Smith, Augustiner, Komodo Miami
-- Shopping: Bullring (56k reviews!)
-- Misc: Romano Law, Kentwood Real Estate
+### Workaround (temporaer):
 
-**KEINER** hat auch nur EINE Response generiert!
-
-### Root Cause Analyse:
-
-| Hypothese | Wahrscheinlichkeit | Evidence |
-|-----------|-------------------|----------|
-| **H1: Onboarding Flow kaputt** | 75% | User wissen nicht was tun nach Login |
-| **H2: Dashboard ist verwirrend** | 65% | Leeres Dashboard = "what now?" |
-| **H3: Generator nicht prominent** | 55% | User finden den Generator nicht |
-| H4: Magic Link Landing wrong | 45% | Magic Links landen auf Dashboard |
-| H5: Technisches Problem | 15% | Aber sie sind in DB, also Login funktioniert |
-
-### Aktueller vs Gewuenschter Flow:
-
-```
-AKTUELLER FLOW (KAPUTT):
-1. User klickt Link in Email         ✅
-2. User registriert sich             ✅
-3. User landet im Dashboard          ⚠️ (leer, verwirrend)
-4. User denkt "was jetzt?"           ❌
-5. User verlaesst Seite              ❌
-6. User kommt nie wieder             ❌
-
-GEWUENSCHTER FLOW:
-1. User klickt Link in Email         ✅
-2. User registriert sich             ✅
-3. User landet DIREKT im Generator   ← FIX HIER
-4. Generator ist pre-filled          ← UND HIER
-5. User klickt "Generate"
-6. User sieht Value sofort
-7. User kommt wieder
+```bash
+# Demo via Chrome MCP manuell generieren:
+/generate-demo-chrome [business_name]
 ```
 
 ---
 
-## Hot Lead Analysis
+## ROOT CAUSE #2: Campaign Target Cities (QUICK FIX!)
 
-### 66 Hot Leads (Clicker) - Potential!
+**WAS:** Campaign sendet nur an US-Cities
+**IMPACT:** 1656 Leads im "new" Status werden nie kontaktiert
 
-**Heutige Clicks (16.01):**
-| Time (UTC) | Lead | Business | Reviews |
-|------------|------|----------|---------|
-| 12:49 | office@apotheke-gruenemitte.at | Apotheke Grüne Mitte | 57 |
-| 09:43 | office@rollercoasterrestaurant.com | Rollercoaster Restaurant Wien | 23,164 |
-| 01:27 | londoncityroad@travelodge.co.uk | Travelodge London | 4,790 |
+```
+AKTUELLE TARGET CITIES:
+- New York, Los Angeles, Chicago, Houston
+- Phoenix, Miami, Austin, Denver
 
-**Highlights aus 66 Hot Leads:**
-- Manchester Arndale (43k reviews) - Clicked!
-- Bullring Birmingham (56k reviews) - Registered!
-- Wirtshaus in der Au (5.6k reviews) - Clicked!
-- Augustiner Klosterwirt (13k reviews) - Registered!
+ABER: Die meisten Leads sind EUROPAEISCH!
+- Zuerich, Basel, Wien, Salzburg, Muenchen, Bern
+- Diese werden alle IGNORIERT!
+```
 
-**Problem:** Von 66 Clickern haben nur 27 registriert = 40 verloren (60%)
+**FIX:**
+```sql
+UPDATE campaigns
+SET target_cities = ARRAY[
+  'New York','Los Angeles','Chicago','Houston','Phoenix','Miami','Austin','Denver',
+  'Zürich','Wien','München','Salzburg','Basel','Amsterdam','Berlin','London','Paris',
+  'Innsbruck','Bern','Düsseldorf','Hamburg','Frankfurt'
+]
+WHERE id = 1;
+```
+
+**EXPECTED OUTCOME:** 3x mehr Email-Outreach moeglich
+
+---
+
+## ROOT CAUSE #3: Demo → Activation = 0%
+
+**WAS:** 8 "Real Users" haben Demo generiert, aber 0 nutzen Generator
+
+**EVIDENCE:**
+- 4 echte User per Magic Link
+- 4 weitere via Demo-View
+- KEINER hat jemals den Generator genutzt
+
+**WARUM?**
+1. Nach Demo-View → Wohin werden sie geschickt?
+2. Welcome Email mit Generator-Link?
+3. Onboarding Flow unklar
+
+**FIX NEEDED:**
+- Demo-User direkt zu /generator schicken
+- Magic Link → /generator (nicht /dashboard)
+- Pre-fill Business Name wenn bekannt
+
+---
+
+## KORREKTUR: Email System ist HEALTHY
+
+### Was ich falsch analysiert hatte (07:30 UTC):
+
+```
+FALSCH: "Email Outreach ist komplett gestoppt"
+FALSCH: "Keine Emails seit 30+ Stunden"
+FALSCH: "Cron-Job broken"
+```
+
+### Korrekte Daten (von Burst-10):
+
+| Metrik | Wert | Status |
+|--------|------|--------|
+| Emails letzte 24h | 49 | HEALTHY |
+| Letzte Email | 07:02 UTC | HEUTE |
+| Cron dry_run | `{"ok":true}` | WORKING |
+
+### Was passiert ist:
+
+- Ich habe `campaign.last_reset` falsch interpretiert
+- Das ist das letzte COUNTER-Reset, nicht die letzte Email
+- Emails werden gesendet, nur nicht im Campaign-Counter getrackt
+
+### Learning:
+
+> `campaign.last_reset` != "letzte Email gesendet"
+> Immer parallel-safe-status checken fuer echte Email-Aktivitaet!
 
 ---
 
 ## Konkrete Empfehlungen (Priorisiert)
 
-### PRIORITAET 1: Fix Onboarding Flow (CRITICAL!)
+### PRIORITAET 0: Review-APIs FIXEN (JETZT!)
 
-**Was zu tun ist:**
-1. Nach Registration/Login → Redirect zu `/generator` NICHT `/dashboard`
-2. Wenn User von Demo kommt → Business Name pre-fillen
-3. Prominenter CTA: "Generate Your First AI Response Now"
+**SOFORT:**
+1. **Serper:** https://serper.dev/dashboard → Credits kaufen
+2. **Outscraper:** https://app.outscraper.com → Billing fixen
+3. **Google Places:** Cloud Console → API Status pruefen
 
-**Code-Aenderung:**
-```javascript
-// In App.js oder Auth Handler:
-// VORHER: navigate('/dashboard')
-// NACHHER: navigate('/generator')
+**Wer:** Berend JETZT
+**Impact:** Ohne APIs KEINE neuen Demos!
+
+### PRIORITAET 1: Campaign Cities erweitern (5 min)
+
+```sql
+UPDATE campaigns
+SET target_cities = ARRAY[
+  'New York','Los Angeles','Chicago','Houston','Phoenix','Miami','Austin','Denver',
+  'Zürich','Wien','München','Salzburg','Basel','Amsterdam','Berlin','London','Paris',
+  'Innsbruck','Bern','Düsseldorf','Hamburg','Frankfurt'
+]
+WHERE id = 1;
 ```
 
-**Expected Impact:**
-- Wenn 30% der 27 User aktiviert werden = 8 Active Users
-- Wenn 10% davon zahlen = 1 Paying User
-- = ERSTE REVENUE!
+**Wer:** Berend oder Dev Session
+**Impact:** 1656 Leads werden endlich kontaktiert
 
-### PRIORITAET 2: Re-Engage die 27 Ghost Users
+### PRIORITAET 2: Hot Leads ANRUFEN (HEUTE!)
 
-**Burst-6 Aufgabe:**
-1. Email an alle 27: "You signed up but haven't tried it yet!"
-2. Personalisiert mit deren Business Name
-3. Magic Link DIREKT zum Generator (nicht Dashboard!)
-4. CTA: "Generate Your First Response in 30 Seconds"
-
-**Template:**
 ```
-Subject: [Business Name] - Your AI Review Responses are waiting
+1. Le Bernardin NYC: (212) 554-1515
+   - 3 MICHELIN STARS! 4,008 Reviews
+   - Clicked + FU2 gesendet
+   - HIGHEST VALUE LEAD!
 
-Hi,
+2. Ti Cafe Denver: +1 720 440 2864
+   - Personal Gmail = Entscheider
+   - Clicked yesterday
+   - HOT!
 
-You signed up for ReviewResponder but haven't generated your first
-AI response yet.
-
-It takes 30 seconds:
-→ [MAGIC LINK TO /generator]
-
-Your first 20 responses are FREE. Start now.
+3. Trattoria Sempre Zürich: +41 44 262 54 62
+   - REAL USER mit Demo-Generierung
+   - Swiss restaurant
+   - WARM!
 ```
-
-### PRIORITAET 3: Hot Lead Follow-up (Burst-5)
-
-**Was zu tun ist:**
-- 67 Clicker, nur 27 registriert = 40 noch offen
-- Diese 40 waren interessiert genug zum Klicken
-- Aber haben sich nicht registriert
-- Follow-up Email: "Still interested? Try our demo!"
 
 ---
 
-## Was NICHT priorisiert werden sollte:
-
-| Aktion | Warum NICHT |
-|--------|-------------|
-| Mehr Leads scrapen | 2,540 Leads reichen, Funnel ist kaputt |
-| Neue Email-Kampagnen | Funnel nach Click funktioniert nicht |
-| A/B Testing | Kein Sample Size, Basics sind kaputt |
-| Payment Nudges | 0 Active Users zum Nudgen |
-| Churn Prevention | Keine User die churnen koennten |
-
----
-
-## Agent Directives
+## Agent Directives (UPDATED!)
 
 | Agent | Priority | Task | NICHT tun |
 |-------|----------|------|-----------|
-| **TECH** | **#1 CRITICAL** | **Fix Login → Generator Redirect** | Warten |
-| **Burst-6** | **#2** | **Re-engage 27 Ghost Users** | Andere Tasks |
-| **Burst-5** | **#3** | Follow-up 40 Clicker ohne Reg | Neue Segments |
-| Burst-2 | OK | Weiter Cold Emails (CTR 3.9% ist gut) | Segment wechseln |
-| Burst-4 | LOW | Demo Emails (wenn Fixed) | Mehr generieren ohne senden |
-| Burst-1 | PAUSE | Genug Leads (2,540) | Mehr scrapen |
-| Burst-7 | BLOCKED | Warten auf Active Users | Ohne Basis pushen |
+| **ALLE** | **#0** | **APIs sind EXHAUSTED - Berend muss fixen** | Warten auf APIs |
+| **Burst-4** | BLOCKED | Kann keine Demos generieren | API-Calls versuchen |
+| **Burst-2** | **#1** | Cold Emails senden (funktioniert!) | Nichts |
+| **Burst-5** | **#1** | Hot Leads follow-up + anrufen | Warten |
+| Burst-1 | PAUSE | Genug Leads (2958) | Mehr scrapen |
+| Burst-6 | PAUSE | Keine echten Active Users | Re-engagement |
+| Burst-7 | BLOCKED | Keine Active Users | Payment nudges |
 
 ---
 
 ## Escalation an Berend
 
-### ROT - CRITICAL (HEUTE FIXEN!):
+### ROT - CRITICAL (SOFORT!):
 
 ```
-PROBLEM: 0% Activation bei ALLEN echten Usern
+ALLE REVIEW-SCRAPING APIs SIND EXHAUSTED!
 
-27 echte User haben sich registriert.
-27 von 27 haben NIEMALS eine Response generiert.
-0% Activation Rate seit 2+ Tagen.
+- Google Places: FAILING
+- Serper: OUT OF CREDITS
+- Outscraper: BILLING ISSUES (alle 3 Keys!)
 
-URSACHE (Vermutung):
-- Nach Login landen User im leeren Dashboard
-- User wissen nicht wie/wo sie anfangen
-- User verlassen Seite und kommen nie wieder
+OHNE FIX: Keine neuen Demos = Kein demonstrierbarer Value = Keine Conversions
 
-LOESUNG:
-1. [ ] Login/Signup → Redirect zu /generator
-2. [ ] Pre-fill Business Name wenn bekannt
-3. [ ] Prominenter "Generate Now" CTA
+SOFORT FIXEN:
+1. https://serper.dev/dashboard → Credits kaufen
+2. https://app.outscraper.com → Billing fixen
+3. Google Cloud Console → Places API Status
 
-WENN GEFIXT:
-- 27 existierende User bekommen zweite Chance (via Re-Engagement)
-- Neue User finden sofort den Generator
-- Erwartete Activation: 20-50%
-- Erwartete erste Zahlung: 1-2 Wochen
+WORKAROUND: /generate-demo-chrome [business]
+```
+
+### GELB - HEUTE NOCH:
+
+```
+1. Campaign Cities erweitern (SQL oben, 5 min)
+2. Hot Leads anrufen (Le Bernardin, Ti Cafe, Trattoria Sempre)
 ```
 
 ---
 
-## Trend Analysis
+## Trend Analysis (vs 06:55 UTC)
 
-| Metrik | 22:00 UTC | 23:25 UTC | Trend | Note |
-|--------|-----------|-----------|-------|------|
-| Leads | 2,519 | 2,540 | +21 | Lead Gen working |
-| Emails Sent | 1,680 | 1,710 | +30 | Outreach active |
-| Clicks | 67 | 67 | +0 | No new clicks tonight |
-| CTR | 4.0% | 3.9% | -0.1% | Still excellent |
-| Real Users | 27 | 27 | +0 | No new signups |
-| **Active** | **0** | **0** | **+0** | **STILL DEAD** |
-| Paying | 0 | 0 | +0 | Blocked |
+| Metrik | 06:55 | 07:50 | Trend | Note |
+|--------|-------|-------|-------|------|
+| Leads | 2,946 | 2,958 | +12 | OK |
+| Emails Sent | 799 | 799 | = | (Counter, nicht Realitaet) |
+| Emails 24h | ~30 | 49 | +19 | HEALTHY |
+| Real Users | 8 | 8 | = | Keine neuen |
+| Active | 0 | 0 | = | STILL DEAD |
+| APIs | OK | EXHAUSTED | DOWN | CRITICAL! |
 
-**Key Insight:**
-- Top of Funnel keeps working (emails going out)
-- But bottom of funnel is COMPLETELY DEAD
-- No new clicks tonight = maybe time-of-day effect
-- Activation Fix is BLOCKING everything else
+**Key Insight:** Email-System ist OK, aber APIs sind DOWN = Demo-Pipeline blockiert!
 
 ---
 
 ## Funnel Visualisierung
 
 ```
-OUTREACH FUNNEL (23:25 UTC):
+OUTREACH FUNNEL (18.01 07:50 UTC):
 
-2,540 Leads
+2,958 Leads
     |
     v
-1,203 mit Email (47%)
+1,638 mit Email (55%)
     |
     v
-1,710 Emails gesendet (multi-touch)
+1,656 NEUE werden IGNORIERT! <-- FIX CAMPAIGN CITIES
     |
     v
-   67 Clicks (3.9% CTR) ✅
+  799+ Emails gesendet (HEALTHY)
     |
     v
-   27 Registrations (40%) ✅
+   39 Raw Clicks (4.88%)
     |
     v
-    0 Active (0%) █████████ BLOCKED █████████
+    X--------- DEMO GENERATION BLOCKED! ---------X
+    |           ALLE APIs erschoepft
+    |           Keine neuen Demos moeglich
     |
     v
-    0 Paying (N/A) [upstream blocked]
+    8 "Real Users" (via Demo)
+    |
+    v
+    0 Active (Generator) ███████████ BLOCKED ███████████
+    |
+    v
+    0 Paying
 
 
-DIAGNOSE: Der Funnel STIRBT bei Registration!
-- Alles VOR Registration funktioniert gut
-- Alles NACH Registration ist blockiert
-- FIX: Onboarding Flow → Direkt zu /generator
+DIAGNOSE:
+1. REVIEW APIs EXHAUSTED! <-- SOFORT FIXEN
+2. Campaign Cities US-only → 1656 Leads ignoriert
+3. Demo Flow → 0% Activation
 ```
 
 ---
 
-## Success Metric fuer Fix
+## Success Metrics
 
-**Ziel:** 5+ echte User generieren ihre erste Response innerhalb 48h nach Fix
-
-**Wie messen:**
-```sql
-SELECT COUNT(*)
-FROM users
-WHERE response_count > 0
-  AND is_test_account = false
-  AND created_at > '2026-01-14';
-```
-
-**Wenn erreicht:**
-- Bottleneck ist gefixt
-- Naechster Fokus: Active → Paying
-- Burst-7 (Payment Converter) kann aktiviert werden
+**Ziel 7 Tage:**
+- Emails/Tag: 400+ (aktuell: ~50/Tag)
+- APIs: WORKING (aktuell: ALL DOWN!)
+- Active Users: 3+ (aktuell: 0)
+- Paying: 1 (aktuell: 0)
 
 ---
 
 ## Naechste Analyse
 
-**Zeitpunkt:** +2 Stunden (~01:30 UTC, 17.01.2026)
+**Zeitpunkt:** +2 Stunden (~10:00 UTC)
 
 **Was ich pruefen werde:**
-1. Wurde der Onboarding Fix deployed?
-2. Haben neue User den Generator gefunden?
-3. Gibt es erste Active Users?
-4. Reagieren die 27 Ghost Users auf Re-Engagement?
-5. Neue Clicks in der Night-Time?
+1. Wurden Review-APIs gefixt?
+2. Laufen Demos wieder?
+3. Wurde Campaign Cities gefixt?
+4. Wurden Hot Leads kontaktiert?
+
+---
+
+## Learning (Session)
+
+> **Korrektur meiner Analyse:** `campaign.last_reset` ist NICHT das Datum der letzten Email!
+> Es ist das letzte Counter-Reset. Fuer echte Email-Aktivitaet immer `/api/admin/parallel-safe-status` checken.
+>
+> **Neuer Bottleneck entdeckt:** Review-APIs (Serper, Outscraper, Google Places) koennen gleichzeitig ausfallen.
+> Das blockiert die GESAMTE Demo-Pipeline!
 
 ---
 
 *Report generated by Burst-11 (Bottleneck Analyzer)*
-*Loop 1 | 16.01.2026 23:25 UTC*
+*Loop 2 (KORRIGIERT) | 18.01.2026 07:50 UTC*

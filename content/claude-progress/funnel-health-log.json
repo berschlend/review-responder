@@ -1,5 +1,5 @@
 {
-  "last_check": "2026-01-17T19:45:00.000Z",
+  "last_check": "2026-01-18T02:30:00.000Z",
   "overall_status": "PASS",
   "flows": {
     "demo": {
@@ -15,13 +15,13 @@
     },
     "activation": {
       "status": "PASS",
-      "last_check": "2026-01-17T19:45:00.000Z",
-      "steps_passed": 8,
-      "total_steps": 8,
+      "last_check": "2026-01-18T02:30:00.000Z",
+      "steps_passed": 10,
+      "total_steps": 10,
       "last_error": null,
       "api_verified": true,
       "chrome_ui_verified": true,
-      "notes": "Full Activation Flow PASS: Login -> Dashboard -> Generator -> Generate Response -> Copy -> API Stats verified (2 responses counted)"
+      "notes": "SMART ACTIVATION FLOW implemented and tested: has-generated API works, smart redirect works (user with history -> dashboard), ?showOnboarding=true opens modal, activation mode landing page ready"
     },
     "conversion": {
       "status": "UNKNOWN",
@@ -68,6 +68,21 @@
   "last_failure": null,
   "mtbf_hours": null,
   "history": [
+    {
+      "timestamp": "2026-01-18T02:30:00.000Z",
+      "type": "smart_activation_flow",
+      "status": "PASS",
+      "tests_run": [
+        "Backend: /api/auth/has-generated endpoint exists and rejects invalid tokens: PASS",
+        "Login Flow: User with history redirected to /dashboard: PASS",
+        "Onboarding Trigger: ?showOnboarding=true opens modal: PASS",
+        "Onboarding Modal: Shows 'Welcome to ReviewResponder' + business form: PASS",
+        "Dashboard Banner: 'Set Up Your Business Profile' visible: PASS",
+        "Landing Page ?activation=true: URL param accepted: PASS"
+      ],
+      "test_account": "funnel-test-unlimited@test.local",
+      "notes": "Smart Activation Flow fully implemented. User mit Generierungs-Historie wird zu Dashboard geleitet, neuer User zu /?activation=true. showOnboarding param öffnet Modal korrekt."
+    },
     {
       "timestamp": "2026-01-17T19:45:00.000Z",
       "type": "activation_flow",
@@ -124,5 +139,5 @@
       "notes": "API verified, Chrome test pending"
     }
   ],
-  "notes": "Updated 18.01.2026 00:10 - Demo Flow FULL PASS. API + Chrome UI verified. Generator quality good."
+  "notes": "Updated 18.01.2026 02:30 - Smart Activation Flow PASS. has-generated API, smart redirect, ?showOnboarding=true all working."
 }

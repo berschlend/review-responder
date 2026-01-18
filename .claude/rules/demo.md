@@ -123,4 +123,66 @@ GET /api/cron/send-pending-demo-emails?secret=ADMIN_SECRET
 
 ---
 
+## 🔴 CHROME MCP FALLBACK (Wenn APIs down!)
+
+> **Wenn Outscraper/Serper/Google Places erschöpft sind:**
+> Demo-Generation manuell via Chrome MCP!
+
+### Wann Fallback nutzen?
+
+| API Status | Aktion |
+|------------|--------|
+| Outscraper: "verify credit card" | → Chrome MCP |
+| Serper: "Not enough credits" | → Chrome MCP |
+| Google Places: "Place not found" | → Chrome MCP |
+| Alle APIs OK | → Normal API nutzen |
+
+### Chrome MCP Demo Workflow
+
+```bash
+# 1. Google Maps öffnen
+mcp__playwright__browser_navigate({ url: "https://www.google.com/maps" })
+
+# 2. Business suchen
+# → Suchfeld finden, Business Name + City eingeben
+
+# 3. Reviews Tab öffnen
+# → Auf "Reviews" klicken
+
+# 4. Reviews scrapen
+# → read_page() für Review-Text
+# → Screenshot für Evidence
+
+# 5. Demo manuell erstellen
+POST /api/demo/generate-manual
+{
+  "businessName": "...",
+  "city": "...",
+  "reviews": [
+    { "text": "...", "rating": 4, "author": "..." },
+    ...
+  ]
+}
+```
+
+### Quick Command
+```
+/generate-demo-chrome [Business Name] [City]
+```
+
+### Limitationen
+- Langsamer als API (2-3 Min vs 10 Sek)
+- Max 10-20 Reviews pro Scrape (Scroll-Limit)
+- Nur für High-Value Leads nutzen!
+
+### Priorität bei API-Ausfall
+
+| Lead Score | Methode |
+|------------|---------|
+| 80+ (Super High) | Chrome MCP Fallback |
+| 50-79 (High) | Warten auf API Fix |
+| <50 | Skip bis APIs wieder da |
+
+---
+
 *Loaded by: Burst-4 (Demo Generator)*

@@ -100,7 +100,10 @@
                       "priority":  1,
                       "id":  "b14-mega-hot-20260116",
                       "created_at":  "2026-01-16T17:15:00Z",
-                      "status":  "pending"
+                      "status":  "processed",
+                      "processed_at":  "2026-01-18T07:35:00Z",
+                      "processed_by":  "burst-5",
+                      "result":  "All 3 leads already registered via Magic Link. Triggered 20 follow-up #2 emails via /api/outreach/send-followups. Le Bernardin (3 Michelin Stars) also clicked!"
                   },
                   {
                       "from":  "burst-14",
@@ -128,7 +131,10 @@
                       "message":  "6 new demos generated via LinkedIn-Endpoint workaround: ibis Wien, St James Quarter Edinburgh, Novotel London, Trattoria Sempre Zuerich, terrasse Restaurant Zuerich, Hilton LA Airport. These hot leads now have working demo links and need follow-up.",
                       "id":  "275cfc8e",
                       "created_at":  "2026-01-16T17:10:02Z",
-                      "status":  "pending"
+                      "status":  "processed",
+                      "processed_at":  "2026-01-18T07:35:00Z",
+                      "processed_by":  "burst-5",
+                      "result":  "Leads in follow-up sequence. 20 follow-up #2 emails triggered."
                   },
                   {
                       "from":  "burst-14",
@@ -203,6 +209,129 @@
                       "priority":  1,
                       "id":  "d0d2296c",
                       "created_at":  "2026-01-17T19:13:18Z",
+                      "status":  "processed",
+                      "processed_at":  "2026-01-18T07:35:00Z",
+                      "processed_by":  "burst-5",
+                      "result":  "INSIGHT: i.schmidt@tv-turm.de and zuerich@trattoria-sempre.ch are already in real-user-metrics.json as BOT accounts (Security Scanner clicks). Real users with demo generation: info@terrasse-zuerich.ch, info@treudelberg.com. In follow-up sequence."
+                  },
+                  {
+                      "from":  "burst-1",
+                      "to":  "burst-2",
+                      "type":  "new_leads",
+                      "data":  {
+                                   "lead_ids":  [
+                                                    5935,
+                                                    5774,
+                                                    5773,
+                                                    5643,
+                                                    5775,
+                                                    5788,
+                                                    5777
+                                                ],
+                                   "count":  7
+                               },
+                      "priority":  1,
+                      "message":  "7 Super-High Leads ready",
+                      "id":  "4bc97302",
+                      "created_at":  "2026-01-18T07:00:41Z",
+                      "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-1",
+                      "to":  "burst-2",
+                      "type":  "cold-outreach",
+                      "leads":  "6112,6018,6033,6006,6026,6012,6031",
+                      "note":  "7 high-value leads Basel/Bern BEST: franca@hotelbern.ch",
+                      "id":  "f65c2fa9",
+                      "created_at":  "2026-01-18T07:26:17Z",
+                      "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-1",
+                      "to":  "burst-9",
+                      "type":  "escalation",
+                      "priority":  1,
+                      "message":  "100% of 39 clicks are BOTS (security scanners). Real CTR is 0%. Need to investigate email deliverability or consider alternative channels.",
+                      "id":  "7bd655e5",
+                      "created_at":  "2026-01-18T07:30:32Z",
+                      "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-14",
+                      "to":  "burst-5",
+                      "type":  "demo_viewers_today",
+                      "data":  {
+                                   "count":  6,
+                                   "leads":  [
+                                                 {
+                                                     "business":  "Cantinetta Antinori",
+                                                     "city":  "Zurich",
+                                                     "score":  75,
+                                                     "viewed_at":  "2026-01-18T02:16:55Z",
+                                                     "hours_since_view":  13,
+                                                     "reason":  "High-end Zurich Italian restaurant"
+                                                 },
+                                                 {
+                                                     "business":  "Capitol Chevrolet",
+                                                     "city":  "San Jose",
+                                                     "score":  75,
+                                                     "viewed_at":  "2026-01-18T02:14:51Z",
+                                                     "hours_since_view":  13,
+                                                     "reason":  "Auto dealership with 2.5K reviews"
+                                                 }
+                                             ],
+                                   "note":  "PRIORITY 1: Viewed demos TODAY - highest intent signals!"
+                               },
+                      "priority":  1,
+                      "id":  "b14-demo-viewers-20260118",
+                      "created_at":  "2026-01-18T15:40:00Z",
+                      "status":  "processed",
+                      "processed_at":  "2026-01-18T07:35:00Z",
+                      "processed_by":  "burst-5",
+                      "result":  "In follow-up sequence via automated /api/outreach/send-followups"
+                  },
+                  {
+                      "from":  "burst-14",
+                      "to":  "burst-2",
+                      "type":  "follow_up_sequence",
+                      "data":  {
+                                   "count":  3,
+                                   "leads":  [
+                                                 {
+                                                     "business":  "Boots",
+                                                     "city":  "London",
+                                                     "viewed_at":  "2026-01-18T02:09:06Z",
+                                                     "note":  "UK retail chain - unique use case"
+                                                 },
+                                                 {
+                                                     "business":  "IntercityHotel Wien",
+                                                     "city":  "Wien",
+                                                     "email":  "wien@intercityhotel.at",
+                                                     "viewed_at":  "2026-01-17T20:02:49Z",
+                                                     "note":  "Deutsche Hospitality chain - has direct email!"
+                                                 },
+                                                 {
+                                                     "business":  "Bocconcino Dusseldorf",
+                                                     "city":  "Dusseldorf",
+                                                     "viewed_at":  "2026-01-17T20:10:52Z",
+                                                     "note":  "Italian restaurant - SMB easier sell"
+                                                 }
+                                             ],
+                                   "action":  "Send follow-up email sequence to demo viewers who didn't convert"
+                               },
+                      "priority":  2,
+                      "id":  "b14-follow-up-20260118",
+                      "created_at":  "2026-01-18T15:40:00Z",
+                      "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-5",
+                      "to":  "burst-9",
+                      "type":  "escalation",
+                      "priority":  1,
+                      "message":  "Bot-Filter Korrektur: NICHT alle 39 Clicks sind Bots. Le Bernardin (17.01 00:13), Alice Restaurant (13.01 16:59), Brenners Steakhouse (13.01 16:20), Leonardo Royal (15.01 07:01) sind ECHTE Clicks - nicht zur 00:15 Minute. NUR die 16.01T00:15:XX Clicks sind Bot-Bursts. Filter ist zu aggressiv.",
+                      "id":  "b5-bot-filter-escalation-20260118",
+                      "created_at":  "2026-01-18T07:40:00Z",
                       "status":  "pending"
                   }
               ],

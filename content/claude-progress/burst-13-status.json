@@ -1,31 +1,41 @@
-﻿{
-    "loop_interval":  "6h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
-    "version":  "3.0",
-    "agent":  "burst-13-churn-prevention",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+{
+    "loop_interval": "6h",
+    "learnings_applied": [],
+    "current_loop": 1,
+    "started_at": "2026-01-18T06:42:26Z",
+    "version": "3.0",
+    "agent": "burst-13-churn-prevention",
+    "escalations_pending": [],
+    "checkpoints": {
+        "resume_from": null,
+        "last_successful_action": "churn-check",
+        "last_processed_id": null
+    },
+    "health": {
+        "api_budget_ok": true,
+        "memory_ok": true,
+        "stuck_detected": false,
+        "last_error": null
+    },
+    "metrics": {
+        "success_rate": 100,
+        "errors_count": 0,
+        "actions_taken": 1
+    },
+    "status": "running",
+    "last_heartbeat": "2026-01-18T07:00:00Z",
+    "last_run": "2026-01-18T07:00:00Z",
+    "next_check": "2026-01-18T13:00:00Z",
+    "at_risk_users": {
+        "paying": 0,
+        "free_power": 0,
+        "cancelled": 0
+    },
+    "finding": "No at-risk users - 0 paying customers to retain. Bot explosion detected: 6+ new fake accounts today via Magic Link security scanner clicks.",
+    "emails_sent_today": 0,
+    "reactivations_today": 0,
+    "win_back_rate_7d": "N/A",
+    "revenue_recovered_30d": "$0",
+    "stuck": false,
+    "needs_berend": []
 }

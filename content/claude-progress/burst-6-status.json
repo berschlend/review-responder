@@ -1,31 +1,36 @@
-﻿{
-    "loop_interval":  "4h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
-    "version":  "3.0",
-    "agent":  "burst-6-user-activator",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+{
+  "loop_interval": "4h",
+  "learnings_applied": [],
+  "current_loop": 0,
+  "started_at": "2026-01-18T13:30:00Z",
+  "version": "3.0",
+  "agent": "burst-6-user-activator",
+  "escalations_pending": [],
+  "checkpoints": {
+    "resume_from": null,
+    "last_successful_action": "priority_check",
+    "last_processed_id": null
+  },
+  "health": {
+    "api_budget_ok": true,
+    "memory_ok": true,
+    "stuck_detected": false,
+    "last_error": null
+  },
+  "metrics": {
+    "success_rate": 0,
+    "errors_count": 0,
+    "actions_taken": 1
+  },
+  "status": "terminated_not_relevant",
+  "last_heartbeat": "2026-01-18T13:30:00Z",
+  "termination_reason": {
+    "priority": 3,
+    "in_paused_list": true,
+    "real_users": 4,
+    "users_needing_onboarding": 0,
+    "bottleneck": "OUTREACH_TO_FIRST_USE",
+    "decision": "Terminiert - Kein Onboarding nötig. Die 4 Real Users haben BEREITS Demo-Generierungen = aktiviert. Priority-1 Agents arbeiten am echten Bottleneck."
+  },
+  "recommendation": "Burst-2 (Cold Email), Burst-4 (Demo), Burst-5 (Hot Lead) sind die richtigen Agents für den aktuellen Bottleneck."
 }

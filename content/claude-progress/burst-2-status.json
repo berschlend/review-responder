@@ -1,31 +1,87 @@
 ﻿{
-    "loop_interval":  "6h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
-    "version":  "3.0",
     "agent":  "burst-2-cold-emailer",
+    "version":  "3.0",
+    "status":  "completed",
+    "started_at":  "2026-01-18T21:45:00Z",
+    "last_heartbeat":  "2026-01-18T17:01:22Z",
+    "current_loop":  2,
+    "loop_interval":  "5min",
+    "learnings_applied":  [
+                              "KEIN Discount in Cold Emails",
+                              "Star Rating in Subject Line = +100% CTR",
+                              "Personal Emails (gmail, gmx, firstname@) = HIGH VALUE",
+                              "Skip Enterprise Leads (Accor, Hilton, Marriott, IHG)",
+                              "info@/contact@ = LOW Priority (skip if \u003c500 reviews)",
+                              "500-2000 Reviews = Sweet Spot (+40 Score)"
+                          ],
+    "checkpoints":  {
+                        "last_successful_action":  "sent_100_emails",
+                        "last_processed_id":  null,
+                        "resume_from":  null
+                    },
+    "metrics":  {
+                    "actions_taken":  100,
+                    "emails_sent_today":  100,
+                    "emails_sent_total":  100,
+                    "bounced":  0,
+                    "success_rate":  100,
+                    "errors_count":  0
+                },
+    "health":  {
+                   "stuck_detected":  false,
+                   "last_error":  null,
+                   "api_budget_ok":  true,
+                   "memory_ok":  true
+               },
     "escalations_pending":  [
 
                             ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+    "session_summary":  {
+                            "loop_1":  {
+                                           "emails_sent":  50,
+                                           "provider":  "mailjet",
+                                           "bounce_rate":  "0%",
+                                           "top_leads":  [
+                                                             "dominik@imlauer.com (3102 reviews, personal name!)",
+                                                             "tengritaghuigur@gmail.com (4674 reviews, Gmail!)",
+                                                             "eastsalzburg@gmail.com (1496 reviews, Gmail!)",
+                                                             "der@paul-stube.at (1884 reviews, creative email!)",
+                                                             "Das LOFT Vienna (4976 reviews)"
+                                                         ],
+                                           "regions":  [
+                                                           "AT",
+                                                           "CH",
+                                                           "DE",
+                                                           "NL"
+                                                       ],
+                                           "business_types":  [
+                                                                  "hotel",
+                                                                  "restaurant",
+                                                                  "dental"
+                                                              ]
+                                       },
+                            "loop_2":  {
+                                           "emails_sent":  50,
+                                           "provider":  "mailjet",
+                                           "bounce_rate":  "0%",
+                                           "top_leads":  [
+                                                             "reza@dentxperts.nl (800 reviews, personal name!)",
+                                                             "concierge@lestroisrois.com (1200 reviews, luxury hotel)",
+                                                             "arabelle@sorellhotels.com (800 reviews)",
+                                                             "blumen.sax@gmx.at (GMX personal!)",
+                                                             "info@bellevue-palace.ch (1500 reviews)"
+                                                         ],
+                                           "regions":  [
+                                                           "CH",
+                                                           "NL",
+                                                           "AT"
+                                                       ],
+                                           "business_types":  [
+                                                                  "hotel",
+                                                                  "restaurant",
+                                                                  "dental",
+                                                                  "florist"
+                                                              ]
+                                       }
+                        }
 }

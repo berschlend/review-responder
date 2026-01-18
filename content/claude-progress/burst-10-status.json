@@ -1,31 +1,147 @@
-﻿{
-    "loop_interval":  "24h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
-    "version":  "3.0",
-    "agent":  "burst-10-morning-briefer",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+{
+  "agent": "burst-10-morning-briefer",
+  "version": "4.0",
+  "status": "running",
+  "started_at": "2026-01-18T07:22:57Z",
+  "last_heartbeat": "2026-01-18T17:00:00Z",
+  "current_loop": 3,
+  "loop_interval": "30min",
+  "agents_health": {
+    "burst-1": "healthy",
+    "burst-2": "healthy",
+    "burst-3": "paused",
+    "burst-4": "BLOCKED",
+    "burst-5": "healthy",
+    "burst-6": "paused",
+    "burst-7": "paused",
+    "burst-8": "paused",
+    "burst-9": "healthy",
+    "burst-10": "healthy",
+    "burst-11": "healthy",
+    "burst-12": "paused",
+    "burst-13": "paused",
+    "burst-14": "healthy",
+    "burst-15": "paused"
+  },
+  "active_sessions": {
+    "BURST1": {"heartbeat": "07:30 UTC", "activity": "Running command"},
+    "BURST2": {"heartbeat": "07:30 UTC", "activity": "Running command"},
+    "BURST4": {"heartbeat": "07:48 UTC", "activity": "BLOCKED - APIs exhausted"},
+    "BURST5": {"heartbeat": "07:30 UTC", "activity": "Running command"},
+    "BURST9": {"heartbeat": "07:28 UTC", "activity": "Running command"},
+    "BURST10": {"heartbeat": "07:50 UTC", "activity": "Monitoring critical issues"},
+    "BURST11": {"heartbeat": "07:30 UTC", "activity": "Running command"},
+    "BURST14": {"heartbeat": "07:27 UTC", "activity": "Running command"}
+  },
+  "critical_issues": [
+    {
+      "issue": "DEMO GENERATION BLOCKED - ALL 5 ACCOUNTS",
+      "severity": "CRITICAL",
+      "discovered_at": "2026-01-18T07:48:00Z",
+      "updated_at": "2026-01-18T17:00:00Z",
+      "discovered_by": "burst-4",
+      "details": {
+        "google_places": "FAILING - Place not found",
+        "serper": "OUT OF CREDITS",
+        "outscraper_key1": "BILLING - verify credit card",
+        "outscraper_key2": "BILLING - verify credit card",
+        "outscraper_key3": "BILLING - verify credit card",
+        "outscraper_key4": "BILLING - verify credit card",
+        "outscraper_key5": "BILLING - verify credit card (NEU ERSTELLT!)"
+      },
+      "workaround_implemented": "Chrome MCP Fallback documented in .claude/rules/demo.md",
+      "account5_created": "berendder4te@gmail.com via Google OAuth",
+      "impact": "Keine neuen Demos via API moeglich, Chrome MCP Fallback fuer Score 80+ Leads",
+      "action_needed": "Berend: 1) Outscraper Billing fixen (Kreditkarte), 2) Serper Credits kaufen"
+    }
+  ],
+  "briefing_summary": {
+    "conversions": 0,
+    "demo_conversions": 1,
+    "real_users": 8,
+    "paying_users": 0,
+    "mrr": 0,
+    "leads": 2958,
+    "emails_sent_24h": 49,
+    "agents_running": 7,
+    "agents_blocked": 1,
+    "agents_paused": 7
+  },
+  "hot_items": 5,
+  "decisions_pending": 4,
+  "decisions": [
+    "🔴 APIs FIXEN (Serper, Outscraper, Google Places) - KRITISCH!",
+    "Campaign Cities erweitern (1656 EU-Leads ignoriert)",
+    "Le Bernardin NYC anrufen wenn keine Response in 48h - 3 MICHELIN STARS!",
+    "Hot Leads anrufen (Ti Cafe Denver, Trattoria Sempre)"
+  ],
+  "high_value_leads": [
+    {
+      "business": "Le Bernardin NYC",
+      "phone": "(212) 554-1515",
+      "reviews": 4008,
+      "special": "3 MICHELIN STARS",
+      "status": "FU2 gesendet, warte auf Response"
+    },
+    {
+      "business": "Ti Cafe Denver",
+      "phone": "+1 720 440 2864",
+      "status": "Personal Gmail, HOT"
+    },
+    {
+      "business": "Trattoria Sempre Zürich",
+      "phone": "+41 44 262 54 62",
+      "status": "REAL USER mit Demo"
+    }
+  ],
+  "last_briefing": "2026-01-18T07:50:00Z",
+  "stuck": false,
+  "needs_berend": [
+    "🔴 KRITISCH: APIs fixen (Serper/Outscraper/Google Places)",
+    "Campaign Cities SQL ausfuehren",
+    "Le Bernardin NYC beobachten - wenn keine Response in 48h → ANRUFEN!",
+    "Ti Cafe Denver anrufen: +1 720 440 2864"
+  ],
+  "metrics": {
+    "actions_taken": 4,
+    "briefings_generated": 2,
+    "agents_checked": 15,
+    "health_checks_passed": 7,
+    "critical_issues_detected": 1,
+    "errors_count": 0,
+    "success_rate": 100
+  },
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": false,
+    "memory_ok": true
+  },
+  "checkpoints": {
+    "last_successful_action": "critical_issue_logged",
+    "last_processed_id": null,
+    "resume_from": null
+  },
+  "escalations_pending": [
+    "Demo Generation APIs exhausted - needs Berend intervention"
+  ],
+  "learnings_applied": [
+    "8 Agents laufen (inkl. BURST1)",
+    "Demo-Viewers sind besseres Signal als Clicks",
+    "1656 EU-Leads werden ignoriert wegen Campaign Cities",
+    "Email System ist AKTIV (49 Emails in 24h)",
+    "Le Bernardin NYC = höchstwertiger Lead (3 Michelin Stars)",
+    "API Credits/Billing muss regelmaessig gecheckt werden"
+  ],
+  "key_insight": "🔴 DEMO GENERATION BLOCKED! Alle Review-APIs erschöpft. Berend muss Serper Credits + Outscraper Billing fixen. Le Bernardin NYC (3 Michelin Stars) ist unser Jackpot-Lead!",
+  "handoff_queue_status": {
+    "total_pending": 13,
+    "priority_1": 6,
+    "mega_hot_leads": 3
+  },
+  "cron_status": {
+    "daily_outreach": "OK - scraped:20, sent:119, followups:4",
+    "last_check": "2026-01-18T07:50:00Z"
+  },
+  "next_briefing": "2026-01-18T08:20:00Z"
 }

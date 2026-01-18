@@ -1,31 +1,37 @@
-﻿{
-    "loop_interval":  "6h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
-    "version":  "3.0",
-    "agent":  "burst-8-upgrader",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+{
+  "agent": "burst-8-upgrader",
+  "version": "4.6",
+  "status": "paused",
+  "reason": "0 zahlende Kunden = 0 Upgrade Candidates. Warte auf Burst-7 (Payment Converter).",
+  "started_at": "2026-01-18T06:42:26Z",
+  "last_heartbeat": "2026-01-18T06:57:31Z",
+  "current_loop": 1,
+  "loop_interval": "6h",
+  "metrics": {
+    "paying_users": 0,
+    "starter_users": 0,
+    "pro_users": 0,
+    "upgrade_candidates": 0,
+    "emails_sent": 0,
+    "upgrades_today": 0,
+    "mrr_increase": 0
+  },
+  "health": {
+    "api_budget_ok": true,
+    "memory_ok": true,
+    "stuck_detected": false,
+    "last_error": null
+  },
+  "checkpoints": {
+    "resume_from": null,
+    "last_successful_action": "status_check",
+    "last_processed_id": null
+  },
+  "escalations_pending": [],
+  "learnings_applied": [
+    "0 paying users = no upgrade work",
+    "16 registered users but 0 responses = activation bottleneck, not upgrade"
+  ],
+  "next_check": "When Burst-7 converts first customer",
+  "consecutive_paused_checks": 7
 }

@@ -1,31 +1,75 @@
 ﻿{
-    "loop_interval":  "30m",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
-    "version":  "3.0",
     "agent":  "burst-14-lead-scorer",
+    "version":  "3.0",
+    "status":  "completed",
+    "started_at":  "2026-01-18T15:25:00Z",
+    "last_heartbeat":  "2026-01-18T17:09:23Z",
+    "current_loop":  2,
+    "loop_interval":  "30m",
+    "metrics":  {
+                    "demos_total":  1315,
+                    "demos_viewed":  147,
+                    "demo_view_rate":  "11.2%",
+                    "conversions":  3,
+                    "conversion_rate_from_view":  "0.68%",
+                    "hot_leads":  1,
+                    "warm_leads":  8,
+                    "cool_leads":  138,
+                    "cold_leads":  1168,
+                    "new_registrations_today":  7,
+                    "likely_bot_registrations":  3,
+                    "errors_count":  0,
+                    "success_rate":  100
+                },
+    "key_findings":  [
+                         {
+                             "title":  "6 Demo Viewers TODAY Need Follow-Up",
+                             "detail":  "Cantinetta Antinori (Zurich), Capitol Chevrolet (San Jose), Mercure Wien, Caledonian Edinburgh, Boots London, Park Inn Berlin - all viewed demos in last 13-14 hours",
+                             "priority":  "HIGH"
+                         },
+                         {
+                             "title":  "7 New Magic Link Registrations - Likely Bots",
+                             "detail":  "All registered TODAY with 0 generations. Pattern matches security scanner behavior. Wait 24h before counting as real.",
+                             "priority":  "MEDIUM"
+                         },
+                         {
+                             "title":  "Only 1 Conversion: BLOCK HOUSE Dusseldorf",
+                             "detail":  "Score 95. Restaurant with 4060 reviews. Converted in 13 seconds. Our BEST lead.",
+                             "priority":  "HIGH"
+                         }
+                     ],
+    "handoffs_created":  {
+                             "burst-5":  [
+                                             "Cantinetta Antinori",
+                                             "Capitol Chevrolet"
+                                         ],
+                             "burst-2":  [
+                                             "Boots",
+                                             "IntercityHotel Wien",
+                                             "Bocconcino Dusseldorf"
+                                         ],
+                             "berend":  "Call Trattoria Sempre Zurich (+41 44 262 54 62)"
+                         },
+    "learnings_applied":  [
+                              "Demo views = only reliable engagement signal (clicks 100% bots)",
+                              "Magic Link registrations need 24h cooldown before counting",
+                              "Demo view timing matters: TODAY \u003e YESTERDAY",
+                              "Hotel chains get -10 penalty (enterprise = harder sell)"
+                          ],
+    "health":  {
+                   "memory_ok":  true,
+                   "api_budget_ok":  true,
+                   "stuck_detected":  false,
+                   "postgres_mcp_issues":  true,
+                   "last_error":  "Postgres MCP connection issues - used API fallback"
+               },
+    "checkpoints":  {
+                        "last_successful_action":  "handoffs_created_burst2_burst5",
+                        "last_processed_id":  1315,
+                        "resume_from":  null
+                    },
     "escalations_pending":  [
 
                             ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+    "next_run":  "2026-01-18T16:05:00Z"
 }

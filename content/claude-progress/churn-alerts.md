@@ -7,7 +7,7 @@
 
 ## At-Risk Summary
 
-**Letztes Update:** 2026-01-16T02:38:00Z
+**Letztes Update:** 2026-01-18T07:00:00Z
 
 | Kategorie | Count | Trend |
 |-----------|-------|-------|
@@ -23,48 +23,50 @@
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Total Users | 38 | +6 seit gestern |
+| Total Registered | 16 | Non-test accounts |
+| Real Users (1+ Gen) | 8 | Via Demo (laut Stats) |
 | Paying Users | 0 | Keine Churn-Gefahr |
-| Never Used (0 Responses) | 26 | 68% - Activation Problem |
-| Low Usage (1-4 Responses) | 7 | Potential churners wenn sie Free bleiben |
-| Medium Usage (5-14 Responses) | 5 | Getting closer to limit |
-| High Usage (15+ Responses) | 0 | Niemand nahe am Limit |
-| Users at 20 Response Limit | 0 | Niemand hat Limit erreicht |
+| Never Used (0 Responses) | 16 | 100% - Kritisches Activation Problem |
+| DAU | 0 | Niemand aktiv heute |
+| WAU | 14 | Letzte Woche aktiv (inkl. Test) |
+| Returning Users | 0 | Niemand kommt zurück |
 
-### Top Active Users (closest to limit)
+### Bot-Filtered Reality (aus real-user-metrics.json)
 
-| User | Plan | Responses | % to Limit |
-|------|------|-----------|------------|
-| Berend.mainz@web.de | unlimited | 8 | N/A (unlimited) |
-| rolicupo.twitch@gmail.com | free | 6 | 30% |
-| berend.jakob.mainz@gmail.com | free | 5 | 25% |
-| rolicupo.games@gmail.com | free | 5 | 25% |
-| breihosen@gmail.com | free | 5 | 25% |
+| Category | Count | Emails |
+|----------|-------|--------|
+| REAL Users (Demo Gen) | 4 | terrasse-zuerich.ch, trattoria-sempre.ch, treudelberg.com, stjamesquarter.com |
+| FAKE Accounts (Bots) | 3 | H0796@accor.com, h9057@accor.com, i.schmidt@tv-turm.de |
+| New Bot Accounts (heute) | 6+ | h5413@sofitel.com, H1163@accor.com, etc. (Magic Link Bot-Clicks) |
 
 ---
 
-## Why Churn Prevention is Paused
+## Why Churn Prevention is PAUSED
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ FIRST PRINCIPLES ANALYSIS:                                   │
+│ FIRST PRINCIPLES ANALYSIS (18.01.2026):                      │
 │                                                              │
 │ Churn Prevention = Verhindern dass ZAHLENDE Kunden gehen    │
 │                                                              │
 │ AKTUELL:                                                     │
 │ - 0 zahlende Kunden                                         │
-│ - 0 User die jemals Limit erreicht haben                    │
-│ - 26 von 38 Users haben NIEMALS Product genutzt             │
+│ - 0 User die jemals Generator genutzt haben                 │
+│ - 100% der registrierten User haben 0 Responses             │
+│ - Viele "Registrierungen" sind Security Scanner Bots        │
 │                                                              │
-│ BOTTLENECK IST NICHT CHURN:                                 │
-│ - Bottleneck ist ACTIVATION (Burst-6)                       │
-│ - Users registrieren sich, nutzen Product aber nicht        │
-│ - Dann PAYMENT (Burst-7) wenn sie Limit erreichen          │
+│ DAS PROBLEM IST NICHT CHURN:                                │
+│ 1. ACQUISITION: Emails gehen raus (OK)                      │
+│ 2. ACTIVATION: Registrierte nutzen Product NICHT (PROBLEM!) │
+│ 3. PAYMENT: Noch niemand am Limit gewesen                   │
+│ 4. CHURN: Noch niemand zum Churnen                          │
+│                                                              │
+│ BOTTLENECK: Magic Link → Account → STOPP (kein Generator)   │
 │                                                              │
 │ WANN WIRD BURST-13 RELEVANT?                                │
-│ 1. Wenn erster zahlender Kunde da ist                       │
-│ 2. Wenn Free Power Users (10+ Responses) vorhanden          │
-│ 3. Wenn erste Cancellation passiert                         │
+│ 1. Erster zahlender Kunde da ist                            │
+│ 2. User Subscription cancelled                               │
+│ 3. Power User (10+ Responses) wird inaktiv                  │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -120,17 +122,48 @@
 
 ---
 
-## Erfolgreiche Win-Backs
+## Hot Leads (für andere Agents)
 
-| Datum | User | Segment | Offer Used | Revenue Recovered |
-|-------|------|---------|------------|-------------------|
-| (noch keine) | - | - | - | - |
+Diese Leads sollten von Burst-5 (Hot Lead Chaser) bearbeitet werden:
+
+| Email | Business | Status | Priority |
+|-------|----------|--------|----------|
+| ti.cafeofficial@gmail.com | Tí Cafe Denver | Clicked 17.01, personal gmail | 🔴 HOT |
+| zuerich@trattoria-sempre.ch | Trattoria Sempre Zürich | Real user, phone available | 🟡 WARM |
+
+---
+
+## Key Insight
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ SECURITY SCANNER BOT EXPLOSION:                              │
+│                                                              │
+│ 6+ neue "Accounts" heute (2026-01-18) sind Bots:            │
+│ - h5413@sofitel.com (Sofitel Munich)                        │
+│ - info@radissonhotels.com (Radisson)                        │
+│ - H1163@accor.com (Mercure Hamburg)                         │
+│ - wien@25hours-hotels.com (25hours Vienna)                  │
+│ - office@rollercoasterrestaurant.com                        │
+│ - info@godfreyhotelhollywood.com                            │
+│ - conciergebirmingham@s5a.com                               │
+│                                                              │
+│ ALLE: is_magic_link=true, signup_source=magic_link,         │
+│       response_count=0, days_since_signup=0                 │
+│                                                              │
+│ PATTERN: Enterprise Hotels mit Security Scannern            │
+│          klicken Magic Links → Auto-Account erstellt        │
+│                                                              │
+│ FIX NEEDED: Bot-Check BEFORE auto-account creation          │
+│ CURRENT: Bot-Check nur bei Magic Link Login, nicht Create   │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Next Steps for Burst-13
 
-1. **PAUSED** - Fokus liegt auf Activation (Burst-6) und Payment (Burst-7)
+1. **PAUSED** - Fokus liegt auf Activation (kein Churn möglich ohne User)
 2. **MONITOR** - Checke alle 6h ob sich Status ändert
 3. **RESUME CONDITIONS:**
    - First paying customer acquired
@@ -140,4 +173,4 @@
 ---
 
 *Diese Datei wird von Burst-13 alle 6 Stunden aktualisiert.*
-*Nächster Check: 2026-01-16T08:38:00Z*
+*Nächster Check: 2026-01-18T13:00:00Z*

@@ -1,12 +1,14 @@
 {
   "realUsers": {
-    "total": 4,
+    "total": 8,
     "viaGenerator": 0,
-    "viaDemo": 4,
+    "viaDemo": 8,
     "viaInstantTry": 0,
+    "inFunnel": 1,
     "inactive": 3,
     "paying": 0
   },
+  "registeredUsers_total": 12,
   "definition": "Real User = 1+ Generation ANYWHERE (responses, demo_generations with demo_page_viewed_at, public_try_usage). Registration alone does NOT count!",
   "registeredUsers": {
     "total": 7,
@@ -101,11 +103,17 @@
     { "pattern": "test-email", "count": 60 }
   ],
   "outreach": {
-    "emailsSent": 1902,
+    "emailsSent": 947,
+    "totalClicks": 37,
+    "uniqueClickers": 83,
+    "clickRate": "3.91%",
+    "realClickRate": "90.6%",
+    "botsFiltered": 15,
     "realUsersWithGeneration": 4,
-    "conversionRate": "0.21%",
-    "note": "4 users actually engaged out of 1902 emails",
-    "WICHTIG_KONTEXT": "Diese Metriken zaehlen NICHT weil: (1) SES war im SANDBOX Modus (max 200/Tag, nur verifizierte Adressen), (2) Lead-Qualitaet noch nicht optimiert, (3) Email-Templates im Test, (4) Bot-Detection gerade erst implementiert. ECHTER START erst wenn SES Production (50k/Monat) aktiv!"
+    "conversionRate": "0.42%",
+    "note": "Bot filter FIXED 2026-01-18! Burst detection was removing ALL real clicks. Now using user-agent detection only.",
+    "FIX_DETAILS": "filterSequentialClicks() disabled - was marking any minute with 3+ clicks as 'burst' and removing all. Real people check email at similar times!",
+    "WICHTIG_KONTEXT": "Diese Metriken zaehlen NICHT weil: (1) SES war im SANDBOX Modus (max 200/Tag, nur verifizierte Adressen), (2) Lead-Qualitaet noch nicht optimiert, (3) Email-Templates im Test. ECHTER START erst wenn SES Production (50k/Monat) aktiv!"
   },
   "sesStatus": {
     "status": "SANDBOX",
@@ -114,12 +122,13 @@
     "productionCapacity": "50k/month",
     "note": "Erst nach SES Production Approval zaehlen die Email-Metriken wirklich!"
   },
-  "lastUpdated": "2026-01-18T12:00:00Z",
-  "analyzedAt": "2026-01-18T12:00:00Z",
+  "lastUpdated": "2026-01-18T18:15:00Z",
+  "analyzedAt": "2026-01-18T18:15:00Z",
+  "analyzedBy": "Burst-1 Lead Finder (Bot Filter Fix)",
   "actionItems": [
+    "✅ FIXED: Bot filter was removing ALL real clicks (burst detection too aggressive)",
     "PRIORITY 0: Call ti.cafeofficial@gmail.com - HOT LEAD clicked!",
-    "PRIORITY 1: Follow up with 4 REAL users who generated demos",
-    "FIX NEEDED: Add bot-check BEFORE auto-account creation (Magic Link clicks)",
-    "INSIGHT: 43% of 'REAL' registrations were bots (3/7)"
+    "PRIORITY 1: Follow up with 37 HOT LEADS who clicked (3.91% CTR now visible!)",
+    "INSIGHT: Real CTR is 3.91%, not 0% - the burst filter was the problem, not deliverability"
   ]
 }

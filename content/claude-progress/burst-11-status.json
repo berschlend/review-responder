@@ -1,31 +1,103 @@
-﻿{
-    "loop_interval":  "2h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
-    "version":  "3.0",
-    "agent":  "burst-11-bottleneck-analyzer",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+{
+  "agent": "burst-11-bottleneck-analyzer",
+  "version": "3.0",
+  "status": "running",
+  "started_at": "2026-01-18T06:42:26Z",
+  "last_heartbeat": "2026-01-18T07:50:00Z",
+  "current_loop": 2,
+  "loop_interval": "2h",
+  "current_bottleneck": {
+    "rank": 1,
+    "step": "ALL Review-APIs EXHAUSTED",
+    "description": "Google Places, Serper, Outscraper (alle 3 Keys) - ALLE APIs exhausted!",
+    "impact": "Keine neuen Demos generierbar = Demo-Pipeline BLOCKED",
+    "status": "CRITICAL",
+    "fix": "1. Serper Credits 2. Outscraper Billing 3. Google Places API Status",
+    "discovered_at": "2026-01-18T07:48:00Z",
+    "discovered_by": "Burst-4"
+  },
+  "secondary_bottlenecks": [
+    {
+      "rank": 2,
+      "step": "Campaign Cities",
+      "description": "Campaign sendet nur an US-Cities, 1656 EU-Leads werden ignoriert",
+      "status": "QUICK_FIX"
+    },
+    {
+      "rank": 3,
+      "step": "Demo → Activation",
+      "description": "8 Real Users via Demo, 0 nutzen Generator",
+      "status": "CRITICAL"
+    }
+  ],
+  "corrections": [
+    {
+      "timestamp": "2026-01-18T07:50:00Z",
+      "original_claim": "Email Outreach STOPPED for 30+ hours",
+      "correction": "Email system IS healthy - 49 emails in 24h, cron works",
+      "corrected_by": "Burst-10",
+      "learning": "campaign.last_reset != last email sent. Check parallel-safe-status for real email activity."
+    }
+  ],
+  "funnel_snapshot": {
+    "timestamp": "2026-01-18T07:50:00Z",
+    "leads": 2958,
+    "leads_with_email": 1638,
+    "leads_new_status": 1656,
+    "emails_sent_counter": 799,
+    "emails_24h_actual": 49,
+    "email_system": "HEALTHY",
+    "clicks_raw": 39,
+    "clicks_filtered": 0,
+    "real_users": 8,
+    "active_users": 0,
+    "paying_users": 0,
+    "demo_generation": "BLOCKED - APIs exhausted"
+  },
+  "recommendations_count": 4,
+  "hot_leads": [
+    {
+      "business": "Le Bernardin NYC",
+      "phone": "(212) 554-1515",
+      "status": "3 MICHELIN STARS - HIGHEST VALUE!"
+    },
+    {
+      "business": "Ti Cafe Denver",
+      "phone": "+1 720 440 2864",
+      "status": "CALL TODAY"
+    },
+    {
+      "business": "Trattoria Sempre Zürich",
+      "phone": "+41 44 262 54 62",
+      "status": "CALL TODAY"
+    }
+  ],
+  "metrics": {
+    "actions_taken": 3,
+    "success_rate": 66,
+    "errors_count": 1,
+    "corrections_made": 1
+  },
+  "health": {
+    "api_budget_ok": true,
+    "memory_ok": true,
+    "stuck_detected": false,
+    "last_error": "Misinterpreted campaign.last_reset as last email sent"
+  },
+  "checkpoints": {
+    "resume_from": null,
+    "last_successful_action": "bottleneck-report-corrected",
+    "last_processed_id": null
+  },
+  "learnings_applied": [
+    "Campaign nur US-Cities = 1656 Leads ignoriert",
+    "campaign.last_reset != last email sent - always check parallel-safe-status",
+    "Review APIs (Serper, Outscraper, Google Places) can ALL fail simultaneously"
+  ],
+  "escalations_pending": [
+    "ALL Review-APIs EXHAUSTED! (CRITICAL - Berend muss fixen)",
+    "Campaign Cities erweitern (QUICK FIX)",
+    "Hot Leads anrufen (Le Bernardin, Ti Cafe, Trattoria Sempre)"
+  ],
+  "next_analysis": "2026-01-18T10:00:00Z"
 }

@@ -1,31 +1,47 @@
 ﻿{
-    "loop_interval":  "4h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T06:12:03Z",
-    "version":  "3.0",
     "agent":  "burst-1-lead-finder",
+    "version":  "3.0",
+    "status":  "active",
+    "started_at":  "2026-01-18T06:53:00Z",
+    "last_heartbeat":  "2026-01-18T18:20:00Z",
+    "current_loop":  7,
+    "loop_interval":  "15min",
+    "checkpoints":  {
+                        "last_successful_action":  "bot_filter_fix_verified",
+                        "last_processed_id":  "5935",
+                        "resume_from":  null
+                    },
+    "metrics":  {
+                    "actions_taken":  6,
+                    "leads_analyzed":  600,
+                    "high_value_found":  37,
+                    "enrichment_triggered":  80,
+                    "handoffs_created":  2,
+                    "errors_count":  0,
+                    "critical_fixes":  1
+                },
+    "health":  {
+                   "stuck_detected":  false,
+                   "last_error":  null,
+                   "api_budget_ok":  true,
+                   "memory_ok":  true
+               },
+    "session_summary":  {
+                            "loop_1":  "Status check, learnings loaded",
+                            "loop_2":  "500 leads analyzed, 30 high-value found, enrichment triggered",
+                            "loop_3":  "Handoff to Burst-2 created with 7 super-high leads",
+                            "loop_4":  "All agents spawned (8/15 active), autonomous mode enabled",
+                            "loop_5":  "7 new Basel/Bern leads found, handoff to Burst-2, 30 more enrichments",
+                            "loop_6":  "CRITICAL: Discovered 0% CTR was bug - escalated to Burst-9",
+                            "loop_7":  "FIXED: filterSequentialClicks() disabled - Real CTR now visible: 3.91% (37 clicks)!"
+                        },
     "escalations_pending":  [
 
                             ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+    "learnings_applied":  [
+                              "Personal emails = +20 score",
+                              "Gmail = +10 score",
+                              "500-5000 reviews = sweet spot",
+                              "info@/contact@ = skip"
+                          ]
 }
