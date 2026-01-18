@@ -5921,26 +5921,26 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     // Use custom type if "Other" is selected, otherwise use dropdown value
     const finalBusinessType = businessType === 'Other' ? customBusinessType.trim() : businessType;
 
-    // Build responseStyle from custom instructions
-    const responseStyle = buildResponseStyle(alwaysMention, neverSay, selectedTone);
-
     setLoading(true);
     try {
+      // Save profile with generated business context
       await api.put('/auth/profile', {
         businessName: businessName.trim(),
         businessType: finalBusinessType,
-        responseStyle: responseStyle || undefined,
+        businessContext: generatedContext || undefined,
       });
       updateUser({
         businessName: businessName.trim(),
         businessType: finalBusinessType,
-        responseStyle: responseStyle || undefined,
+        businessContext: generatedContext || undefined,
       });
       // Complete onboarding
       await api.put('/auth/complete-onboarding');
       updateUser({ onboardingCompleted: true });
-      toast.success('Setup complete! Your AI is personalized.');
+      toast.success('Setup complete! Head to Generator to create responses.');
       onComplete?.();
+      // Navigate to generator so user can immediately use their personalized AI
+      navigate('/generator');
     } catch (error) {
       console.error('Failed to save business profile:', error);
       toast.error('Failed to save profile');
@@ -6186,131 +6186,109 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
             </div>
           )}
 
-          {/* Step 2: Custom Instructions */}
+          {/* Step 2: Keywords + Preview */}
           {currentStep === 2 && (
             <div>
               <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-                Customize your AI voice
+                Describe your business
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '20px', fontSize: '14px' }}>
-                Tell the AI what to emphasize and avoid in responses
+                Add keywords and see how your AI will respond to reviews
               </p>
 
-              {/* Tone Selection */}
-              <div className="form-group" style={{ marginBottom: '20px' }}>
-                <label className="form-label">Response Tone</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {[
-                    { value: 'professional', label: 'Professional', icon: '💼' },
-                    { value: 'friendly', label: 'Friendly', icon: '😊' },
-                    { value: 'casual', label: 'Casual', icon: '👋' },
-                  ].map(tone => (
-                    <button
-                      key={tone.value}
-                      type="button"
-                      onClick={() => setSelectedTone(tone.value)}
-                      style={{
-                        flex: 1,
-                        padding: '12px 8px',
-                        border:
-                          selectedTone === tone.value
-                            ? '2px solid var(--primary)'
-                            : '1px solid var(--gray-200)',
-                        borderRadius: '8px',
-                        background: selectedTone === tone.value ? 'var(--primary-50)' : 'white',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      <span style={{ fontSize: '20px' }}>{tone.icon}</span>
-                      <span
-                        style={{
-                          fontSize: '13px',
-                          fontWeight: selectedTone === tone.value ? '600' : '400',
-                          color: selectedTone === tone.value ? 'var(--primary)' : 'var(--gray-700)',
-                        }}
-                      >
-                        {tone.label}
-                      </span>
-                    </button>
-                  ))}
+              {/* Keywords Input */}
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label">
+                  Keywords about your business
+                </label>
+                <textarea
+                  className="form-input"
+                  placeholder="e.g., family-owned since 1985, authentic Italian recipes, fresh ingredients daily, cozy atmosphere, outdoor seating"
+                  value={keywords}
+                  onChange={e => setKeywords(e.target.value)}
+                  rows={3}
+                  style={{ resize: 'vertical', minHeight: '80px' }}
+                />
+                <p style={{ fontSize: '12px', color: 'var(--gray-500)', margin: '4px 0 0 0' }}>
+                  What makes your business special? The AI will use these in responses.
+                </p>
+              </div>
+
+              {/* Generate Preview Button */}
+              {!sampleResponse && (
+                <button
+                  className="btn btn-primary"
+                  onClick={generateBusinessContext}
+                  disabled={generatingContext || !keywords.trim()}
+                  style={{ width: '100%', marginBottom: '20px' }}
+                >
+                  {generatingContext ? (
+                    <>
+                      <span className="loading-spinner" style={{ width: '16px', height: '16px', marginRight: '8px' }} />
+                      {loadingStep || 'Generating...'}
+                    </>
+                  ) : (
+                    'Generate Preview'
+                  )}
+                </button>
+              )}
+
+              {/* Preview Section */}
+              {sampleResponse && (
+                <div style={{ marginTop: '16px' }}>
+                  <div
+                    style={{
+                      background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                      border: '1px solid #f59e0b',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <p style={{ fontSize: '12px', fontWeight: '600', color: '#92400e', margin: '0 0 6px 0' }}>
+                      Sample Review:
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#78350f', margin: 0, fontStyle: 'italic' }}>
+                      "{sampleReview}"
+                    </p>
+                  </div>
+
+                  <div
+                    style={{
+                      background: 'linear-gradient(135deg, #d1fae5, #a7f3d0)',
+                      border: '1px solid #10b981',
+                      borderRadius: '8px',
+                      padding: '12px',
+                    }}
+                  >
+                    <p style={{ fontSize: '12px', fontWeight: '600', color: '#065f46', margin: '0 0 6px 0' }}>
+                      Your AI Response:
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#064e3b', margin: 0 }}>
+                      {sampleResponse}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setSampleResponse('');
+                      setSampleReview('');
+                      setGeneratedContext('');
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--primary)',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      marginTop: '12px',
+                      padding: 0,
+                    }}
+                  >
+                    Regenerate with different keywords
+                  </button>
                 </div>
-              </div>
-
-              {/* Always Mention */}
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label className="form-label">
-                  Always mention{' '}
-                  <span style={{ color: 'var(--gray-400)', fontWeight: '400' }}>(optional)</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g., 24/7 support, free consultation, family-owned"
-                  value={alwaysMention}
-                  onChange={e => setAlwaysMention(e.target.value)}
-                />
-                <p
-                  style={{
-                    fontSize: '12px',
-                    color: 'var(--gray-500)',
-                    margin: '4px 0 0 0',
-                  }}
-                >
-                  Comma-separated phrases to include in responses
-                </p>
-              </div>
-
-              {/* Never Say */}
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label className="form-label">
-                  Never say{' '}
-                  <span style={{ color: 'var(--gray-400)', fontWeight: '400' }}>(optional)</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g., sorry, discount, compensation"
-                  value={neverSay}
-                  onChange={e => setNeverSay(e.target.value)}
-                />
-                <p
-                  style={{
-                    fontSize: '12px',
-                    color: 'var(--gray-500)',
-                    margin: '4px 0 0 0',
-                  }}
-                >
-                  Words or phrases to avoid in responses
-                </p>
-              </div>
-
-              {/* Preview hint */}
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, var(--primary-50), #eff6ff)',
-                  border: '1px solid var(--primary-200)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  marginTop: '8px',
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: '13px',
-                    color: 'var(--primary-700)',
-                    margin: 0,
-                    textAlign: 'center',
-                  }}
-                >
-                  💡 These settings are applied to all your responses. You can change them anytime
-                  in Settings.
-                </p>
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -6355,7 +6333,12 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
               Continue
             </button>
           ) : (
-            <button className="btn btn-primary" onClick={nextStep} disabled={loading}>
+            <button
+              className="btn btn-primary"
+              onClick={nextStep}
+              disabled={loading || !sampleResponse}
+              title={!sampleResponse ? 'Generate a preview first' : ''}
+            >
               {loading ? 'Saving...' : 'Finish Setup →'}
             </button>
           )}
