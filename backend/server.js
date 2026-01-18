@@ -9665,7 +9665,7 @@ app.get('/api/cron/indexnow', async (req, res) => {
 
     // Add all blog posts
     const blogPosts = await dbAll(
-      `SELECT slug FROM blog_posts WHERE is_published = true ORDER BY published_at DESC LIMIT 50`
+      `SELECT slug FROM blog_articles WHERE is_published = TRUE AND slug IS NOT NULL ORDER BY published_at DESC LIMIT 50`
     );
     blogPosts.forEach(post => {
       urlList.push(`https://tryreviewresponder.com/blog/${post.slug}`);
