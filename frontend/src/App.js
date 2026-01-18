@@ -3513,7 +3513,7 @@ const LandingPage = () => {
               marginBottom: '32px',
             }}
           >
-            {/* Competitor Response */}
+            {/* Competitor Response - Real template from industry guides */}
             <div
               style={{
                 padding: '24px',
@@ -3532,7 +3532,7 @@ const LandingPage = () => {
               >
                 <X size={20} color="#ef4444" />
                 <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>
-                  Other AI Tools
+                  Typical AI Tools
                 </span>
               </div>
               <p
@@ -3544,10 +3544,10 @@ const LandingPage = () => {
                   marginBottom: '12px',
                 }}
               >
-                "Hi [Reviewer Name], thank you for taking the time to share your comments with us.
-                Your feedback is appreciated as it helps us to improve. We are sorry to hear that
-                your last dining experience did not meet your expectations. Our team will work
-                harder to guarantee our future guests receive prompt and attentive service..."
+                "Dear Customer, we're genuinely sorry to hear about your experience. Thank you for
+                bringing this to our attention. Your feedback is appreciated as it helps us
+                improve. We would love the opportunity to make things right. Please contact us so
+                we can fix this."
               </p>
               <div
                 style={{
@@ -3557,15 +3557,15 @@ const LandingPage = () => {
                   color: 'var(--text-muted)',
                 }}
               >
-                <span>68 words</span>
+                <span>47 words</span>
                 <span>•</span>
                 <span>Generic</span>
                 <span>•</span>
-                <span>Template-y</span>
+                <span>No specifics</span>
               </div>
             </div>
 
-            {/* ReviewResponder Response */}
+            {/* ReviewResponder Response - REAL API output */}
             <div
               style={{
                 padding: '24px',
@@ -3584,6 +3584,18 @@ const LandingPage = () => {
               >
                 <Check size={20} color="var(--primary)" />
                 <span style={{ fontWeight: '600', color: 'var(--primary)' }}>ReviewResponder</span>
+                <span
+                  style={{
+                    fontSize: '0.65rem',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    color: '#059669',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontWeight: '600',
+                  }}
+                >
+                  REAL OUTPUT
+                </span>
               </div>
               <p
                 style={{
@@ -3594,9 +3606,8 @@ const LandingPage = () => {
                   marginBottom: '12px',
                 }}
               >
-                "45 minute wait and cold food - that's not what we're about. I'm talking to the
-                team today. If you're willing to give us another shot, ask for me personally. -
-                Mario"
+                "That's unacceptable on every level. Cold food and poor service aren't what we
+                stand for - let me fix this personally."
               </p>
               <div
                 style={{
@@ -3607,11 +3618,11 @@ const LandingPage = () => {
                   fontWeight: '500',
                 }}
               >
-                <span>32 words</span>
+                <span>22 words</span>
                 <span>•</span>
-                <span>Personal</span>
+                <span>Direct</span>
                 <span>•</span>
-                <span>Action-oriented</span>
+                <span>Takes ownership</span>
               </div>
             </div>
           </div>
