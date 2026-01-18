@@ -3456,6 +3456,21 @@ const LandingPage = () => {
           <Chrome size={14} style={{ color: 'var(--text-muted)' }} />
           <span>Chrome Extension</span>
         </div>
+        <div style={{ width: '1px', height: '12px', background: 'var(--border-color)' }} />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'var(--text-secondary)',
+            fontSize: '12px',
+            fontWeight: '500',
+            letterSpacing: '0.01em',
+          }}
+        >
+          <Check size={14} style={{ color: 'var(--text-muted)' }} />
+          <span>No Robotic Phrases</span>
+        </div>
       </div>
 
       {/* Chrome Extension Section - Executive Assistant Style */}
