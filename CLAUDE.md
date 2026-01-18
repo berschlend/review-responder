@@ -398,6 +398,18 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Sonnet > Opus fuer Prompt-Following (18.01.2026)
+**Problem:** Testimonial-Antworten mit Opus 4.5 klangen "off" - Opus interpretierte Dinge rein die nicht im Original standen (z.B. "back to running your business" bei einem Review der das nie erwaehnte).
+**Root Cause:** Opus ist "zu smart" - es over-interprets und fuegt Kontext hinzu. Unsere Prompts wurden fuer Sonnet geschrieben/getestet.
+**Loesung:** Model-Strategie nach Use Case:
+| Use Case | Model | Warum |
+|----------|-------|-------|
+| Business Context generieren | Opus 4.5 | Einmalig, kreativ, foundational |
+| Response Style definieren | Opus 4.5 | Einmalig, setzt den Ton |
+| Actual Responses (Demo, Testimonials) | **Sonnet 4** | Folgt Prompts praezise |
+| Regulaere User Responses | Sonnet/Haiku | Prompt-following |
+**Lesson:** Groesser ≠ Besser. Opus fuer kreative/foundationale Tasks, Sonnet fuer praezises Prompt-Following. Bei `/product-refine` Context Engineering IMMER auf **Sonnet 4** (`claude-sonnet-4-20250514`) optimieren - das ist unser Production Model fuer Responses!
+
 ### Dynamic Agent Priority Control via focus-update (18.01.2026)
 **Problem:** Agents konnten `current-focus.json` lesen (focus-read), aber nicht updaten. Burst-11 konnte z.B. nicht automatisch Burst-7 aktivieren wenn User am Limit sind.
 **Loesung:** `focus-update` Action in `agent-helpers.ps1` implementiert:

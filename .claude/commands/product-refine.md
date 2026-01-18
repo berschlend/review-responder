@@ -7,6 +7,26 @@
 
 ---
 
+## TARGET MODEL: SONNET 4 (KRITISCH!)
+
+**Alle Response-Prompts sind fuer `claude-sonnet-4-20250514` optimiert!**
+
+| Use Case | Model | Warum |
+|----------|-------|-------|
+| Business Context (einmalig) | Opus 4.5 | Kreativ, foundational |
+| **Response Generation** | **Sonnet 4** | Prompt-following, praezise |
+| Demo Responses | **Sonnet 4** | Prompt-following |
+| Testimonial Responses | **Sonnet 4** | Prompt-following |
+
+**Warum Sonnet statt Opus?**
+- Opus "over-interprets" - fuegt Kontext hinzu der nicht im Review steht
+- Sonnet folgt Prompts praeziser
+- Unsere XML-Struktur, Examples, Slop-Listen wurden fuer Sonnet getestet
+
+**Bei Prompt-Aenderungen:** Immer mit Sonnet 4 testen, NICHT mit Opus!
+
+---
+
 ## OVERVIEW
 
 This skill implements **Continuous Learning** for ReviewResponder's AI response quality.
