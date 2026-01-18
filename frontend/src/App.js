@@ -3473,6 +3473,207 @@ const LandingPage = () => {
         </div>
       </div>
 
+      {/* AI Comparison Section - Why We're Different */}
+      <section
+        style={{
+          padding: '64px 20px',
+          background: 'linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
+          borderBottom: '1px solid var(--border-color)',
+        }}
+      >
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <h2
+            style={{
+              textAlign: 'center',
+              marginBottom: '12px',
+              fontSize: '1.75rem',
+              fontWeight: '700',
+              color: 'var(--text-primary)',
+            }}
+          >
+            Why Your Reviews Sound <span style={{ color: 'var(--primary)' }}>Different</span> With Us
+          </h2>
+          <p
+            style={{
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              marginBottom: '40px',
+              fontSize: '1rem',
+            }}
+          >
+            We tested every competitor. They all sound like AI.
+          </p>
+
+          {/* Side-by-Side Response Comparison */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '24px',
+              marginBottom: '32px',
+            }}
+          >
+            {/* Competitor Response */}
+            <div
+              style={{
+                padding: '24px',
+                background: 'var(--bg-tertiary)',
+                borderRadius: '12px',
+                border: '1px solid var(--border-color)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '16px',
+                }}
+              >
+                <X size={20} color="#ef4444" />
+                <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>
+                  Other AI Tools
+                </span>
+              </div>
+              <p
+                style={{
+                  fontStyle: 'italic',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.9rem',
+                  lineHeight: '1.6',
+                  marginBottom: '12px',
+                }}
+              >
+                "Hi [Reviewer Name], thank you for taking the time to share your comments with us.
+                Your feedback is appreciated as it helps us to improve. We are sorry to hear that
+                your last dining experience did not meet your expectations. Our team will work
+                harder to guarantee our future guests receive prompt and attentive service..."
+              </p>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  fontSize: '0.75rem',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                <span>68 words</span>
+                <span>•</span>
+                <span>Generic</span>
+                <span>•</span>
+                <span>Template-y</span>
+              </div>
+            </div>
+
+            {/* ReviewResponder Response */}
+            <div
+              style={{
+                padding: '24px',
+                background: 'rgba(79, 70, 229, 0.05)',
+                borderRadius: '12px',
+                border: '2px solid var(--primary)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '16px',
+                }}
+              >
+                <Check size={20} color="var(--primary)" />
+                <span style={{ fontWeight: '600', color: 'var(--primary)' }}>ReviewResponder</span>
+              </div>
+              <p
+                style={{
+                  fontStyle: 'italic',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.9rem',
+                  lineHeight: '1.6',
+                  marginBottom: '12px',
+                }}
+              >
+                "45 minute wait and cold food - that's not what we're about. I'm talking to the
+                team today. If you're willing to give us another shot, ask for me personally. -
+                Mario"
+              </p>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  fontSize: '0.75rem',
+                  color: 'var(--primary)',
+                  fontWeight: '500',
+                }}
+              >
+                <span>32 words</span>
+                <span>•</span>
+                <span>Personal</span>
+                <span>•</span>
+                <span>Action-oriented</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Context Badge */}
+          <div
+            style={{
+              textAlign: 'center',
+              marginBottom: '32px',
+              fontSize: '0.8rem',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span
+              style={{
+                background: 'var(--bg-secondary)',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+              }}
+            >
+              Same 2-star review • "Waited 45 minutes for food, arrived cold"
+            </span>
+          </div>
+
+          {/* Feature Pills */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px',
+              flexWrap: 'wrap',
+            }}
+          >
+            {[
+              { icon: '🚫', text: '45+ AI phrases blocked' },
+              { icon: '🏭', text: '31 industries supported' },
+              { icon: '⭐', text: 'Rating-specific strategies' },
+              { icon: '💰', text: 'Flat $29/mo pricing' },
+            ].map((pill, i) => (
+              <span
+                key={i}
+                style={{
+                  padding: '8px 14px',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  color: 'var(--text-secondary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span>{pill.icon}</span>
+                <span>{pill.text}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Chrome Extension Section - Executive Assistant Style */}
       <section id="demo" className="container" style={{ marginBottom: '48px', marginTop: '48px' }}>
         <div
