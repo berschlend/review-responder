@@ -8409,11 +8409,11 @@ Rewrite until it sounds like a real person.
 
 Write ${ratingStrategy.length}. Be specific. Sound human.`;
 
-  // Try Claude Opus 4.5 for BEST quality demos (first impression matters!)
-  // Latency is irrelevant here - demos are pre-generated
+  // Use Sonnet for demos - prompts optimized for Sonnet, Opus over-interprets
+  // Opus is used for foundational stuff (business context), Sonnet for actual responses
   try {
     const response = await anthropic.messages.create({
-      model: 'claude-opus-4-5-20251101',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
       system: systemMessage,
       messages: [{ role: 'user', content: userMessage }],
@@ -8421,7 +8421,7 @@ Write ${ratingStrategy.length}. Be specific. Sound human.`;
 
     logApiCall({
       provider: 'anthropic',
-      model: 'claude-opus-4-5-20251101',
+      model: 'claude-sonnet-4-20250514',
       endpoint: '/api/demo/generate',
       inputTokens: response.usage?.input_tokens || 0,
       outputTokens: response.usage?.output_tokens || 0,
