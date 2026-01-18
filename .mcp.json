@@ -2,8 +2,8 @@
   "mcpServers": {
     "gemini": {
       "type": "stdio",
-      "command": "gemini-mcp",
-      "args": []
+      "command": "cmd",
+      "args": ["/c", "set GEMINI_API_KEY=AIzaSyBbANWPv3uaxDiEUHnxZv_sRd9QM7vjXaw && gemini-mcp"]
     },
     "memory": {
       "type": "stdio",
@@ -14,11 +14,6 @@
       "type": "stdio",
       "command": "cmd",
       "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
-    },
-    "fetch": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-fetch"]
     },
     "filesystem": {
       "type": "stdio",
@@ -35,45 +30,20 @@
       "command": "cmd",
       "args": ["/c", "npx", "-y", "puppeteer-mcp-server"]
     },
-    "brave-search": {
+    "fetch": {
       "type": "stdio",
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-brave-search"]
-    },
-    "youtube": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-youtube"]
-    },
-    "postgres": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-postgres"]
+      "args": ["/c", "npx", "-y", "mcp-fetch"]
     },
     "github": {
       "type": "stdio",
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-github"]
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-github"]
     },
-    "google-maps": {
+    "notion": {
       "type": "stdio",
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-google-maps"]
-    },
-    "slack": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-slack"]
-    },
-    "linear": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-linear"]
-    },
-    "sentry": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@anthropic-ai/mcp-sentry"]
+      "args": ["/c", "npx", "-y", "@notionhq/notion-mcp-server"]
     }
   }
 }

@@ -20450,7 +20450,8 @@ app.get('/api/cron/enrich-g2-leads', async (req, res) => {
 });
 
 // GET /api/cron/enrich-outreach-leads - Find emails for ALL leads with website but no email
-// Created: 18.01.2026 - Processes 100 leads per call (vs 30 in daily-outreach)
+// Created: 18.01.2026 - ASYNC: Responds immediately, runs in background
+// Updated: 18.01.2026 - Made async to avoid Render timeout (30s)
 app.get('/api/cron/enrich-outreach-leads', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (
@@ -20460,16 +20461,18 @@ app.get('/api/cron/enrich-outreach-leads', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const limit = parseInt(req.query.limit) || 100;
-  const results = {
-    leads_checked: 0,
-    emails_found: 0,
-    by_source: {},
-    errors: 0,
-  };
+  const limit = parseInt(req.query.limit) || 30; // Default 30 to stay under timeout
+  const sync = req.query.sync === 'true'; // Optional: wait for result (for testing)
 
   try {
-    // Find ALL leads with website but no email (not just G2)
+    // Count how many leads need enrichment
+    const countResult = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NULL AND website IS NOT NULL AND status IN ($1, $2)',
+      ['new', 'needs_enrichment']
+    );
+    const totalNeedingEmail = parseInt(countResult?.count || 0);
+
+    // Find leads to enrich (prioritize high-review leads)
     const leadsNeedingEmail = await dbAll(`
       SELECT id, business_name, website, lead_type, contact_name, business_type
       FROM outreach_leads
@@ -20484,7 +20487,27 @@ app.get('/api/cron/enrich-outreach-leads', async (req, res) => {
       LIMIT $1
     `, [limit]);
 
-    console.log(`🔍 Enriching ${leadsNeedingEmail.length} leads...`);
+    // Respond immediately with job info (unless sync mode)
+    if (!sync) {
+      res.json({
+        success: true,
+        message: `Enrichment started for ${leadsNeedingEmail.length} leads`,
+        leads_to_process: leadsNeedingEmail.length,
+        total_needing_email: totalNeedingEmail,
+        estimated_time: `${Math.ceil(leadsNeedingEmail.length * 3 / 60)} minutes`,
+        note: 'Running in background. Check logs or call with ?sync=true to wait for result.',
+      });
+    }
+
+    // Run enrichment (continues after response sent)
+    const results = {
+      leads_checked: 0,
+      emails_found: 0,
+      by_source: {},
+      errors: 0,
+    };
+
+    console.log(`🔍 Enriching ${leadsNeedingEmail.length} leads (async mode: ${!sync})...`);
 
     for (const lead of leadsNeedingEmail) {
       results.leads_checked++;
@@ -20530,14 +20553,17 @@ app.get('/api/cron/enrich-outreach-leads', async (req, res) => {
       ? Math.round((results.emails_found / results.leads_checked) * 100)
       : 0;
 
-    res.json({
-      success: true,
-      ...results,
-      success_rate: `${successRate}%`,
-      remaining_without_email: await dbGet(
-        'SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NULL AND website IS NOT NULL'
-      ).then(r => parseInt(r?.count || 0)),
-    });
+    console.log(`✅ Enrichment complete: ${results.emails_found}/${results.leads_checked} emails found (${successRate}%)`);
+
+    // If sync mode, send result now
+    if (sync) {
+      res.json({
+        success: true,
+        ...results,
+        success_rate: `${successRate}%`,
+        remaining_without_email: totalNeedingEmail - results.emails_found,
+      });
+    }
   } catch (error) {
     console.error('Enrich outreach leads error:', error);
     res.status(500).json({

@@ -2,8 +2,17 @@
     "locks":  {
 
               },
-    "lastUpdated":  "2026-01-18T00:09:37.1685552+00:00",
+    "lastUpdated":  "2026-01-18T00:47:28.5042075+00:00",
     "sessions":  {
+                     "RR":  {
+                                "workingOn":  {
 
+                                              },
+                                "lastHeartbeat":  "2026-01-18T00:47:28.4881376+00:00",
+                                "startedAt":  "2026-01-18T00:43:03.5081409+00:00",
+                                "currentTask":  "",
+                                "activity":  "Running command",
+                                "pid":  20160
+                            }
                  }
 }
