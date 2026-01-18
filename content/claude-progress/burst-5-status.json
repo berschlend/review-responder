@@ -3,8 +3,8 @@
     "learnings_applied":  [
 
                           ],
-    "current_loop":  1,
-    "started_at":  "2026-01-18T02:12:00Z",
+    "current_loop":  0,
+    "started_at":  "2026-01-18T02:26:56Z",
     "version":  "3.0",
     "agent":  "burst-5-hot-lead-chaser",
     "escalations_pending":  [
@@ -26,6 +26,6 @@
                     "errors_count":  0,
                     "actions_taken":  0
                 },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-18T02:12:51Z"
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

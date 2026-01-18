@@ -1,20 +1,19 @@
 {
     "agent": "burst-4-demo-generator",
     "version": "3.0",
-    "status": "running",
+    "status": "idle",
     "started_at": "2026-01-18T14:30:00Z",
-    "last_heartbeat": "2026-01-18T15:00:00Z",
-    "current_loop": 2,
+    "last_heartbeat": "2026-01-18T15:15:00Z",
+    "current_loop": 3,
     "loop_interval": "15m",
     "metrics": {
-        "demos_generated_today": 33,
+        "demos_generated_session": 33,
         "demos_total": 815,
-        "cache_hits": 0,
-        "api_calls": 118,
+        "leads_processed": 670,
+        "enrichment_triggered": 30,
         "api_cost_today": 1.53,
         "api_cost_month": 28.91,
-        "success_rate": 100,
-        "actions_taken": 7
+        "success_rate": 100
     },
     "health": {
         "api_budget_ok": true,
@@ -25,25 +24,14 @@
     },
     "checkpoints": {
         "resume_from": null,
-        "last_successful_action": "generate-demos-batch",
+        "last_successful_action": "idle-all-leads-processed",
         "last_processed_id": null
     },
     "escalations_pending": [],
     "learnings_applied": [
         "Cache First API Second",
-        "Dental practices with bad reviews = HIGH PAIN",
-        "Smaller batch sizes avoid Render timeout"
+        "Smaller batch sizes avoid Render timeout",
+        "Async enrichment pattern works well"
     ],
-    "session_summary": {
-        "demos_generated": 33,
-        "leads_processed": 570,
-        "pending_demo_emails": 0,
-        "notable_demos": [
-            "IMLAUER Sky - Bar & Restaurant",
-            "Munich Marriott Hotel",
-            "The Caledonian Edinburgh",
-            "Alinea",
-            "Hamburg Marriott Hotel"
-        ]
-    }
+    "notes": "All available leads have demos. Waiting for new leads or enrichment to complete."
 }

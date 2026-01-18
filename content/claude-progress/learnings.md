@@ -813,3 +813,23 @@ RICHTIGE Interpretation:
 ### [2026-01-18 02:05] Burst-5
 - Bot filter shows 100% of 39 clicks were bots. Real hot leads are REGISTERED users who never used the product - 16 found and emailed.
 
+
+### [2026-01-18 02:23] Burst-2
+- 50 Emails via Brevo mit 0% Bounce Rate - DACH Region (AT/CH/DE/NL) hat gute Email-Adressen
+
+
+### [2026-01-18 02:23] Burst-2
+- Personal Emails (dominik@, der@, gmail) sind HIGH VALUE - wahrscheinlich Owner/Entscheider erreichbar
+
+
+### [2026-01-18 02:24] Burst-2
+- Accor Corporate Emails (@accor.com) konsequent uebersprungen - Enterprise Pattern = Low Conversion per Learnings
+
+
+### [2026-01-18 02:24] Burst-5
+- Bot filter shows 100% of 39 clicks were security scanners. Real hot leads = registered users who never used product (16 found). Onboarding emails to inactive users more valuable than chasing fake clicks.
+
+
+### [2026-01-18 02:24] Burst-5
+- Leads with 2 follow-ups + no conversion need personal touch (phone call) not more emails. Documented 5 high-value leads (23k+ reviews) for Berend to call.
+

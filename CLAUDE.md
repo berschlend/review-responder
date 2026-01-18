@@ -179,8 +179,22 @@ RICHTIG: "1.902 TEST-Emails unter Sandbox → Noch keine validen Daten"
 3. **HIGH-PAIN Leads priorisieren** - 500-5000 Reviews = PAIN = VALUE!
 4. **Telefon-Outreach parallel** - Fuer Hot Leads (bereits registriert/geklickt)
 
+### Email Provider Stack (18.01 Update)
+
+| Provider | Limit/Tag | Status | Verwendung |
+|----------|-----------|--------|------------|
+| **Mailjet** | 200 | ✅ NEU | Cold Outreach |
+| **MailerSend** | 100 | ✅ | Fallback |
+| **Resend** | 100 | ✅ | Transactional |
+| **SES** | 200 | ⚠️ Sandbox | Nach Production: 50k/Tag |
+| **Brevo** | 0 | ❌ Credits aufgebraucht | - |
+
+**Mailjet Setup (18.01):**
+- Sender verifiziert: `support@tryreviewresponder.com`
+- Keys in Render: `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`
+
 ### Email Outreach Fixed (18.01 Abend)
-- ✅ **Brevo funktioniert!** (300/Tag, getestet via `/api/admin/test-email`)
+- ✅ **Mailjet aktiviert!** (200/Tag)
 - ✅ **5 Super-High Leads importiert** (Score 80-105, 1500-6000 Reviews)
 - ✅ **5 Cold Emails gesendet** via send-cold-email Endpoint
 - ✅ **Neuer Enrichment Endpoint:** `/api/cron/enrich-outreach-leads?limit=100`

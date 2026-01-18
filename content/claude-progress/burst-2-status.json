@@ -1,47 +1,31 @@
-{
-  "agent": "burst-2-cold-emailer",
-  "version": "3.0",
-  "status": "completed",
-  "started_at": "2026-01-18T19:30:00Z",
-  "last_heartbeat": "2026-01-18T20:12:00Z",
-  "current_loop": 1,
-  "loop_interval": "6h",
-  "checkpoints": {
-    "last_successful_action": "sent_50_emails",
-    "last_processed_id": 6114,
-    "resume_from": null
-  },
-  "metrics": {
-    "emails_sent_today": 50,
-    "emails_sent_session": 50,
-    "actions_taken": 50,
-    "errors_count": 0,
-    "success_rate": 100
-  },
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "api_budget_ok": true,
-    "memory_ok": true
-  },
-  "learnings_applied": [
-    "Star rating in subject line",
-    "No discount in cold emails",
-    "Brevo provider 100% success",
-    "Personal emails prioritized",
-    "DACH region focus"
-  ],
-  "escalations_pending": [],
-  "session_summary": {
-    "high_value_leads_contacted": [
-      "dominik@imlauer.com (3102 reviews)",
-      "eastsalzburg@gmail.com (1496 reviews)",
-      "der@paul-stube.at (1884 reviews)"
-    ],
-    "industries": {
-      "hotels": 25,
-      "restaurants": 17,
-      "dental": 8
-    }
-  }
+﻿{
+    "loop_interval":  "6h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-18T02:26:56Z",
+    "version":  "3.0",
+    "agent":  "burst-2-cold-emailer",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }
