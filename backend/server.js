@@ -176,14 +176,15 @@ async function getProviderCountsToday() {
 async function selectEmailProvider() {
   const counts = await getProviderCountsToday();
 
-  // Priority order: SES (unlimited) → Brevo (300) → MailerSend (100) → others
+  // Priority order: SES (sandbox) → Resend (100) → Brevo (0 credits!) → MailerSend (trial limit)
+  // Updated 18.01.2026: Brevo has 0 credits, MailerSend has trial recipient limit
   const providers = [
     { name: 'ses', available: sesClient !== null },
+    { name: 'resend', available: resend !== null },
     { name: 'brevo', available: brevoApi !== null },
     { name: 'mailersend', available: mailerSendClient !== null },
     { name: 'mailgun', available: mailgunClient !== null },
     { name: 'sendgrid', available: process.env.SENDGRID_API_KEY !== undefined },
-    { name: 'resend', available: resend !== null },
   ];
 
   for (const p of providers) {
@@ -196,9 +197,9 @@ async function selectEmailProvider() {
     }
   }
 
-  // All providers exhausted - use Brevo anyway (might fail with quota error)
-  console.warn('[Email] All providers at daily limit! Trying Brevo as fallback...');
-  return brevoApi ? 'brevo' : 'resend';
+  // All providers exhausted - use Resend as fallback (Brevo has 0 credits)
+  console.warn('[Email] All providers at daily limit! Trying Resend as fallback...');
+  return resend ? 'resend' : 'brevo';
 }
 
 // Email sender addresses (configurable via ENV)
