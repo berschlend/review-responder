@@ -1,0 +1,41 @@
+[
+    {
+        "message":  "Lead hat Demo angesehen, 3x geklickt!",
+        "id":  "13342554",
+        "type":  "hot-lead",
+        "createdAt":  "2026-01-18T00:54:16.8215773+00:00",
+        "claimedAt":  null,
+        "leadId":  "lead_123",
+        "claimedBy":  null,
+        "target":  "BURST-5",
+        "from":  "BURST-2",
+        "status":  "pending",
+        "priority":  "high"
+    },
+    {
+        "message":  "Dringend! Lead will kaufen!",
+        "id":  "e4172c03",
+        "type":  "hot-lead",
+        "createdAt":  "2026-01-18T00:54:51.2941121+00:00",
+        "claimedAt":  null,
+        "leadId":  "lead_456",
+        "claimedBy":  null,
+        "target":  "BURST-5",
+        "from":  "BURST-2",
+        "status":  "pending",
+        "priority":  "high"
+    },
+    {
+        "message":  "Bitte Demo-Qualitaet pruefen",
+        "id":  "e9dc4c76",
+        "type":  "quality-check",
+        "createdAt":  "2026-01-18T00:54:58.2384172+00:00",
+        "claimedAt":  null,
+        "leadId":  "",
+        "claimedBy":  null,
+        "target":  "BURST-9",
+        "from":  "BURST-4",
+        "status":  "pending",
+        "priority":  "normal"
+    }
+]

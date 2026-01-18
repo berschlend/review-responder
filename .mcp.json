@@ -1,49 +1,43 @@
 {
   "mcpServers": {
     "gemini": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "set GEMINI_API_KEY=AIzaSyBbANWPv3uaxDiEUHnxZv_sRd9QM7vjXaw && gemini-mcp"]
+      "command": "gemini-mcp",
+      "args": [],
+      "env": {
+        "GEMINI_API_KEY": "AIzaSyBbANWPv3uaxDiEUHnxZv_sRd9QM7vjXaw"
+      }
     },
     "memory": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-memory"]
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
     },
     "sequential-thinking": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     },
     "filesystem": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Berend Mainz\\Documents"]
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Berend Mainz\\Documents"]
     },
     "playwright": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@playwright/mcp"]
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp"]
     },
     "puppeteer": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "puppeteer-mcp-server"]
+      "command": "npx",
+      "args": ["-y", "puppeteer-mcp-server"]
     },
     "fetch": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "mcp-fetch"]
+      "command": "npx",
+      "args": ["-y", "@mokei/mcp-fetch"]
     },
     "github": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-github"]
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
     },
     "notion": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@notionhq/notion-mcp-server"]
+      "command": "npx",
+      "args": ["-y", "@notionhq/notion-mcp-server"]
     }
   }
 }
