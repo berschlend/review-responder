@@ -11707,7 +11707,7 @@ WHY I BUILT THIS:
 Small business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
 
 PRICING:
-- Free: 20 responses/month
+- Free: 20 responses per month (renews monthly, no credit card needed)
 - Starter $29/mo: 300 responses
 - Pro $49/mo: 800 responses + team access + bulk generation
 - Unlimited $99/mo: No limits + API
