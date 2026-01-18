@@ -3902,7 +3902,7 @@ const LandingPage = () => {
               fontStyle: 'italic',
             }}
           >
-            Built by someone who tested 10,000+ AI responses
+            Built in Germany. Works worldwide.
           </p>
           <p
             style={{
