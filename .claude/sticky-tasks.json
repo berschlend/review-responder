@@ -2,6 +2,10 @@
     "tasks":  [
                   {
                       "id":  0,
+                      "text":  "🖥️ PC NEUSTART → Desktop: PC-Schneller-Machen.bat (Rechtsklick → Als Admin) → ~2.5 GB RAM frei für 10 Claude Sessions"
+                  },
+                  {
+                      "id":  1,
                       "text":  "⏳ AWS SES Production Access PENDING - Sandbox aktiv (200/Tag, nur verifizierte Empfänger). Prüfen: AWS Console → SES → Account Dashboard"
                   },
                   {

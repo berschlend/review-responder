@@ -27,7 +27,7 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 |-------|--------|
 | `CLAUDE.md` | Core (dieses File) |
 | `.claude/rules/` | Agent-spezifische Rules |
-| `.claude/secrets.local` | Admin URLs, API Keys |
+| `.claude/secrets.local` | Admin URLs, API Keys, **DATABASE_URL** |
 | `content/claude-progress/real-user-metrics.json` | **ECHTE User-Zahlen (verifiziert)** |
 
 ### Session-Start Regel (KRITISCH!)
@@ -139,9 +139,25 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 ### REAL Metriken (18.01)
 | Metrik | Dashboard | **Realitaet** | Status |
 |--------|-----------|---------------|--------|
-| Emails gesendet | 1.902 | 1.902 | ✅ |
+| Emails gesendet | 1.902 | 1.902 (PRE-PRODUCTION!) | ⚠️ |
 | Registrierungen | 6 | 2-3 likely real | 🔄 Validierung |
 | Paying | 0 | 0 | 🎯 Ziel |
+
+### ⚠️ EMAIL SYSTEM = PRE-PRODUCTION (18.01 Insight!)
+
+**WICHTIG:** Die bisherigen Email-Metriken zaehlen NICHT weil:
+1. **SES Sandbox** - Max 200/Tag, nur verifizierte Adressen
+2. **Lead-Qualitaet** - Noch nicht optimiert (info@, Enterprise)
+3. **Email-Templates** - Im Test, nicht A/B optimiert
+4. **Bot-Detection** - Gerade erst implementiert
+
+**Echter Start:** Nach SES Production Approval (50k/Monat)
+**Antrag eingereicht:** 17.01.2026
+
+```
+FALSCH: "1.902 Emails → 0 Conversions → Cold Email funktioniert nicht"
+RICHTIG: "1.902 TEST-Emails unter Sandbox → Noch keine validen Daten"
+```
 
 ### Cold Outreach Startschwierigkeiten (GEFIXT!)
 
@@ -257,7 +273,7 @@ Claude entfernt Task aus `.claude/sticky-tasks.json`
 | **Fetch MCP** | ACTIVE | ✅ HTTP ohne Browser |
 | **Gmail MCP** | ACTIVE | ✅ Gmail API direkt |
 | **Filesystem MCP** | ACTIVE | ✅ File Ops ohne Cat/Read |
-| **Postgres MCP** | READY | ✅ DB ohne Chrome Dashboard |
+| **Postgres MCP** | **ACTIVE** | ✅ DB ohne Chrome Dashboard |
 | **Notion MCP** | READY | ✅ Notion ohne Browser |
 | **YouTube MCP** | READY | ✅ YouTube API |
 | **Brave Search** | READY | ✅ Web Search ohne Browser |

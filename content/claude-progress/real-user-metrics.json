@@ -104,7 +104,15 @@
     "emailsSent": 1902,
     "realUsersWithGeneration": 4,
     "conversionRate": "0.21%",
-    "note": "4 users actually engaged out of 1902 emails"
+    "note": "4 users actually engaged out of 1902 emails",
+    "WICHTIG_KONTEXT": "Diese Metriken zaehlen NICHT weil: (1) SES war im SANDBOX Modus (max 200/Tag, nur verifizierte Adressen), (2) Lead-Qualitaet noch nicht optimiert, (3) Email-Templates im Test, (4) Bot-Detection gerade erst implementiert. ECHTER START erst wenn SES Production (50k/Monat) aktiv!"
+  },
+  "sesStatus": {
+    "status": "SANDBOX",
+    "applicationDate": "2026-01-17",
+    "pendingProduction": true,
+    "productionCapacity": "50k/month",
+    "note": "Erst nach SES Production Approval zaehlen die Email-Metriken wirklich!"
   },
   "lastUpdated": "2026-01-18T12:00:00Z",
   "analyzedAt": "2026-01-18T12:00:00Z",

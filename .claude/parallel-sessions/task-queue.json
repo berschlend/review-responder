@@ -4,13 +4,13 @@
         "id":  "13342554",
         "type":  "hot-lead",
         "createdAt":  "2026-01-18T00:54:16.8215773+00:00",
-        "claimedAt":  null,
         "leadId":  "lead_123",
-        "claimedBy":  null,
         "target":  "BURST-5",
         "from":  "BURST-2",
-        "status":  "pending",
-        "priority":  "high"
+        "priority":  "high",
+        "status":  "claimed",
+        "claimedBy":  "BURST-5",
+        "claimedAt":  "2026-01-18T01:02:37.7647862+00:00"
     },
     {
         "message":  "Dringend! Lead will kaufen!",

@@ -38,6 +38,10 @@
     "notion": {
       "command": "npx",
       "args": ["-y", "@notionhq/notion-mcp-server"]
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://review_responder_db_user:ZSrmS3ZEY2pTaa7DmkyD4JvU4W2T4rN1@dpg-d5gjq7e3jp1c73c443sg-a.frankfurt-postgres.render.com/review_responder_db"]
     }
   }
 }

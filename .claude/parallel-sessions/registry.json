@@ -2,17 +2,17 @@
     "locks":  {
 
               },
-    "lastUpdated":  "2026-01-18T00:47:28.5042075+00:00",
+    "lastUpdated":  "2026-01-18T01:19:45.2511819+00:00",
     "sessions":  {
-                     "RR":  {
-                                "workingOn":  {
+                     "TEST-CMD":  {
+                                      "workingOn":  {
 
-                                              },
-                                "lastHeartbeat":  "2026-01-18T00:47:28.4881376+00:00",
-                                "startedAt":  "2026-01-18T00:43:03.5081409+00:00",
-                                "currentTask":  "",
-                                "activity":  "Running command",
-                                "pid":  20160
-                            }
+                                                    },
+                                      "lastHeartbeat":  "2026-01-18T01:19:11.2141071+00:00",
+                                      "startedAt":  "2026-01-18T01:19:11.1828086+00:00",
+                                      "currentTask":  "",
+                                      "activity":  "Session started",
+                                      "pid":  3404
+                                  }
                  }
 }
