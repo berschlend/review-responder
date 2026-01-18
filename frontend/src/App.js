@@ -4105,6 +4105,30 @@ const LandingPage = () => {
             Here's what your competitors' responses look like.
           </p>
 
+          {/* The Review Being Responded To */}
+          <div
+            style={{
+              textAlign: 'center',
+              marginBottom: '24px',
+              fontSize: '0.85rem',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <span
+              style={{
+                background: 'var(--bg-secondary)',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                display: 'inline-block',
+                fontStyle: 'italic',
+              }}
+            >
+              ⭐⭐⭐ "The risotto was delicious but arrived lukewarm. Waiter was friendly and gave
+              us free dessert."
+            </span>
+          </div>
+
           {/* Side-by-Side Response Comparison */}
           <div
             style={{
@@ -4261,27 +4285,6 @@ const LandingPage = () => {
                 <span>Human</span>
               </div>
             </div>
-          </div>
-
-          {/* Context Badge */}
-          <div
-            style={{
-              textAlign: 'center',
-              marginBottom: '24px',
-              fontSize: '0.8rem',
-              color: 'var(--text-muted)',
-            }}
-          >
-            <span
-              style={{
-                background: 'var(--bg-secondary)',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-              }}
-            >
-              Same 3-star review • "Risotto delicious but lukewarm. Waiter comped dessert."
-            </span>
           </div>
 
           {/* CTA Button */}
