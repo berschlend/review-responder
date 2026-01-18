@@ -17910,53 +17910,7 @@ const RestaurantReviewPage = () => {
             focus on what matters - great food and happy customers.
           </p>
 
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              background: 'white',
-              padding: '6px',
-              borderRadius: '14px',
-              maxWidth: '540px',
-              margin: '0 auto 32px',
-              boxShadow:
-                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            }}
-          >
-            <input
-              type="email"
-              placeholder="Enter your restaurant email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px',
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#ef4444',
-                color: 'white',
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#ef4444" source="restaurant_landing" />
 
           <div
             style={{
@@ -18228,53 +18182,7 @@ const HotelReviewPage = () => {
             respond professionally to every review and boost your hotel's reputation.
           </p>
 
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              background: 'white',
-              padding: '6px',
-              borderRadius: '14px',
-              maxWidth: '540px',
-              margin: '0 auto 32px',
-              boxShadow:
-                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            }}
-          >
-            <input
-              type="email"
-              placeholder="Enter your hotel email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px',
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#6366f1',
-                color: 'white',
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#6366f1" source="hotel_landing" />
 
           <div
             style={{
@@ -19831,53 +19739,7 @@ const DentistReviewPage = () => {
             respond professionally while maintaining HIPAA compliance awareness.
           </p>
 
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              background: 'white',
-              padding: '6px',
-              borderRadius: '14px',
-              maxWidth: '540px',
-              margin: '0 auto 32px',
-              boxShadow:
-                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            }}
-          >
-            <input
-              type="email"
-              placeholder="Enter your practice email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px',
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#2E7D32',
-                color: 'white',
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#2E7D32" source="dentist_landing" />
 
           <div
             style={{
@@ -20144,53 +20006,7 @@ const MedicalPracticeReviewPage = () => {
             HIPAA-aware responses that build patient trust without compromising privacy.
           </p>
 
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              background: 'white',
-              padding: '6px',
-              borderRadius: '14px',
-              maxWidth: '540px',
-              margin: '0 auto 32px',
-              boxShadow:
-                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            }}
-          >
-            <input
-              type="email"
-              placeholder="Enter your practice email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px',
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#C62828',
-                color: 'white',
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#C62828" source="medical_landing" />
 
           <div
             style={{
