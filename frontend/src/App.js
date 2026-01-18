@@ -37314,214 +37314,16 @@ const AdminPage = () => {
             </button>
           </div>
 
-          {accountUsageLoading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>Loading account usage...</div>
-          ) : accountUsageData ? (
-            <>
-              {/* Account Cards */}
-              {accountUsageData.accounts?.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {accountUsageData.accounts.map((acc, idx) => (
-                    <div
-                      key={idx}
-                      className="card"
-                      style={{
-                        border:
-                          acc.daily_status === 'critical'
-                            ? '2px solid #EF4444'
-                            : acc.daily_status === 'warning'
-                              ? '2px solid #F59E0B'
-                              : '1px solid var(--gray-200)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '12px',
-                        }}
-                      >
-                        <div>
-                          <div style={{ fontWeight: '600', fontSize: '16px' }}>
-                            {acc.account_name}
-                          </div>
-                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
-                            {acc.email}
-                          </div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
-                            {acc.messages_today} msgs | {acc.sessions_today} sessions
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Daily Usage Bar */}
-                      <div style={{ marginBottom: '12px' }}>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            fontSize: '13px',
-                            marginBottom: '4px',
-                          }}
-                        >
-                          <span>Today</span>
-                          <span>
-                            {(acc.tokens_today / 1000).toFixed(0)}K /{' '}
-                            {(accountUsageData.limits?.daily / 1000000).toFixed(1)}M (
-                            {acc.daily_percent}%)
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            background: 'var(--gray-200)',
-                            borderRadius: '4px',
-                            height: '8px',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${Math.min(acc.daily_percent, 100)}%`,
-                              height: '100%',
-                              background:
-                                acc.daily_status === 'critical'
-                                  ? '#EF4444'
-                                  : acc.daily_status === 'warning'
-                                    ? '#F59E0B'
-                                    : '#10B981',
-                              transition: 'width 0.3s ease',
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Weekly Usage Bar */}
-                      <div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            fontSize: '13px',
-                            marginBottom: '4px',
-                          }}
-                        >
-                          <span>This Week</span>
-                          <span>
-                            {(acc.tokens_week / 1000).toFixed(0)}K /{' '}
-                            {(accountUsageData.limits?.weekly / 1000000).toFixed(0)}M (
-                            {acc.weekly_percent}%)
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            background: 'var(--gray-200)',
-                            borderRadius: '4px',
-                            height: '8px',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${Math.min(acc.weekly_percent, 100)}%`,
-                              height: '100%',
-                              background:
-                                acc.weekly_status === 'critical'
-                                  ? '#EF4444'
-                                  : acc.weekly_status === 'warning'
-                                    ? '#F59E0B'
-                                    : '#3B82F6',
-                              transition: 'width 0.3s ease',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Totals Card */}
-                  <div className="card" style={{ background: 'var(--gray-50)' }}>
-                    <div style={{ fontWeight: '600', marginBottom: '8px' }}>Combined Totals</div>
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(4, 1fr)',
-                        gap: '12px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontSize: '20px', fontWeight: '600' }}>
-                          {(accountUsageData.totals?.tokens_today / 1000).toFixed(0)}K
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-                          Tokens Today
-                        </div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '20px', fontWeight: '600' }}>
-                          {(accountUsageData.totals?.tokens_week / 1000).toFixed(0)}K
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-                          Tokens Week
-                        </div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '20px', fontWeight: '600' }}>
-                          {accountUsageData.totals?.messages_today || 0}
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Messages</div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '20px', fontWeight: '600' }}>
-                          {accountUsageData.totals?.sessions_today || 0}
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Sessions</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Last Sync Info */}
-                  <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--gray-500)' }}>
-                    Last sync:{' '}
-                    {accountUsageData.last_sync
-                      ? new Date(accountUsageData.last_sync).toLocaleString()
-                      : 'Never'}
-                    <br />
-                    <span style={{ fontSize: '11px' }}>
-                      Run <code>.\scripts\Sync-AccountUsage.ps1</code> to update
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-                  <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
-                    No account usage data synced yet.
-                  </p>
-                  <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>
-                    Run <code>.\scripts\Sync-AccountUsage.ps1</code> locally to sync your Claude CLI
-                    account usage.
-                  </p>
-                </div>
-              )}
-            </>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
-                Could not load account usage
-              </p>
-              <button className="btn btn-primary" onClick={() => loadAccountUsageData()}>
-                Retry
-              </button>
+          {accountUsageLoading && (
+            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray-500)' }}>
+              Loading usage data...
             </div>
           )}
 
-          {/* Subscription Overview */}
+          {/* Subscription Overview with Usage */}
           <div style={{ marginTop: '32px' }}>
             <h3 style={{ marginBottom: '16px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '8px' }}>
-              Subscription Overview
+              Claude Max Subscriptions (4x $20/mo)
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
@@ -37529,61 +37331,121 @@ const AdminPage = () => {
                 { id: 'acc2', email: 'berend.jakob.mainz@gmail.com', browser: 'Edge', subscribed: '2026-01-12', renewal: '2026-02-12', price: 20 },
                 { id: 'acc3', email: 'breihosen@gmail.com', browser: 'Chrome', subscribed: '2026-01-14', renewal: '2026-02-14', price: 20 },
                 { id: 'acc4', email: 'berendder4te@gmail.com', browser: 'Chrome (Profile 2)', subscribed: '2026-01-18', renewal: '2026-02-18', price: 20 },
-              ].map((acc) => {
-                const daysUntilRenewal = Math.ceil((new Date(acc.renewal) - new Date()) / (1000 * 60 * 60 * 24));
+              ].map((sub) => {
+                const daysUntilRenewal = Math.ceil((new Date(sub.renewal) - new Date()) / (1000 * 60 * 60 * 24));
                 const isNearRenewal = daysUntilRenewal <= 7;
+                // Find matching usage data by email
+                const usageAcc = accountUsageData?.accounts?.find(a =>
+                  a.email?.toLowerCase() === sub.email.toLowerCase() ||
+                  a.account_name?.toLowerCase() === sub.id.toLowerCase()
+                );
                 return (
                   <div
-                    key={acc.id}
+                    key={sub.id}
                     className="card"
                     style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px 16px',
-                      border: isNearRenewal ? '2px solid #F59E0B' : '1px solid var(--gray-200)',
+                      padding: '16px',
+                      border: isNearRenewal ? '2px solid #F59E0B' : usageAcc?.daily_status === 'critical' ? '2px solid #EF4444' : '1px solid var(--gray-200)',
                     }}
                   >
-                    <div>
-                      <div style={{ fontWeight: '600' }}>{acc.id.toUpperCase()}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{acc.email}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--gray-400)' }}>Browser: {acc.browser}</div>
+                    {/* Header Row */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: usageAcc ? '12px' : 0 }}>
+                      <div>
+                        <div style={{ fontWeight: '600', fontSize: '16px' }}>{sub.id.toUpperCase()}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{sub.email}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-400)' }}>Browser: {sub.browser}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: isNearRenewal ? '#F59E0B' : 'inherit' }}>
+                          ${sub.price}/mo
+                        </div>
+                        <div style={{ fontSize: '12px', color: isNearRenewal ? '#F59E0B' : 'var(--gray-500)' }}>
+                          Renewal: {sub.renewal.slice(5)} {/* MM-DD only */}
+                        </div>
+                        <div style={{ fontSize: '11px', color: isNearRenewal ? '#F59E0B' : 'var(--gray-400)' }}>
+                          {daysUntilRenewal > 0 ? `${daysUntilRenewal}d left` : 'Due today!'}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '14px', fontWeight: '600', color: isNearRenewal ? '#F59E0B' : 'inherit' }}>
-                        ${acc.price}/mo
+
+                    {/* Usage Bars (if data available) */}
+                    {usageAcc && (
+                      <>
+                        {/* Today Usage */}
+                        <div style={{ marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '2px' }}>
+                            <span>Today: {usageAcc.messages_today || 0} msgs / {usageAcc.sessions_today || 0} sessions</span>
+                            <span style={{ color: usageAcc.daily_status === 'critical' ? '#EF4444' : usageAcc.daily_status === 'warning' ? '#F59E0B' : 'inherit' }}>
+                              {(usageAcc.tokens_today / 1000).toFixed(0)}K ({usageAcc.daily_percent}%)
+                            </span>
+                          </div>
+                          <div style={{ background: 'var(--gray-200)', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                            <div style={{
+                              width: `${Math.min(usageAcc.daily_percent, 100)}%`,
+                              height: '100%',
+                              background: usageAcc.daily_status === 'critical' ? '#EF4444' : usageAcc.daily_status === 'warning' ? '#F59E0B' : '#10B981',
+                            }} />
+                          </div>
+                        </div>
+                        {/* Week Usage */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '2px' }}>
+                            <span>Week</span>
+                            <span style={{ color: usageAcc.weekly_status === 'critical' ? '#EF4444' : usageAcc.weekly_status === 'warning' ? '#F59E0B' : 'inherit' }}>
+                              {(usageAcc.tokens_week / 1000).toFixed(0)}K ({usageAcc.weekly_percent}%)
+                            </span>
+                          </div>
+                          <div style={{ background: 'var(--gray-200)', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                            <div style={{
+                              width: `${Math.min(usageAcc.weekly_percent, 100)}%`,
+                              height: '100%',
+                              background: usageAcc.weekly_status === 'critical' ? '#EF4444' : usageAcc.weekly_status === 'warning' ? '#F59E0B' : '#3B82F6',
+                            }} />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    {!usageAcc && (
+                      <div style={{ fontSize: '11px', color: 'var(--gray-400)', fontStyle: 'italic', marginTop: '8px' }}>
+                        No usage data - run Sync-AccountUsage.ps1
                       </div>
-                      <div style={{ fontSize: '12px', color: isNearRenewal ? '#F59E0B' : 'var(--gray-500)' }}>
-                        Renewal: {acc.renewal}
-                      </div>
-                      <div style={{ fontSize: '11px', color: isNearRenewal ? '#F59E0B' : 'var(--gray-400)' }}>
-                        {daysUntilRenewal > 0 ? `${daysUntilRenewal} days` : 'Due today!'}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 );
               })}
             </div>
 
-            {/* Total Cost Summary */}
+            {/* Total Cost + ROI Summary */}
             <div className="card" style={{ marginTop: '16px', background: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)', color: 'white' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: '14px', opacity: 0.8 }}>Total Monthly Cost</div>
+                  <div style={{ fontSize: '14px', opacity: 0.8 }}>Total Cost</div>
                   <div style={{ fontSize: '28px', fontWeight: '700' }}>$80/mo</div>
-                  <div style={{ fontSize: '12px', opacity: 0.6 }}>~76 EUR at current rates</div>
+                  <div style={{ fontSize: '12px', opacity: 0.6 }}>~76 EUR</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  {accountUsageData?.totals && (
+                    <>
+                      <div style={{ fontSize: '20px', fontWeight: '600' }}>
+                        {(accountUsageData.totals.tokens_today / 1000).toFixed(0)}K
+                      </div>
+                      <div style={{ fontSize: '11px', opacity: 0.7 }}>tokens today</div>
+                    </>
+                  )}
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '12px', opacity: 0.8 }}>Investment ROI Target</div>
+                  <div style={{ fontSize: '12px', opacity: 0.8 }}>ROI Target</div>
                   <div style={{ fontSize: '16px', fontWeight: '600' }}>$1000 MRR</div>
-                  <div style={{ fontSize: '11px', opacity: 0.6 }}>= 12.5x return on Claude costs</div>
+                  <div style={{ fontSize: '11px', opacity: 0.6 }}>12.5x return</div>
                 </div>
               </div>
             </div>
 
-            <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-400)', textAlign: 'center' }}>
-              To update: Edit <code>content/claude-accounts.json</code> or this section in App.js
-            </div>
+            {accountUsageData?.last_sync && (
+              <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--gray-400)', textAlign: 'center' }}>
+                Usage synced: {new Date(accountUsageData.last_sync).toLocaleString()}
+              </div>
+            )}
           </div>
         </div>
       )}
