@@ -37299,7 +37299,7 @@ const AdminPage = () => {
             <div>
               <h2 style={{ margin: 0 }}>Claude Account Usage</h2>
               <div style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                via Claude Max Abo (3x $20/mo) - nicht API
+                via Claude Max Abo (4x $20/mo) - nicht API
               </div>
             </div>
             <button
@@ -37517,6 +37517,74 @@ const AdminPage = () => {
               </button>
             </div>
           )}
+
+          {/* Subscription Overview */}
+          <div style={{ marginTop: '32px' }}>
+            <h3 style={{ marginBottom: '16px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '8px' }}>
+              Subscription Overview
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                { id: 'acc1', email: 'Berend.mainz@web.de', browser: 'Firefox', subscribed: '2026-01-10', renewal: '2026-02-10', price: 20 },
+                { id: 'acc2', email: 'berend.jakob.mainz@gmail.com', browser: 'Edge', subscribed: '2026-01-12', renewal: '2026-02-12', price: 20 },
+                { id: 'acc3', email: 'breihosen@gmail.com', browser: 'Chrome', subscribed: '2026-01-14', renewal: '2026-02-14', price: 20 },
+                { id: 'acc4', email: 'berendder4te@gmail.com', browser: 'Chrome (Profile 2)', subscribed: '2026-01-18', renewal: '2026-02-18', price: 20 },
+              ].map((acc) => {
+                const daysUntilRenewal = Math.ceil((new Date(acc.renewal) - new Date()) / (1000 * 60 * 60 * 24));
+                const isNearRenewal = daysUntilRenewal <= 7;
+                return (
+                  <div
+                    key={acc.id}
+                    className="card"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      border: isNearRenewal ? '2px solid #F59E0B' : '1px solid var(--gray-200)',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: '600' }}>{acc.id.toUpperCase()}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{acc.email}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--gray-400)' }}>Browser: {acc.browser}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: isNearRenewal ? '#F59E0B' : 'inherit' }}>
+                        ${acc.price}/mo
+                      </div>
+                      <div style={{ fontSize: '12px', color: isNearRenewal ? '#F59E0B' : 'var(--gray-500)' }}>
+                        Renewal: {acc.renewal}
+                      </div>
+                      <div style={{ fontSize: '11px', color: isNearRenewal ? '#F59E0B' : 'var(--gray-400)' }}>
+                        {daysUntilRenewal > 0 ? `${daysUntilRenewal} days` : 'Due today!'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Total Cost Summary */}
+            <div className="card" style={{ marginTop: '16px', background: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)', color: 'white' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '14px', opacity: 0.8 }}>Total Monthly Cost</div>
+                  <div style={{ fontSize: '28px', fontWeight: '700' }}>$80/mo</div>
+                  <div style={{ fontSize: '12px', opacity: 0.6 }}>~76 EUR at current rates</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '12px', opacity: 0.8 }}>Investment ROI Target</div>
+                  <div style={{ fontSize: '16px', fontWeight: '600' }}>$1000 MRR</div>
+                  <div style={{ fontSize: '11px', opacity: 0.6 }}>= 12.5x return on Claude costs</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-400)', textAlign: 'center' }}>
+              To update: Edit <code>content/claude-accounts.json</code> or this section in App.js
+            </div>
+          </div>
         </div>
       )}
 

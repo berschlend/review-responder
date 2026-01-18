@@ -2,10 +2,10 @@
   "accounts": [
     {
       "id": "acc1",
-      "email": "TODO",
+      "email": "Berend.mainz@web.de",
       "browser": "Firefox",
-      "subscribed": "2025-01-XX",
-      "renewalDate": "2025-02-XX",
+      "subscribed": "2026-01-10",
+      "renewalDate": "2026-02-10",
       "monthlyPrice": 20,
       "currency": "USD",
       "status": "active",
@@ -13,21 +13,21 @@
     },
     {
       "id": "acc2",
-      "email": "TODO",
+      "email": "berend.jakob.mainz@gmail.com",
       "browser": "Edge",
-      "subscribed": "2025-01-XX",
-      "renewalDate": "2025-02-XX",
+      "subscribed": "2026-01-12",
+      "renewalDate": "2026-02-12",
       "monthlyPrice": 20,
       "currency": "USD",
       "status": "active",
-      "notes": ""
+      "notes": "Haupt-Gmail"
     },
     {
       "id": "acc3",
-      "email": "TODO",
+      "email": "breihosen@gmail.com",
       "browser": "Chrome (Default)",
-      "subscribed": "2025-01-XX",
-      "renewalDate": "2025-02-XX",
+      "subscribed": "2026-01-14",
+      "renewalDate": "2026-02-14",
       "monthlyPrice": 20,
       "currency": "USD",
       "status": "active",
@@ -37,8 +37,8 @@
       "id": "acc4",
       "email": "berendder4te@gmail.com",
       "browser": "Chrome (Profile 2)",
-      "subscribed": "2025-01-18",
-      "renewalDate": "2025-02-18",
+      "subscribed": "2026-01-18",
+      "renewalDate": "2026-02-18",
       "monthlyPrice": 20,
       "currency": "USD",
       "status": "active",
@@ -47,5 +47,5 @@
   ],
   "totalMonthly": 80,
   "totalMonthlyEUR": 76,
-  "lastUpdated": "2025-01-18"
+  "lastUpdated": "2026-01-18"
 }
