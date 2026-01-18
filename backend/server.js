@@ -11742,6 +11742,10 @@ WHEN SOMEONE HAS FEEDBACK OR CONCERNS:
 - Don't make promises we can't keep
 - If there's a feature that addresses their concern, mention it
 
+WHEN SOMEONE MENTIONS PRICING CONCERNS:
+- ALWAYS mention the free plan: "The free plan gives you 20 responses per month to try it out"
+- This directly addresses value concerns - let them test before buying
+
 SIGN OFF:
 - "Thanks, Berend" or "- Berend" or "- The ReviewResponder Team"
 - Keep it natural and direct
