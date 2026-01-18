@@ -3882,8 +3882,7 @@ const LandingPage = () => {
             }}
           />
           <p style={{ fontSize: '1.1rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
-            "After testing thousands of AI responses, I know exactly what makes one sound human —
-            and built a tool that gets it right."
+            "After testing thousands of AI responses, I know exactly what makes one feel personal. So I built a tool that gets it right."
           </p>
           <p
             style={{
@@ -37323,14 +37322,14 @@ const AdminPage = () => {
           {/* Subscription Overview with Usage */}
           <div style={{ marginTop: '32px' }}>
             <h3 style={{ marginBottom: '16px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '8px' }}>
-              Claude Max Subscriptions (4x $20/mo)
+              Claude Max Subscriptions (4x $100/mo)
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { id: 'acc1', email: 'Berend.mainz@web.de', browser: 'Firefox', subscribed: '2026-01-10', renewal: '2026-02-10', price: 20 },
-                { id: 'acc2', email: 'berend.jakob.mainz@gmail.com', browser: 'Edge', subscribed: '2026-01-12', renewal: '2026-02-12', price: 20 },
-                { id: 'acc3', email: 'breihosen@gmail.com', browser: 'Chrome', subscribed: '2026-01-14', renewal: '2026-02-14', price: 20 },
-                { id: 'acc4', email: 'berendder4te@gmail.com', browser: 'Chrome (Profile 2)', subscribed: '2026-01-18', renewal: '2026-02-18', price: 20 },
+                { id: 'acc1', email: 'Berend.mainz@web.de', browser: 'Firefox', subscribed: '2026-01-10', renewal: '2026-02-10', price: 100 },
+                { id: 'acc2', email: 'berend.jakob.mainz@gmail.com', browser: 'Edge', subscribed: '2026-01-12', renewal: '2026-02-12', price: 100 },
+                { id: 'acc3', email: 'breihosen@gmail.com', browser: 'Chrome', subscribed: '2026-01-14', renewal: '2026-02-14', price: 100 },
+                { id: 'acc4', email: 'berendder4te@gmail.com', browser: 'Chrome (Profile 2)', subscribed: '2026-01-18', renewal: '2026-02-18', price: 100 },
               ].map((sub) => {
                 const daysUntilRenewal = Math.ceil((new Date(sub.renewal) - new Date()) / (1000 * 60 * 60 * 24));
                 const isNearRenewal = daysUntilRenewal <= 7;
@@ -37420,8 +37419,8 @@ const AdminPage = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '14px', opacity: 0.8 }}>Total Cost</div>
-                  <div style={{ fontSize: '28px', fontWeight: '700' }}>$80/mo</div>
-                  <div style={{ fontSize: '12px', opacity: 0.6 }}>~76 EUR</div>
+                  <div style={{ fontSize: '28px', fontWeight: '700' }}>$400/mo</div>
+                  <div style={{ fontSize: '12px', opacity: 0.6 }}>~€380</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   {accountUsageData?.totals && (
@@ -37436,7 +37435,7 @@ const AdminPage = () => {
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '12px', opacity: 0.8 }}>ROI Target</div>
                   <div style={{ fontSize: '16px', fontWeight: '600' }}>$1000 MRR</div>
-                  <div style={{ fontSize: '11px', opacity: 0.6 }}>12.5x return</div>
+                  <div style={{ fontSize: '11px', opacity: 0.6 }}>2.5x return</div>
                 </div>
               </div>
             </div>
