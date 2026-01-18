@@ -509,6 +509,12 @@ const Footer = () => (
             <li>
               <Link to="/local-business-reviews">Local Business</Link>
             </li>
+            <li>
+              <Link to="/bar-nightclub-review-responses">Bars & Nightclubs</Link>
+            </li>
+            <li>
+              <Link to="/retail-store-review-responses">Retail Stores</Link>
+            </li>
           </ul>
         </div>
         <div>
@@ -5527,6 +5533,8 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         { value: 'Spa / Wellness', label: 'Spa / Wellness' },
         { value: 'Gym / Fitness Studio', label: 'Gym / Fitness Studio' },
         { value: 'Veterinary / Pet Services', label: 'Veterinary / Pet Services' },
+        { value: 'Senior Care', label: 'Senior Care' },
+        { value: 'Therapy / Counseling', label: 'Therapy / Counseling' },
       ],
     },
     {
@@ -5598,6 +5606,16 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       always: 'hope to welcome you back, mention our amenities, contact concierge',
       never: 'sorry for inconvenience, we regret, compensation',
       tone: 'friendly',
+    },
+    'Senior Care': {
+      always: 'compassionate care is our priority, mention our dedicated staff, families are welcome to visit',
+      never: 'cheap, sorry for inconvenience, we regret',
+      tone: 'professional',
+    },
+    'Therapy / Counseling': {
+      always: 'confidential and supportive environment, mention our licensed professionals, scheduling is flexible',
+      never: 'cheap, crazy, insane, mental',
+      tone: 'professional',
     },
     default: {
       always: '',
@@ -11381,6 +11399,8 @@ const getContextPlaceholder = businessType => {
     'Photography / Creative': 'e.g. weddings & portraits, natural light style, same-day previews',
     'Event Planning': 'e.g. weddings, corporate events, full-service, 100+ events completed',
     'Childcare / Education': 'e.g. ages 2-5, certified teachers, outdoor learning, healthy meals',
+    'Senior Care': 'e.g. assisted living, memory care, 24/7 nursing, family-owned, 20 years',
+    'Therapy / Counseling': 'e.g. licensed therapist, CBT specialist, couples therapy, 15 years experience',
   };
   return examples[businessType] || 'e.g. family-owned, since 1985, quality service, friendly team';
 };
@@ -11529,6 +11549,20 @@ const getTextareaPlaceholder = businessType => {
 • We offer outdoor learning and healthy meals
 • We're known for our nurturing environment
 • Director Sarah ensures every child thrives`,
+    'Senior Care': `Examples:
+• We're a family-owned assisted living facility since 2005
+• Our caregivers are certified with ongoing training
+• We offer memory care with specialized programs
+• We have a beautiful garden and activity room
+• We're known for our compassionate, personalized care
+• Director Sarah treats every resident like family`,
+    'Therapy / Counseling': `Examples:
+• We're a private therapy practice with 15+ years experience
+• Our therapists are licensed and specialize in anxiety, depression, and relationships
+• We offer in-person and telehealth sessions
+• We provide a safe, confidential environment
+• We're known for our empathetic, client-centered approach
+• Dr. Johnson creates individualized treatment plans`,
   };
   return (
     examples[businessType] ||
@@ -11887,6 +11921,8 @@ const SettingsPage = () => {
         { value: 'Spa / Wellness', label: 'Spa / Wellness' },
         { value: 'Gym / Fitness Studio', label: 'Gym / Fitness Studio' },
         { value: 'Veterinary / Pet Services', label: 'Veterinary / Pet Services' },
+        { value: 'Senior Care', label: 'Senior Care' },
+        { value: 'Therapy / Counseling', label: 'Therapy / Counseling' },
       ],
     },
     {
@@ -38356,6 +38392,380 @@ const AdminPage = () => {
   );
 };
 
+// SEO Landing Page - Bar & Nightclub Review Responses
+const BarNightclubReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/bar-nightclub-review-responses',
+    };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Bar & Nightclub Review Response Generator | AI-Powered Replies | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional bar and nightclub review responses with AI. Reply to guest reviews instantly. Build reputation and attract more patrons.'
+      );
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Bar & Nightclub Review Response Generator',
+      description: 'AI tool to respond professionally to bar and nightclub reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #4A148C 0%, #311B92 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <Utensils size={14} />
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Bars & Nightclubs
+            </span>
+          </div>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Bar & Nightclub Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Turn every review into an opportunity. Generate professional responses that showcase your
+            atmosphere, service, and unforgettable experiences.
+          </p>
+          <InstantDemoWidget primaryColor="#4A148C" />
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> Auto-Detect Language
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> One-Click Chrome
+            </span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Bars & Nightclubs
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Sparkles size={32} style={{ color: '#4A148C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              First Impressions Count
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Guests check reviews before choosing where to spend their night. Your responses shape
+              their expectations.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#4A148C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Boost Weekend Traffic
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Higher ratings mean more foot traffic. Professional responses turn critics into
+              regulars.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#4A148C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Stand Out in Nightlife
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              In a competitive scene, engaged venues win. Show guests you care about their
+              experience.
+            </p>
+          </div>
+        </div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Elevate Your Nightlife Reputation Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join bars and nightclubs using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Retail Store Review Responses
+const RetailStoreReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/retail-store-review-responses',
+    };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Retail Store Review Response Generator | AI-Powered Replies | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional retail store review responses with AI. Reply to customer reviews instantly. Build trust and drive more foot traffic.'
+      );
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Retail Store Review Response Generator',
+      description: 'AI tool to respond professionally to retail store and shop reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #00695C 0%, #004D40 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <Store size={14} />
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Retail Stores
+            </span>
+          </div>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Retail Store Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Transform customer feedback into loyalty. Generate professional responses that highlight
+            your service, selection, and shopping experience.
+          </p>
+          <InstantDemoWidget primaryColor="#00695C" />
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> Auto-Detect Language
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> One-Click Chrome
+            </span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Retail Stores
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#00695C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Customer Trust
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Shoppers research before visiting. Your review responses build confidence and set
+              expectations.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#00695C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Drive Foot Traffic
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Higher ratings mean more visitors. Professional responses convert online browsers into
+              in-store customers.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#00695C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Stand Out Locally
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              In a competitive retail landscape, engaged stores win. Show customers you value their
+              feedback.
+            </p>
+          </div>
+        </div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Retail Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join retail stores using AI to manage their online reputation and attract more customers.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
 // Main App
 function App() {
   return (
@@ -38448,6 +38858,8 @@ const AppContent = () => {
           <Route path="/angie-list-contractor-reviews" element={<AngiListReviewPage />} />
           <Route path="/massage-therapist-reviews" element={<MassageTherapistReviewPage />} />
           <Route path="/personal-trainer-reviews" element={<PersonalTrainerReviewPage />} />
+          <Route path="/bar-nightclub-review-responses" element={<BarNightclubReviewPage />} />
+          <Route path="/retail-store-review-responses" element={<RetailStoreReviewPage />} />
           <Route
             path="/dashboard"
             element={
