@@ -398,6 +398,18 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Dynamic Agent Priority Control via focus-update (18.01.2026)
+**Problem:** Agents konnten `current-focus.json` lesen (focus-read), aber nicht updaten. Burst-11 konnte z.B. nicht automatisch Burst-7 aktivieren wenn User am Limit sind.
+**Loesung:** `focus-update` Action in `agent-helpers.ps1` implementiert:
+```powershell
+# Priority ändern (1=aktiv, 2=secondary, 3=paused)
+powershell -File scripts/agent-helpers.ps1 -Action focus-update -Agent 7 -Value 1 -Data "5 User am Limit"
+# Bottleneck/Tonight Focus updaten
+powershell -File scripts/agent-helpers.ps1 -Action focus-update -Key bottleneck -Data '{"type":"..."}'
+```
+**Features:** Auto-updates `paused_agents` und `high_priority_agents` Listen, logged zu `focus-changes.log`, verwendet `Add-Member -Force` fuer dynamische Property-Erstellung.
+**Lesson:** PowerShell PSCustomObject braucht `Add-Member -Force` um neue Properties hinzuzufuegen. Direkte Zuweisung (`$obj.newProp = value`) schlaegt fehl wenn Property nicht existiert.
+
 ### Parallel Agent Spawning mit EncodedCommand (18.01.2026)
 **Problem:** Night-Agents sollten neue Claude-Terminals spawnen koennen, aber batch-file Ansatz crashte (File not found errors mit Windows Terminal).
 **Root Cause:** Windows Terminal (`wt`) parsed Argumente anders als erwartet. Batch-Files in TEMP wurden nicht gefunden wegen Pfad-Escaping und Timing.
