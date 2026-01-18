@@ -9639,6 +9639,88 @@ Unsubscribe: https://tryreviewresponder.com/unsubscribe?email=${encodeURICompone
   });
 }
 
+// GET /api/cron/indexnow - Submit all URLs to IndexNow for instant Bing/Yandex indexing
+// Usage: /api/cron/indexnow?secret=XXX or manually via admin
+app.get('/api/cron/indexnow', async (req, res) => {
+  const cronSecret = req.query.secret || req.headers['x-cron-secret'] || req.headers['x-admin-key'];
+  if (
+    !safeCompare(cronSecret || '', process.env.CRON_SECRET || '') &&
+    !safeCompare(cronSecret || '', process.env.ADMIN_SECRET || '')
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const INDEXNOW_KEY = 'd0ac09b49784914bf2f12b979427ca6f';
+
+  try {
+    // Collect all important URLs
+    const urlList = [
+      // Main pages
+      'https://tryreviewresponder.com/',
+      'https://tryreviewresponder.com/blog',
+      'https://tryreviewresponder.com/pricing',
+      'https://tryreviewresponder.com/how-it-works',
+      'https://tryreviewresponder.com/affiliates',
+    ];
+
+    // Add all blog posts
+    const blogPosts = await dbAll(
+      `SELECT slug FROM blog_posts WHERE is_published = true ORDER BY published_at DESC LIMIT 50`
+    );
+    blogPosts.forEach(post => {
+      urlList.push(`https://tryreviewresponder.com/blog/${post.slug}`);
+    });
+
+    // Add SEO landing pages
+    const seoPages = [
+      'google-review', 'yelp-review', 'tripadvisor-review', 'amazon-review',
+      'airbnb-review', 'booking-review', 'zillow-review', 'thumbtack-review',
+      'linkedin-recommendations', 'chiropractor-reviews', 'barber-barbershop-reviews',
+      'restaurant-reviews', 'hotel-reviews', 'dental-reviews', 'medical-practice-reviews',
+      'law-firm-reviews', 'real-estate-reviews', 'auto-dealer-reviews',
+      'home-services-reviews', 'pet-services-reviews', 'fitness-gym-reviews',
+      'salon-spa-reviews', 'cafe-coffee-shop-reviews', 'therapy-counselor-reviews',
+      'financial-advisor-reviews',
+    ];
+    seoPages.forEach(page => {
+      urlList.push(`https://tryreviewresponder.com/${page}`);
+    });
+
+    console.log(`IndexNow: Submitting ${urlList.length} URLs...`);
+
+    // Submit to IndexNow (max 10000 URLs per request)
+    const response = await fetch('https://api.indexnow.org/IndexNow', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        host: 'tryreviewresponder.com',
+        key: INDEXNOW_KEY,
+        keyLocation: `https://tryreviewresponder.com/${INDEXNOW_KEY}.txt`,
+        urlList: urlList,
+      }),
+    });
+
+    const status = response.status;
+    // 200 = OK, 202 = Accepted (URLs will be processed)
+    const success = status === 200 || status === 202;
+
+    console.log(`IndexNow response: ${status} (${success ? 'success' : 'failed'})`);
+
+    res.json({
+      success,
+      status,
+      urlCount: urlList.length,
+      urls: urlList,
+      message: success
+        ? `Submitted ${urlList.length} URLs to IndexNow (Bing/Yandex will index within minutes)`
+        : `IndexNow returned status ${status}`,
+    });
+  } catch (error) {
+    console.error('IndexNow error:', error);
+    res.status(500).json({ error: 'IndexNow submission failed', details: error.message });
+  }
+});
+
 // GET /api/cron/generate-demos - Batch generate demos for leads
 // Changed from POST to GET for cron-job.org compatibility (14.01.2026)
 app.get('/api/cron/generate-demos', async (req, res) => {
@@ -27154,6 +27236,25 @@ Now write the article about: "${topic}"`;
       console.log('Pinged Google about sitemap update');
     } catch (e) {
       // Ignore ping errors
+    }
+
+    // IndexNow - Instant indexing for Bing/Yandex (fire and forget)
+    const INDEXNOW_KEY = 'd0ac09b49784914bf2f12b979427ca6f';
+    const newBlogUrl = `https://tryreviewresponder.com/blog/${slug}`;
+    try {
+      fetch('https://api.indexnow.org/IndexNow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          host: 'tryreviewresponder.com',
+          key: INDEXNOW_KEY,
+          keyLocation: `https://tryreviewresponder.com/${INDEXNOW_KEY}.txt`,
+          urlList: [newBlogUrl, 'https://tryreviewresponder.com/blog'],
+        }),
+      }).catch(() => {});
+      console.log(`IndexNow pinged for: ${newBlogUrl}`);
+    } catch (e) {
+      // Ignore IndexNow errors
     }
 
     res.json({
