@@ -133,8 +133,9 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 **Stand: 18.01.2026**
 
 ### Chrome Web Store
-- Status: Ueberprufung laeuft (eingereicht 13.01)
-- Extension v1.7.0 (Website aktualisiert 17.01)
+- Status: v1.7.0 eingereicht (18.01.2026)
+- v1.6.2 Review abgebrochen, v1.7.0-store.zip neu hochgeladen
+- Store-Listing (Beschreibung, Screenshots) bleibt bei Review-Abbruch erhalten!
 
 ### REAL Metriken (18.01)
 | Metrik | Dashboard | **Realitaet** | Status |
@@ -397,6 +398,12 @@ ReviewResponder/
 ---
 
 ## LEARNINGS (Top 5)
+
+### Chrome Web Store: Review abbrechen ohne Datenverlust (18.01.2026)
+**Problem:** Ausstehende Extension-Review (v1.6.2) blockierte Upload von neuer Version (v1.7.0). "Neues Paket hochladen" Button ausgegraut.
+**Loesung:** Im Developer Dashboard → Drei-Punkte-Menü (⋮) oben rechts → **"Überprüfung abbrechen"**
+**Wichtig:** Store-Listing (Name, Beschreibung, Screenshots, Privacy Policy) bleibt ERHALTEN! Nur das Paket (ZIP) wird verworfen.
+**Lesson:** Man kann Chrome Extension Reviews jederzeit abbrechen und neu einreichen ohne alles neu zu schreiben. Die Angst vor Datenverlust ist unbegründet.
 
 ### Sonnet > Opus fuer Prompt-Following (18.01.2026)
 **Problem:** Testimonial-Antworten mit Opus 4.5 klangen "off" - Opus interpretierte Dinge rein die nicht im Original standen (z.B. "back to running your business" bei einem Review der das nie erwaehnte).

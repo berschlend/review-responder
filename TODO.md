@@ -64,7 +64,7 @@
 |-----|------------|------|----------------|
 | **Phone Outreach (3 Hot Leads)** | **Berend morgen früh** | **18.01** | **Call-Preps ready in `content/call-prep/`. Prio: Ti Cafe → Trattoria → Sphere** |
 | **Night-Burst System** | **Manuellen Neustart** | **17.01** | **6 Agents STALE, Burst-6 nie gestartet. Siehe for-berend.md für Commands** |
-| Chrome Extension v1.6.2 | Chrome Review (1-3 Tage) | 15.01 | Bei Approval → Google Ads schalten |
+| Chrome Extension v1.7.0 | Chrome Review (1-3 Tage) | 18.01 | v1.6.2 Review abgebrochen, v1.7.0 neu eingereicht. Bei Approval → Google Ads |
 | AnyDesk Remote (Laptop zu) | HDMI Dummy Plug kaufen | 16.01 | Amazon bestellen (~5€) → Einstecken |
 | **AWS SES Production Access** | **AWS Review (~24h)** | **18.01** | **Anfrage eingereicht 17.01. Check: AWS Console → SES → Account. Sandbox = nur 200/Tag + verifizierte Empfänger!** |
 
@@ -183,9 +183,11 @@
 
 ## 🟠 AKTUELL IN ARBEIT
 
-### Chrome Extension v1.6.2 - IM REVIEW
+### Chrome Extension v1.7.0 - IM REVIEW
 
 - [x] Extension v1.6.2 submitted (15.01.2026)
+- [x] v1.6.2 Review abgebrochen (18.01.2026) - Store-Listing bleibt erhalten!
+- [x] v1.7.0-store.zip hochgeladen und neu eingereicht (18.01.2026)
 - [ ] Wartet auf Chrome Review (1-3 Tage) → BLOCKED
 - [ ] Nach Approval: YouTube Demo-Video URL updaten
 
