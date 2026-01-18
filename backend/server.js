@@ -173,32 +173,34 @@ async function getProviderCountsToday() {
 }
 
 // Select best provider with remaining capacity
+// NOTE: This is called for OUTREACH emails only. Transactional emails always use Resend directly.
 async function selectEmailProvider() {
   const counts = await getProviderCountsToday();
 
-  // Priority order: SES (sandbox) → Resend (100) → Brevo (0 credits!) → MailerSend (trial limit)
-  // Updated 18.01.2026: Brevo has 0 credits, MailerSend has trial recipient limit
+  // Priority for OUTREACH: SES → Brevo → MailerSend → Mailgun → SendGrid
+  // Resend is RESERVED for transactional emails (welcome, magic link, password)
+  // Updated 18.01.2026: Resend last to preserve quota for critical user emails
   const providers = [
     { name: 'ses', available: sesClient !== null },
-    { name: 'resend', available: resend !== null },
     { name: 'brevo', available: brevoApi !== null },
     { name: 'mailersend', available: mailerSendClient !== null },
     { name: 'mailgun', available: mailgunClient !== null },
     { name: 'sendgrid', available: process.env.SENDGRID_API_KEY !== undefined },
+    { name: 'resend', available: resend !== null }, // Last resort for outreach
   ];
 
   for (const p of providers) {
     if (p.available && counts[p.name] < EMAIL_PROVIDER_LIMITS[p.name]) {
       const remaining = EMAIL_PROVIDER_LIMITS[p.name] - counts[p.name];
       console.log(
-        `[Email] Selected ${p.name} (${counts[p.name]}/${EMAIL_PROVIDER_LIMITS[p.name]}, ${remaining} remaining)`
+        `[Email] Selected ${p.name} for outreach (${counts[p.name]}/${EMAIL_PROVIDER_LIMITS[p.name]}, ${remaining} remaining)`
       );
       return p.name;
     }
   }
 
-  // All providers exhausted - use Resend as fallback (Brevo has 0 credits)
-  console.warn('[Email] All providers at daily limit! Trying Resend as fallback...');
+  // All providers exhausted - use Resend as last resort
+  console.warn('[Email] All outreach providers exhausted! Using Resend as last resort...');
   return resend ? 'resend' : 'brevo';
 }
 
@@ -587,7 +589,15 @@ async function sendEmail({
   addTrackingPixel = false,
 }) {
   // MULTI-PROVIDER: Select best available provider with capacity
-  let provider = await selectEmailProvider();
+  // CRITICAL: Transactional emails (welcome, magic link, password) ALWAYS use Resend
+  // Outreach emails use other providers to preserve Resend quota (100/day)
+  let provider;
+  if (type === 'transactional' && resend) {
+    provider = 'resend'; // Reserved for critical user emails
+    console.log(`[Email] Transactional email - using reserved Resend`);
+  } else {
+    provider = await selectEmailProvider();
+  }
   let messageId = null;
   let error = null;
 
