@@ -3881,6 +3881,16 @@ const LandingPage = () => {
           </p>
           <p
             style={{
+              color: 'var(--text-muted, #888)',
+              marginTop: 4,
+              fontSize: '0.8rem',
+              fontStyle: 'italic',
+            }}
+          >
+            Built by someone who tested 10,000+ AI responses
+          </p>
+          <p
+            style={{
               color: 'var(--text-secondary)',
               marginTop: 16,
               fontSize: '0.85rem',
