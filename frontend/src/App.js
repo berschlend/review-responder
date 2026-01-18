@@ -1416,7 +1416,13 @@ const AuthProvider = ({ children }) => {
       api
         .get('/auth/me')
         .then(res => setUser(res.data.user))
-        .catch(() => localStorage.removeItem('token'))
+        .catch((error) => {
+          // Only remove token on 401 (unauthorized) - token is actually invalid
+          // Don't remove on network errors, 500s, or timeouts (temporary issues)
+          if (error.response?.status === 401) {
+            localStorage.removeItem('token');
+          }
+        })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
