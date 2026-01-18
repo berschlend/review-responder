@@ -4650,9 +4650,9 @@ async function generateResponseHandler(req, res) {
         avoidExample: 'Hey thanks for the review!',
       },
       apologetic: {
-        description: 'Empathetic and solution-focused - takes ownership',
-        goodExample: 'We completely understand your frustration, and we take this seriously...',
-        avoidExample: 'We apologize for any inconvenience this may have caused.',
+        description: 'Steady and solution-focused for complaints - acknowledges without groveling',
+        goodExample: "I hear you. That's not our standard. Let me look into it.",
+        avoidExample: 'We completely understand your frustration and we take this very seriously...',
       },
     };
 
