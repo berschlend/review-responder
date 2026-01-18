@@ -4133,7 +4133,19 @@ const LandingPage = () => {
               >
                 <X size={20} color="#ef4444" />
                 <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>
-                  Typical AI Tools
+                  ChatGPT
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.65rem',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#ef4444',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontWeight: '600',
+                  }}
+                >
+                  REAL OUTPUT
                 </span>
               </div>
               <p
@@ -4145,10 +4157,10 @@ const LandingPage = () => {
                   marginBottom: '12px',
                 }}
               >
-                "Dear Customer, we're genuinely sorry to hear about your experience. Thank you for
-                bringing this to our attention. Your feedback is appreciated as it helps us
-                improve. We would love the opportunity to make things right. Please contact us so
-                we can fix this."
+                "Dear [Customer's Name], I would like to sincerely apologize for the experience you
+                had during your anniversary dinner. The long wait and temperature of your wife's
+                steak are not reflective of our standards. Please reach out to me at [contact
+                information] so we can discuss this. Thank you for bringing this to our attention."
               </p>
               <div
                 style={{
@@ -4158,11 +4170,11 @@ const LandingPage = () => {
                   color: 'var(--text-muted)',
                 }}
               >
-                <span>47 words</span>
+                <span>54 words</span>
+                <span>•</span>
+                <span>Has [placeholders]</span>
                 <span>•</span>
                 <span>Generic</span>
-                <span>•</span>
-                <span>No specifics</span>
               </div>
             </div>
 
@@ -4198,6 +4210,18 @@ const LandingPage = () => {
                   REAL OUTPUT
                 </span>
               </div>
+              <div
+                style={{
+                  fontSize: '0.7rem',
+                  color: 'var(--text-muted)',
+                  marginBottom: '12px',
+                  padding: '6px 8px',
+                  background: 'rgba(79, 70, 229, 0.05)',
+                  borderRadius: '4px',
+                }}
+              >
+                Customized: Bella Italia • Warm tone • Personal email
+              </div>
               <p
                 style={{
                   fontStyle: 'italic',
@@ -4207,8 +4231,9 @@ const LandingPage = () => {
                   marginBottom: '12px',
                 }}
               >
-                "That's unacceptable on every level. Cold food and poor service aren't what we
-                stand for - let me fix this personally."
+                "That's completely unacceptable, and I'm sorry your anniversary was ruined like
+                that. Please email me directly at marco@bellaitalia.com - I need to make this right
+                and ensure this never happens again."
               </p>
               <div
                 style={{
@@ -4219,11 +4244,11 @@ const LandingPage = () => {
                   fontWeight: '500',
                 }}
               >
-                <span>22 words</span>
+                <span>35 words</span>
                 <span>•</span>
-                <span>Direct</span>
+                <span>Personal</span>
                 <span>•</span>
-                <span>Takes ownership</span>
+                <span>Offers solution</span>
               </div>
             </div>
           </div>
@@ -4245,7 +4270,8 @@ const LandingPage = () => {
                 border: '1px solid var(--border-color)',
               }}
             >
-              Same 2-star review • "Waited 45 minutes for food, arrived cold"
+              Same 1-star review • "Anniversary dinner ruined. Hour wait, cold steak, manager
+              shrugged."
             </span>
           </div>
 
