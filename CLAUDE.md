@@ -464,6 +464,15 @@ Erscheint nach JEDER Claude-Antwort. Keine extra Aktion noetig.
 **Loesung:** Konsistente Fallback-Kette: **Primary** (Opus/Sonnet) → **Haiku** → **GPT-4o-mini** (nur letzter Ausweg)
 **Lesson:** Haiku > GPT-4o-mini (gleicher Provider, bessere Qualitaet). GPT-4o-mini nur wenn Anthropic komplett down.
 
+### Tab Wrangler für MCP Tab Cleanup (18.01.2026)
+**Problem:** Viele parallele Claudes erstellen viele Chrome Tabs die sich ansammeln.
+**Root Cause:** Tab Wrangler hatte "Don't close tabs that are in a group" aktiviert - MCP Tabs sind in Tab-Gruppen!
+**Loesung:**
+1. "Don't close tabs that are in a group" DEAKTIVIEREN
+2. Timeout auf 5-10 Min senken (war 20 Min)
+3. Minimale Whitelist: `claude.ai`, `mail.google.com` (Claude öffnet was er braucht)
+**Lesson:** Tab Wrangler funktioniert für MCP Tab-Gruppen nur wenn Group-Protection AUS ist. Threshold 20+ Tabs + kurze Inaktivität (5-10 Min).
+
 ### Data Quality - DB Zahlen sind FAKE (17.01.2026)
 **Problem:** DB zeigte 61 User, 4.4% CTR - alles Bots und Test-Accounts!
 **Loesung:** `/data-analyze` Skill + `real-user-metrics.json` als Single Source of Truth
