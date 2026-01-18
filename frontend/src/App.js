@@ -3867,8 +3867,8 @@ const LandingPage = () => {
             }}
           />
           <p style={{ fontSize: '1.1rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
-            "I built ReviewResponder because I spent hours every week writing review responses for
-            my own business. Now I don't — and neither should you."
+            "After testing thousands of AI responses, I know exactly what makes one sound human —
+            and built a tool that gets it right."
           </p>
           <p
             style={{
