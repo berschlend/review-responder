@@ -67,14 +67,33 @@ Wohin darf ich die schicken? Email oder WhatsApp?"
 
 ---
 
+## DEIN ANGEBOT (WICHTIG!)
+
+> **"Erster Monat komplett kostenlos - testen Sie es einfach."**
+
+```
+"Wissen Sie was, ich mach Ihnen ein Angebot:
+Testen Sie es den ersten Monat komplett kostenlos.
+Wenn es Ihnen gefaellt, sind es danach 29 Euro im Monat.
+Wenn nicht, kuendigen Sie mit einem Klick. Kein Risiko."
+```
+
+**Warum das funktioniert:**
+- Null Risiko fuer sie
+- Sie koennen es WIRKLICH testen (nicht nur Demo ansehen)
+- Du musst nicht "verkaufen", nur zum Testen einladen
+
+---
+
 ## OBJECTION HANDLING
 
 | Einwand | Antwort |
 |---------|---------|
 | "Wir antworten selbst" | "Verstehe. Wie lange brauchen Sie pro Antwort? Unser Tool macht das in 10 Sekunden - Zeit die Sie fuer Gaeste haben." |
-| "Kein Budget" | "Die Starter-Version ist 29 Euro/Monat. Das ist eine Antwort pro Tag. Wenn eine gute Antwort einen Kunden zurueckbringt, hat sich das 10x bezahlt." |
-| "AI klingt robotisch" | "Genau deshalb die Demo - Sie sehen selbst ob es zu Ihrem Ton passt. Kostet Sie 2 Minuten." |
+| "Kein Budget" | "Der erste Monat ist komplett kostenlos. Danach 29 Euro - aber nur wenn es Ihnen gefaellt. Null Risiko." |
+| "AI klingt robotisch" | "Genau deshalb: Testen Sie es einen Monat kostenlos. Sie sehen selbst ob es zu Ihrem Ton passt." |
 | "Kein Interesse" | "Kein Problem. Falls Sie mal eine negative Review bekommen und nicht wissen wie antworten - reviewresponder.com. Schoenen Tag noch!" |
+| "Muss ich drueber nachdenken" | "Klar. Soll ich Ihnen die Demo schicken? Dann koennen Sie in Ruhe schauen, und der erste Monat ist sowieso kostenlos." |
 
 ---
 

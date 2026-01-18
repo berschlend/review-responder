@@ -5998,6 +5998,13 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
       }
     }
 
+    // FIRSTMONTHFREE - 30 day free trial for phone outreach leads
+    let trialDays = 0;
+    if (upperDiscountCode === 'FIRSTMONTHFREE' || upperDiscountCode === 'FREETRIAL') {
+      trialDays = 30;
+      console.log(`[First Month Free] 30-day trial for user ${user.id}`);
+    }
+
     const sessionConfig = {
       customer: user.stripe_customer_id,
       // Let Stripe automatically show all payment methods enabled in Dashboard
@@ -6021,6 +6028,17 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
     // Add discounts if available
     if (discounts.length > 0) {
       sessionConfig.discounts = discounts;
+    }
+
+    // Add free trial if FIRSTMONTHFREE code used
+    if (trialDays > 0) {
+      sessionConfig.subscription_data = {
+        trial_period_days: trialDays,
+        metadata: {
+          campaign: 'phone_outreach_trial',
+          user_id: user.id.toString(),
+        },
+      };
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);

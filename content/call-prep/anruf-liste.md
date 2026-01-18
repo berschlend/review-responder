@@ -4,6 +4,18 @@
 
 ---
 
+## DEIN ANGEBOT (Sag das bei JEDEM Anruf!)
+
+```
+"Erster Monat komplett kostenlos.
+Danach 29 Euro - aber nur wenn es Ihnen gefaellt.
+Kein Risiko, kuendigen mit einem Klick."
+```
+
+**Merke:** Du verkaufst nicht. Du lädst zum TESTEN ein. Null Druck.
+
+---
+
 ## Beste Anrufzeiten
 
 | Region | Beste Zeit (Lokalzeit) | Grund |
