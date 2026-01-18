@@ -1,37 +1,39 @@
-{
-    "agent": "burst-4-demo-generator",
-    "version": "3.0",
-    "status": "idle",
-    "started_at": "2026-01-18T14:30:00Z",
-    "last_heartbeat": "2026-01-18T15:15:00Z",
-    "current_loop": 3,
-    "loop_interval": "15m",
-    "metrics": {
-        "demos_generated_session": 33,
-        "demos_total": 815,
-        "leads_processed": 670,
-        "enrichment_triggered": 30,
-        "api_cost_today": 1.53,
-        "api_cost_month": 28.91,
-        "success_rate": 100
-    },
-    "health": {
-        "api_budget_ok": true,
-        "api_budget_percent": 29,
-        "memory_ok": true,
-        "stuck_detected": false,
-        "last_error": null
-    },
-    "checkpoints": {
-        "resume_from": null,
-        "last_successful_action": "idle-all-leads-processed",
-        "last_processed_id": null
-    },
-    "escalations_pending": [],
-    "learnings_applied": [
-        "Cache First API Second",
-        "Smaller batch sizes avoid Render timeout",
-        "Async enrichment pattern works well"
-    ],
-    "notes": "All available leads have demos. Waiting for new leads or enrichment to complete."
+﻿{
+    "agent":  "burst-4-demo-generator",
+    "version":  "3.0",
+    "status":  "completed",
+    "started_at":  "2026-01-18T14:30:00Z",
+    "last_heartbeat":  "2026-01-18T02:34:03Z",
+    "current_loop":  3,
+    "loop_interval":  "15m",
+    "metrics":  {
+                    "demos_generated_session":  33,
+                    "demos_total":  815,
+                    "leads_processed":  670,
+                    "enrichment_triggered":  30,
+                    "api_cost_today":  1.53,
+                    "api_cost_month":  28.91,
+                    "success_rate":  100
+                },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "api_budget_percent":  29,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  "idle-all-leads-processed",
+                        "last_processed_id":  null
+                    },
+    "escalations_pending":  [
+
+                            ],
+    "learnings_applied":  [
+                              "Cache First API Second",
+                              "Smaller batch sizes avoid Render timeout",
+                              "Async enrichment pattern works well"
+                          ],
+    "notes":  "All available leads have demos. Waiting for new leads or enrichment to complete."
 }

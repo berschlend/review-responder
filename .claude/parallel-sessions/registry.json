@@ -2,17 +2,27 @@
     "locks":  {
 
               },
-    "lastUpdated":  "2026-01-18T02:28:42.7819639+00:00",
+    "lastUpdated":  "2026-01-18T02:33:50.9125069+00:00",
     "sessions":  {
                      "RR":  {
                                 "workingOn":  {
 
                                               },
-                                "lastHeartbeat":  "2026-01-18T02:28:42.7749093+00:00",
-                                "startedAt":  "2026-01-18T02:26:10.2095393+00:00",
+                                "lastHeartbeat":  "2026-01-18T02:32:20.1693158+00:00",
+                                "startedAt":  "2026-01-18T02:32:20.1657906+00:00",
                                 "currentTask":  "",
-                                "activity":  "Running command",
-                                "pid":  11176
-                            }
+                                "activity":  "Session started",
+                                "pid":  20684
+                            },
+                     "BURST2":  {
+                                    "workingOn":  {
+
+                                                  },
+                                    "lastHeartbeat":  "2026-01-18T02:33:50.7682131+00:00",
+                                    "startedAt":  "2026-01-18T02:33:50.7636957+00:00",
+                                    "currentTask":  "",
+                                    "activity":  "Session started",
+                                    "pid":  31640
+                                }
                  }
 }

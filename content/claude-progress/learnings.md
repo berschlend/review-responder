@@ -833,3 +833,11 @@ RICHTIGE Interpretation:
 ### [2026-01-18 02:24] Burst-5
 - Leads with 2 follow-ups + no conversion need personal touch (phone call) not more emails. Documented 5 high-value leads (23k+ reviews) for Berend to call.
 
+
+### [2026-01-18 02:33] Burst-4
+- Demo Generation ist self-limiting: Nach 815 Demos waren alle Leads mit gueltigen Daten verarbeitet. Cron-Endpoint generiert nur Demos fuer Leads MIT Email - 1241 Leads brauchen noch Enrichment bevor Demos moeglich.
+
+
+### [2026-01-18 02:33] Burst-4
+- Batch Size 100 verursacht Render 502 Timeout. Batch Size 30-50 ist sicher. Async Pattern (Background Processing) funktioniert gut.
+
