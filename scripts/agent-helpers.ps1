@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier", "chrome-gmail", "chrome-admin", "chrome-monitor-setup", "goal-check", "likely-real", "hot-lead-add", "call-status", "sync-sticky-tasks", "call-alert")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "focus-update", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier", "chrome-gmail", "chrome-admin", "chrome-monitor-setup", "goal-check", "likely-real", "hot-lead-add", "call-status", "sync-sticky-tasks", "call-alert")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -212,6 +212,109 @@ switch ($Action) {
         } else {
             Write-Output "{}"
         }
+    }
+
+    "focus-update" {
+        # Update agent priorities in current-focus.json
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action focus-update -Agent 7 -Value 1 -Data "5 User am Limit"
+        # Or: powershell -File scripts/agent-helpers.ps1 -Action focus-update -Key "bottleneck" -Data '{"type":"activation","description":"..."}'
+
+        $focusFile = Join-Path $ProgressDir "current-focus.json"
+        if (-not (Test-Path $focusFile)) {
+            Write-Output "ERROR: current-focus.json not found"
+            exit 1
+        }
+
+        $focus = Get-Content $focusFile -Raw | ConvertFrom-Json
+
+        # Update agent priority
+        if ($Agent -gt 0) {
+            $agentKey = "burst-$Agent"
+            $newPriority = if ($Value) { [int]$Value } else { 1 }
+            $reason = if ($Data) { $Data } else { "Updated by agent" }
+
+            # Update priority
+            if ($focus.agent_priorities.$agentKey) {
+                $agentObj = $focus.agent_priorities.$agentKey
+                $agentObj.priority = $newPriority
+                $agentObj.reason = $reason
+                # Add or update optional fields using Add-Member -Force
+                $agentObj | Add-Member -NotePropertyName "updated_at" -NotePropertyValue (Get-Timestamp) -Force
+                $agentObj | Add-Member -NotePropertyName "updated_by" -NotePropertyValue $env:CLAUDE_SESSION -Force
+            }
+
+            # Update paused_agents list
+            $pausedList = [System.Collections.ArrayList]@($focus.resource_allocation.paused_agents)
+            if ($newPriority -eq 3) {
+                # Add to paused if not already there
+                if ($agentKey -notin $pausedList) {
+                    $pausedList.Add($agentKey) | Out-Null
+                }
+            } else {
+                # Remove from paused
+                $pausedList.Remove($agentKey)
+            }
+            $focus.resource_allocation.paused_agents = @($pausedList)
+
+            # Update high_priority_agents list
+            $highPrioList = [System.Collections.ArrayList]@($focus.resource_allocation.high_priority_agents)
+            if ($newPriority -eq 1) {
+                if ($agentKey -notin $highPrioList) {
+                    $highPrioList.Add($agentKey) | Out-Null
+                }
+            } else {
+                $highPrioList.Remove($agentKey)
+            }
+            $focus.resource_allocation.high_priority_agents = @($highPrioList)
+
+            Write-Output "OK: $agentKey priority set to $newPriority ($reason)"
+        }
+        # Update other keys (bottleneck, etc.)
+        elseif ($Key) {
+            switch ($Key) {
+                "bottleneck" {
+                    if ($Data) {
+                        $newBottleneck = $Data | ConvertFrom-Json
+                        $focus.current_bottleneck = $newBottleneck
+                        $focus.current_bottleneck | Add-Member -NotePropertyName "identified_at" -NotePropertyValue (Get-Timestamp) -Force
+                        $focus.current_bottleneck | Add-Member -NotePropertyName "identified_by" -NotePropertyValue $env:CLAUDE_SESSION -Force
+                        Write-Output "OK: Bottleneck updated to $($newBottleneck.type)"
+                    }
+                }
+                "tonight_focus" {
+                    if ($Data) {
+                        $newFocus = $Data | ConvertFrom-Json
+                        $focus.tonight_focus = $newFocus
+                        $focus.tonight_focus | Add-Member -NotePropertyName "set_at" -NotePropertyValue (Get-Timestamp) -Force
+                        $focus.tonight_focus | Add-Member -NotePropertyName "set_by" -NotePropertyValue $env:CLAUDE_SESSION -Force
+                        Write-Output "OK: Tonight focus updated"
+                    }
+                }
+                default {
+                    Write-Output "ERROR: Unknown key '$Key'. Use: bottleneck, tonight_focus"
+                    exit 1
+                }
+            }
+        }
+        else {
+            Write-Output "ERROR: Provide -Agent N or -Key name"
+            exit 1
+        }
+
+        # Save changes
+        $focus.last_updated = Get-Timestamp
+        $focus | Add-Member -NotePropertyName "last_updated_by" -NotePropertyValue $env:CLAUDE_SESSION -Force
+        $focus | ConvertTo-Json -Depth 10 | Set-Content -Path $focusFile -Encoding UTF8
+
+        # Log change
+        $logEntry = "$(Get-Date -Format 'yyyy-MM-dd HH:mm'): [$env:CLAUDE_SESSION] "
+        if ($Agent -gt 0) {
+            $logEntry += "Set burst-$Agent to priority $newPriority - $reason"
+        } else {
+            $logEntry += "Updated $Key"
+        }
+        $logFile = Join-Path $ProgressDir "focus-changes.log"
+        Add-Content -Path $logFile -Value $logEntry -Encoding UTF8
     }
 
     "wake-backend" {
