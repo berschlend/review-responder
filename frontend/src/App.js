@@ -644,6 +644,7 @@ const InstantDemoWidget = ({
   businessType = '',
   primaryColor = 'var(--primary)',
 }) => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [reviewText, setReviewText] = useState('');
@@ -1215,7 +1216,7 @@ const InstantDemoWidget = ({
               )}
             </button>
             <Link
-              to="/register"
+              to={user ? '/settings' : '/register'}
               className="btn btn-primary"
               style={{
                 padding: '8px 16px',
@@ -1225,7 +1226,7 @@ const InstantDemoWidget = ({
                 background: primaryColor,
               }}
             >
-              Get even better responses - Free
+              {user ? 'Customize your responses' : 'Get even better responses - Free'}
             </Link>
           </div>
         </div>
