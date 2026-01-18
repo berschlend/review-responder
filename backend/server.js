@@ -132,6 +132,63 @@ if (process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) {
   console.log('[Mailjet] Initialized');
 }
 
+// Elastic Email (100/day free, no credit card required)
+// API Docs: https://api.elasticemail.com/public/help
+const elasticEmailApiKey = process.env.ELASTIC_EMAIL_API_KEY || null;
+if (elasticEmailApiKey) {
+  console.log('[Elastic Email] Initialized (100/day free)');
+}
+
+// SMTP2GO (200/day free, 1000/month)
+// API Docs: https://developers.smtp2go.com/docs/send-an-email
+const smtp2goApiKey = process.env.SMTP2GO_API_KEY || null;
+if (smtp2goApiKey) {
+  console.log('[SMTP2GO] Initialized (200/day free)');
+}
+
+// SendPulse (400/day free = 12000/month, 50/hour limit)
+// API Docs: https://sendpulse.com/api
+const sendpulseUserId = process.env.SENDPULSE_USER_ID || null;
+const sendpulseSecret = process.env.SENDPULSE_SECRET || null;
+let sendpulseAccessToken = null;
+let sendpulseTokenExpiry = 0;
+
+async function getSendpulseToken() {
+  if (sendpulseAccessToken && Date.now() < sendpulseTokenExpiry) {
+    return sendpulseAccessToken;
+  }
+
+  if (!sendpulseUserId || !sendpulseSecret) return null;
+
+  try {
+    const response = await fetch('https://api.sendpulse.com/oauth/access_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        grant_type: 'client_credentials',
+        client_id: sendpulseUserId,
+        client_secret: sendpulseSecret
+      })
+    });
+
+    const data = await response.json();
+    if (data.access_token) {
+      sendpulseAccessToken = data.access_token;
+      sendpulseTokenExpiry = Date.now() + (data.expires_in - 60) * 1000; // Refresh 60s early
+      return sendpulseAccessToken;
+    }
+    console.error('[SendPulse] Token fetch failed:', data);
+    return null;
+  } catch (err) {
+    console.error('[SendPulse] Token fetch error:', err.message);
+    return null;
+  }
+}
+
+if (sendpulseUserId && sendpulseSecret) {
+  console.log('[SendPulse] Initialized (400/day free)');
+}
+
 // ==========================================
 // MULTI-PROVIDER EMAIL SYSTEM
 // ==========================================
@@ -139,7 +196,10 @@ if (process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) {
 // Priority: SES (unlimited) → Brevo (300) → MailerSend (100) → others
 
 const EMAIL_PROVIDER_LIMITS = {
-  ses: 50000, // Effectively unlimited - $0.10/1000 emails
+  ses: 50000, // Effectively unlimited - $0.10/1000 emails (SANDBOX MODE until approved!)
+  sendpulse: 400, // 12000/month = ~400/day, but 50/hour limit (NEW!)
+  smtp2go: 200, // 1000/month = ~33/day but 200/day limit on free tier (NEW!)
+  elasticemail: 100, // 100/day free, no monthly limit (NEW!)
   mailjet: 200, // 6000/month free = 200/day
   brevo: 300, // Has 0 credits currently!
   mailersend: 100, // 3000/month ÷ 30 days (trial limit reached)
@@ -166,7 +226,10 @@ async function getProviderCountsToday() {
       GROUP BY provider
     `);
 
-    const counts = { ses: 0, brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
+    const counts = {
+      ses: 0, sendpulse: 0, smtp2go: 0, elasticemail: 0, mailjet: 0,
+      brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0
+    };
     result.rows.forEach(row => {
       if (Object.prototype.hasOwnProperty.call(counts, row.provider)) {
         counts[row.provider] = parseInt(row.count);
@@ -177,7 +240,10 @@ async function getProviderCountsToday() {
     return counts;
   } catch (err) {
     console.error('[Email] Failed to get provider counts:', err.message);
-    return { ses: 0, brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
+    return {
+      ses: 0, sendpulse: 0, smtp2go: 0, elasticemail: 0, mailjet: 0,
+      brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0
+    };
   }
 }
 
@@ -186,12 +252,17 @@ async function getProviderCountsToday() {
 async function selectEmailProvider() {
   const counts = await getProviderCountsToday();
 
-  // Priority for OUTREACH: SES → Mailjet → Brevo → MailerSend → Mailgun → SendGrid
-  // Resend is RESERVED for transactional emails (welcome, magic link, password)
-  // Updated 18.01.2026: Mailjet added (200/day), Resend last to preserve quota
+  // Priority for OUTREACH (Updated 18.01.2026):
+  // 1. SES (SANDBOX until approved - will fail for non-verified emails)
+  // 2. NEW FREE PROVIDERS: SendPulse (400/day), SMTP2GO (200/day), Elastic Email (100/day)
+  // 3. Mailjet (200/day), Brevo (0 credits!), MailerSend, Mailgun, SendGrid
+  // 4. Resend is RESERVED for transactional emails (welcome, magic link, password)
   const providers = [
-    { name: 'ses', available: sesClient !== null },
-    { name: 'mailjet', available: mailjetClient !== null }, // 200/day free!
+    { name: 'ses', available: sesClient !== null }, // SANDBOX MODE!
+    { name: 'sendpulse', available: sendpulseUserId !== null && sendpulseSecret !== null }, // 400/day NEW!
+    { name: 'smtp2go', available: smtp2goApiKey !== null }, // 200/day NEW!
+    { name: 'elasticemail', available: elasticEmailApiKey !== null }, // 100/day NEW!
+    { name: 'mailjet', available: mailjetClient !== null }, // 200/day free
     { name: 'brevo', available: brevoApi !== null }, // 0 credits currently
     { name: 'mailersend', available: mailerSendClient !== null },
     { name: 'mailgun', available: mailgunClient !== null },
@@ -725,6 +796,88 @@ async function sendEmail({
         const result = await mailerSendClient.email.send(emailParams);
         messageId = result?.headers?.['x-message-id'] || `ms_${Date.now()}`;
         console.log(`[MailerSend] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
+      // ========== MAILJET ==========
+      // ========== SENDPULSE (NEW - 400/day free) ==========
+      else if (provider === 'sendpulse' && sendpulseUserId && sendpulseSecret) {
+        const token = await getSendpulseToken();
+        if (!token) throw new Error('SendPulse token fetch failed');
+
+        const response = await fetch('https://api.sendpulse.com/smtp/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: {
+              subject,
+              from: { name: fromName, email: fromEmail },
+              to: [{ email: to }],
+              html: finalHtml || undefined,
+              text: finalText || undefined,
+            },
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || JSON.stringify(data));
+        messageId = data.id || `sendpulse_${Date.now()}`;
+        console.log(`[SendPulse] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
+      // ========== SMTP2GO (NEW - 200/day free) ==========
+      else if (provider === 'smtp2go' && smtp2goApiKey) {
+        const response = await fetch('https://api.smtp2go.com/v3/email/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            api_key: smtp2goApiKey,
+            to: [`${to}`],
+            sender: `${fromName} <${fromEmail}>`,
+            subject,
+            html_body: finalHtml || undefined,
+            text_body: finalText || undefined,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.data?.error || !data.data?.succeeded) {
+          throw new Error(data.data?.error || 'SMTP2GO send failed');
+        }
+        messageId = data.request_id || `smtp2go_${Date.now()}`;
+        console.log(`[SMTP2GO] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
+      // ========== ELASTIC EMAIL (NEW - 100/day free) ==========
+      else if (provider === 'elasticemail' && elasticEmailApiKey) {
+        const response = await fetch('https://api.elasticemail.com/v4/emails/transactional', {
+          method: 'POST',
+          headers: {
+            'X-ElasticEmail-ApiKey': elasticEmailApiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            Recipients: {
+              To: [to],
+            },
+            Content: {
+              From: `${fromName} <${fromEmail}>`,
+              Subject: subject,
+              Body: [
+                ...(finalHtml ? [{ ContentType: 'HTML', Content: finalHtml }] : []),
+                ...(finalText ? [{ ContentType: 'PlainText', Content: finalText }] : []),
+              ],
+            },
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.Error || JSON.stringify(data));
+        }
+        messageId = data.TransactionID || data.MessageID || `elastic_${Date.now()}`;
+        console.log(`[Elastic Email] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
       }
       // ========== MAILJET ==========
       else if (provider === 'mailjet' && mailjetClient) {
@@ -15223,7 +15376,39 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
         limit: EMAIL_PROVIDER_LIMITS.ses,
         used: counts.ses,
         remaining: EMAIL_PROVIDER_LIMITS.ses - counts.ses,
-        note: 'Amazon SES - $0.10/1000 emails, effectively unlimited',
+        note: 'Amazon SES - SANDBOX MODE! Only verified emails until production approved',
+      },
+      {
+        name: 'sendpulse',
+        available: sendpulseUserId !== null && sendpulseSecret !== null,
+        limit: EMAIL_PROVIDER_LIMITS.sendpulse,
+        used: counts.sendpulse || 0,
+        remaining: EMAIL_PROVIDER_LIMITS.sendpulse - (counts.sendpulse || 0),
+        note: 'SendPulse - 400/day free (12k/month), 50/hour limit - NEW!',
+      },
+      {
+        name: 'smtp2go',
+        available: smtp2goApiKey !== null,
+        limit: EMAIL_PROVIDER_LIMITS.smtp2go,
+        used: counts.smtp2go || 0,
+        remaining: EMAIL_PROVIDER_LIMITS.smtp2go - (counts.smtp2go || 0),
+        note: 'SMTP2GO - 200/day free (1k/month) - NEW!',
+      },
+      {
+        name: 'elasticemail',
+        available: elasticEmailApiKey !== null,
+        limit: EMAIL_PROVIDER_LIMITS.elasticemail,
+        used: counts.elasticemail || 0,
+        remaining: EMAIL_PROVIDER_LIMITS.elasticemail - (counts.elasticemail || 0),
+        note: 'Elastic Email - 100/day free, no monthly limit - NEW!',
+      },
+      {
+        name: 'mailjet',
+        available: mailjetClient !== null,
+        limit: EMAIL_PROVIDER_LIMITS.mailjet,
+        used: counts.mailjet || 0,
+        remaining: EMAIL_PROVIDER_LIMITS.mailjet - (counts.mailjet || 0),
+        note: 'Mailjet - 200/day free (6k/month)',
       },
       {
         name: 'brevo',
@@ -15231,6 +15416,7 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
         limit: EMAIL_PROVIDER_LIMITS.brevo,
         used: counts.brevo,
         remaining: EMAIL_PROVIDER_LIMITS.brevo - counts.brevo,
+        note: 'Brevo - Currently 0 credits!',
       },
       {
         name: 'mailersend',
@@ -15238,6 +15424,7 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
         limit: EMAIL_PROVIDER_LIMITS.mailersend,
         used: counts.mailersend,
         remaining: EMAIL_PROVIDER_LIMITS.mailersend - counts.mailersend,
+        note: 'MailerSend - Trial limit may be reached',
       },
       {
         name: 'sendgrid',
@@ -15259,6 +15446,7 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
         limit: EMAIL_PROVIDER_LIMITS.resend,
         used: counts.resend,
         remaining: EMAIL_PROVIDER_LIMITS.resend - counts.resend,
+        note: 'Resend - RESERVED for transactional emails only!',
       },
     ];
 
@@ -15280,6 +15468,18 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
       setup_instructions: {
         ses: !process.env.AWS_SES_ACCESS_KEY_ID
           ? 'Add AWS_SES_ACCESS_KEY_ID, AWS_SES_SECRET_ACCESS_KEY, AWS_SES_REGION to Render'
+          : '✓ Configured (SANDBOX MODE - request production access!)',
+        sendpulse: !sendpulseUserId
+          ? 'Add SENDPULSE_USER_ID and SENDPULSE_SECRET to Render env vars (400/day free!)'
+          : '✓ Configured',
+        smtp2go: !smtp2goApiKey
+          ? 'Add SMTP2GO_API_KEY to Render env vars (200/day free!)'
+          : '✓ Configured',
+        elasticemail: !elasticEmailApiKey
+          ? 'Add ELASTIC_EMAIL_API_KEY to Render env vars (100/day free!)'
+          : '✓ Configured',
+        mailjet: !process.env.MAILJET_API_KEY
+          ? 'Add MAILJET_API_KEY and MAILJET_SECRET_KEY to Render env vars'
           : '✓ Configured',
         mailersend: !process.env.MAILERSEND_API_KEY
           ? 'Add MAILERSEND_API_KEY to Render env vars'
@@ -27986,7 +28186,122 @@ app.post('/api/admin/test-email', async (req, res) => {
         messageId: result.messageId || result.body?.messageId,
         message: 'Test email sent via Brevo. Check your inbox and spam folder!',
       });
-    } else if (resend) {
+    }
+    // ========== SENDPULSE TEST (NEW - 400/day free) ==========
+    else if (provider === 'sendpulse') {
+      if (!sendpulseUserId || !sendpulseSecret) {
+        return res.status(500).json({
+          error: 'SendPulse not configured',
+          details: 'Add SENDPULSE_USER_ID and SENDPULSE_SECRET to Render env vars',
+        });
+      }
+
+      const token = await getSendpulseToken();
+      if (!token) {
+        return res.status(500).json({ error: 'SendPulse token fetch failed' });
+      }
+
+      const response = await fetch('https://api.sendpulse.com/smtp/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: {
+            subject,
+            from: { name: 'ReviewResponder Test', email: 'outreach@tryreviewresponder.com' },
+            to: [{ email: to }],
+            html,
+          },
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || JSON.stringify(data));
+
+      return res.json({
+        success: true,
+        provider: 'sendpulse',
+        to,
+        messageId: data.id || `sendpulse_${Date.now()}`,
+        message: 'Test email sent via SendPulse (400/day free)!',
+      });
+    }
+    // ========== SMTP2GO TEST (NEW - 200/day free) ==========
+    else if (provider === 'smtp2go') {
+      if (!smtp2goApiKey) {
+        return res.status(500).json({
+          error: 'SMTP2GO not configured',
+          details: 'Add SMTP2GO_API_KEY to Render env vars',
+        });
+      }
+
+      const response = await fetch('https://api.smtp2go.com/v3/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: smtp2goApiKey,
+          to: [`${to}`],
+          sender: 'ReviewResponder Test <outreach@tryreviewresponder.com>',
+          subject,
+          html_body: html,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.data?.error || !data.data?.succeeded) {
+        throw new Error(data.data?.error || 'SMTP2GO send failed');
+      }
+
+      return res.json({
+        success: true,
+        provider: 'smtp2go',
+        to,
+        messageId: data.request_id || `smtp2go_${Date.now()}`,
+        message: 'Test email sent via SMTP2GO (200/day free)!',
+      });
+    }
+    // ========== ELASTIC EMAIL TEST (NEW - 100/day free) ==========
+    else if (provider === 'elasticemail') {
+      if (!elasticEmailApiKey) {
+        return res.status(500).json({
+          error: 'Elastic Email not configured',
+          details: 'Add ELASTIC_EMAIL_API_KEY to Render env vars',
+        });
+      }
+
+      const response = await fetch('https://api.elasticemail.com/v4/emails/transactional', {
+        method: 'POST',
+        headers: {
+          'X-ElasticEmail-ApiKey': elasticEmailApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          Recipients: { To: [to] },
+          Content: {
+            From: 'ReviewResponder Test <outreach@tryreviewresponder.com>',
+            Subject: subject,
+            Body: [{ ContentType: 'HTML', Content: html }],
+          },
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.Error || JSON.stringify(data));
+      }
+
+      return res.json({
+        success: true,
+        provider: 'elasticemail',
+        to,
+        messageId: data.TransactionID || data.MessageID || `elastic_${Date.now()}`,
+        message: 'Test email sent via Elastic Email (100/day free)!',
+      });
+    }
+    // ========== RESEND FALLBACK ==========
+    else if (resend) {
       const result = await resend.emails.send({
         from: FROM_EMAIL,
         to,
