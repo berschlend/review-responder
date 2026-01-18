@@ -1,31 +1,49 @@
-﻿{
-    "loop_interval":  "4h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-18T02:12:00Z",
-    "version":  "3.0",
-    "agent":  "burst-4-demo-generator",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+{
+    "agent": "burst-4-demo-generator",
+    "version": "3.0",
+    "status": "running",
+    "started_at": "2026-01-18T14:30:00Z",
+    "last_heartbeat": "2026-01-18T15:00:00Z",
+    "current_loop": 2,
+    "loop_interval": "15m",
+    "metrics": {
+        "demos_generated_today": 33,
+        "demos_total": 815,
+        "cache_hits": 0,
+        "api_calls": 118,
+        "api_cost_today": 1.53,
+        "api_cost_month": 28.91,
+        "success_rate": 100,
+        "actions_taken": 7
+    },
+    "health": {
+        "api_budget_ok": true,
+        "api_budget_percent": 29,
+        "memory_ok": true,
+        "stuck_detected": false,
+        "last_error": null
+    },
+    "checkpoints": {
+        "resume_from": null,
+        "last_successful_action": "generate-demos-batch",
+        "last_processed_id": null
+    },
+    "escalations_pending": [],
+    "learnings_applied": [
+        "Cache First API Second",
+        "Dental practices with bad reviews = HIGH PAIN",
+        "Smaller batch sizes avoid Render timeout"
+    ],
+    "session_summary": {
+        "demos_generated": 33,
+        "leads_processed": 570,
+        "pending_demo_emails": 0,
+        "notable_demos": [
+            "IMLAUER Sky - Bar & Restaurant",
+            "Munich Marriott Hotel",
+            "The Caledonian Edinburgh",
+            "Alinea",
+            "Hamburg Marriott Hotel"
+        ]
+    }
 }

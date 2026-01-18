@@ -384,6 +384,17 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Parallel Agent Spawning mit EncodedCommand (18.01.2026)
+**Problem:** Night-Agents sollten neue Claude-Terminals spawnen koennen, aber batch-file Ansatz crashte (File not found errors mit Windows Terminal).
+**Root Cause:** Windows Terminal (`wt`) parsed Argumente anders als erwartet. Batch-Files in TEMP wurden nicht gefunden wegen Pfad-Escaping und Timing.
+**Loesung:** Gleiches Pattern wie `start-agents.ps1`:
+1. PowerShell-Command als String bauen
+2. Mit `[System.Text.Encoding]::Unicode.GetBytes()` encoden
+3. Base64 mit `[Convert]::ToBase64String()`
+4. `Start-Process wt -ArgumentList "powershell -NoExit -EncodedCommand $encoded"`
+**Key Files:** `spawn-agent.ps1`, `parallel-session-manager.ps1`
+**Lesson:** Bei Windows Terminal IMMER EncodedCommand nutzen statt Batch-Files. Das ist das bewaehrte Pattern das auch `/priority-mode` und `/night-mode` verwenden.
+
 ### Async Cron Pattern fuer Render Timeout (18.01.2026)
 **Problem:** Lead Enrichment Endpoint (`/api/cron/enrich-outreach-leads`) wurde von Render nach 30s gekillt (502 Error). 1438 Leads hatten keine Email, nur 30/Tag wurden enriched.
 **Root Cause:** Render Free Tier hat 30s Request Timeout. Synchrone Verarbeitung von 30+ Leads dauert laenger.
