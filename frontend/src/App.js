@@ -4282,7 +4282,7 @@ const LandingPage = () => {
                 <span>•</span>
                 <span>Confident</span>
                 <span>•</span>
-                <span>Human</span>
+                <span>Personal</span>
               </div>
             </div>
           </div>
