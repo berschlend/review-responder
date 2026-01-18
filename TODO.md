@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 18.01.2026 22:30 (RR wrap-up - Chrome MCP Lead Scraper implementiert)
+> Letzte Aktualisierung: 18.01.2026 18:40 (ACC4 wrap-up - BSO Comparison mit echten ChatGPT vs ReviewResponder Outputs)
 
 ---
 
@@ -183,19 +183,21 @@
 
 ## 🟠 AKTUELL IN ARBEIT
 
-### Chrome Extension v1.7.0 - IM REVIEW
+### Chrome Extension v1.7.0 - IM REVIEW (BLOCKED)
 
 - [x] Extension v1.6.2 submitted (15.01.2026)
 - [x] v1.6.2 Review abgebrochen (18.01.2026) - Store-Listing bleibt erhalten!
 - [x] v1.7.0-store.zip hochgeladen und neu eingereicht (18.01.2026)
-- [ ] Wartet auf Chrome Review (1-3 Tage) → BLOCKED
-- [ ] Nach Approval: YouTube Demo-Video URL updaten
+- [ ] Wartet auf Chrome Review (1-3 Tage) → **BLOCKED**
 
-### Demo Videos (BLOCKED - warte auf One-Click Test)
+### BSO Comparison - Landing Page ✅ DONE (18.01.2026)
 
-- [ ] **Video 1:** 15 Sek Extension Demo
-  - BLOCKED: Warte auf One-Click Submit Test mit Google Business Account
-  - Script ready: `content/video-15s-ultra.md`
+- [x] Echter GPT-4o-mini Call mit generic prompt
+- [x] Echter ReviewResponder Call mit voller Customization
+- [x] First Principles: 3-Sterne nuancierte Review statt 1-Stern Disaster
+- [x] Review OBEN zeigen (Kontext zuerst)
+- [x] "comped" → "free dessert" (klarer)
+- [x] Tags: ChatGPT = [Placeholders] + "Thrilled" | ReviewResponder = Confident + Personal
 
 ---
 
