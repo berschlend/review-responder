@@ -11480,7 +11480,7 @@ Generate a response following the guidelines. Be specific to what they said. Var
   // Use Claude (Anthropic) with system parameter separated (Anthropic Best Practice)
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const completion = await anthropic.messages.create({
-    model: 'claude-opus-4-5-20251101',
+    model: 'claude-sonnet-4-20250514',
     max_tokens: 400,
     system: systemMessage,
     messages: [{ role: 'user', content: userMessage }],
