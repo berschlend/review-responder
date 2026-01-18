@@ -95,6 +95,11 @@ powershell -File "$env:USERPROFILE\parallel-session-manager.ps1" -Action claim-t
 - Chrome-Task nötig aber du hast kein Chrome → Spawn mit -Chrome
 - Zu viele Tasks für einen Agent → Spawn Backup
 
+**LIMIT: Max 15 aktive Agents!**
+- Spawn wird blockiert wenn >= 15 Agents laufen
+- Inaktive Agents (>10 Min ohne Heartbeat) zählen NICHT
+- Bei `SPAWN_BLOCKED:MAX_AGENTS` → Warte oder beende andere Agents
+
 ---
 
 ## CORE RULES

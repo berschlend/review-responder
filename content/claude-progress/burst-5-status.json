@@ -4,7 +4,7 @@
 
                           ],
     "current_loop":  1,
-    "started_at":  "2026-01-18T01:47:18Z",
+    "started_at":  "2026-01-18T02:12:00Z",
     "version":  "3.0",
     "agent":  "burst-5-hot-lead-chaser",
     "escalations_pending":  [
@@ -27,5 +27,5 @@
                     "actions_taken":  0
                 },
     "status":  "running",
-    "last_heartbeat":  "2026-01-18T02:04:18Z"
+    "last_heartbeat":  "2026-01-18T02:12:51Z"
 }

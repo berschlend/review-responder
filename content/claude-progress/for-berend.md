@@ -1,4 +1,40 @@
-# Progress Update - 17.01.2026
+# Progress Update - 18.01.2026
+
+**Update:** 18.01.2026 ~02:10 UTC | **Von:** Burst-5 (Hot Lead Chaser)
+
+---
+
+## 🔥 HOT LEADS FÜR PERSÖNLICHE ANSPRACHE
+
+> Diese Leads haben beide Follow-Ups bekommen und nicht konvertiert.
+> Sie brauchen jetzt **persönlichen Kontakt** (Anruf/Email).
+
+| Business | Email | Reviews | Warum HOT |
+|----------|-------|---------|-----------|
+| **ROLLERCOASTERRESTAURANT Vienna** | office@rollercoasterrestaurant.com | 23,164 | Registriert, 2 Follow-Ups, größtes Lead! |
+| **Sphere Tim Raue (2 Michelin!)** | i.schmidt@tv-turm.de | 8,474 | 2 Michelin Stars, Berlin TV-Turm |
+| **Le Bernardin NYC** | cgoldberg@le-bernardin.com | 4,008 | World-famous fine dining |
+| **Sofitel Munich** | h5413@sofitel.com | 4,496 | Luxury Hotel, registriert |
+| **25hours Vienna** | wien@25hours-hotels.com | 4,698 | Boutique Hotel, registriert |
+
+### Empfohlene Aktion
+1. **Anruf** bei ROLLERCOASTERRESTAURANT (größte Chance)
+2. **Personal Email** an Sphere Tim Raue (High-Value 2 Michelin)
+3. **Demo-Call anbieten** für Le Bernardin
+
+---
+
+## 📊 HEUTE GESENDET
+
+| Aktion | Count | Status |
+|--------|-------|--------|
+| Onboarding Emails | 28 | ✅ Gesendet |
+| Clicker Follow-Ups | 1 | ✅ msz@deutschebahn.com |
+| Registrierte User erreicht | 16 | ✅ Alle wichtigen |
+
+---
+
+# Ältere Updates (17.01)
 
 **Update:** 17.01.2026 ~16:45 UTC | **Von:** Burst-9 (Doctor) - System Health Check
 
