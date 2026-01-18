@@ -5923,24 +5923,28 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
     setLoading(true);
     try {
-      // Save profile with generated business context
+      // Save keywords to localStorage for Settings to pick up
+      if (keywords.trim()) {
+        localStorage.setItem('onboardingKeywords', keywords.trim());
+      }
+
+      // Save profile WITHOUT businessContext - will be generated in Settings
       await api.put('/auth/profile', {
         businessName: businessName.trim(),
         businessType: finalBusinessType,
-        businessContext: generatedContext || undefined,
+        // NO businessContext - user will generate it in Settings
       });
       updateUser({
         businessName: businessName.trim(),
         businessType: finalBusinessType,
-        businessContext: generatedContext || undefined,
       });
       // Complete onboarding
       await api.put('/auth/complete-onboarding');
       updateUser({ onboardingCompleted: true });
-      toast.success('Setup complete! Head to Generator to create responses.');
+      toast.success('Setup complete! Generate your AI context in Settings.');
       onComplete?.();
-      // Navigate to generator so user can immediately use their personalized AI
-      navigate('/generator');
+      // Navigate to Settings where keywords are cached for context generation
+      navigate('/settings');
     } catch (error) {
       console.error('Failed to save business profile:', error);
       toast.error('Failed to save profile');
