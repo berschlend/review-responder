@@ -21,6 +21,7 @@ const Mailgun = require('mailgun.js');
 const FormData = require('form-data');
 const { MailerSend, EmailParams, Sender, Recipient } = require('mailersend');
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
+const Mailjet = require('node-mailjet');
 const cron = require('node-cron');
 const {
   getFewShotExamples,
@@ -124,6 +125,13 @@ if (process.env.AWS_SES_ACCESS_KEY_ID && process.env.AWS_SES_SECRET_ACCESS_KEY) 
   console.log('[Amazon SES] Initialized - Region:', process.env.AWS_SES_REGION || 'eu-central-1');
 }
 
+// Mailjet (200/day free, good deliverability)
+let mailjetClient = null;
+if (process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) {
+  mailjetClient = Mailjet.apiConnect(process.env.MAILJET_API_KEY, process.env.MAILJET_SECRET_KEY);
+  console.log('[Mailjet] Initialized');
+}
+
 // ==========================================
 // MULTI-PROVIDER EMAIL SYSTEM
 // ==========================================
@@ -132,11 +140,12 @@ if (process.env.AWS_SES_ACCESS_KEY_ID && process.env.AWS_SES_SECRET_ACCESS_KEY) 
 
 const EMAIL_PROVIDER_LIMITS = {
   ses: 50000, // Effectively unlimited - $0.10/1000 emails
-  brevo: 300,
-  mailersend: 100, // 3000/month ÷ 30 days
+  mailjet: 200, // 6000/month free = 200/day
+  brevo: 300, // Has 0 credits currently!
+  mailersend: 100, // 3000/month ÷ 30 days (trial limit reached)
   sendgrid: 100,
   mailgun: 166, // 5000/month ÷ 30 days
-  resend: 100,
+  resend: 100, // Reserved for transactional!
 };
 
 // Get today's email count per provider (cached for 5 min)
@@ -177,12 +186,13 @@ async function getProviderCountsToday() {
 async function selectEmailProvider() {
   const counts = await getProviderCountsToday();
 
-  // Priority for OUTREACH: SES → Brevo → MailerSend → Mailgun → SendGrid
+  // Priority for OUTREACH: SES → Mailjet → Brevo → MailerSend → Mailgun → SendGrid
   // Resend is RESERVED for transactional emails (welcome, magic link, password)
-  // Updated 18.01.2026: Resend last to preserve quota for critical user emails
+  // Updated 18.01.2026: Mailjet added (200/day), Resend last to preserve quota
   const providers = [
     { name: 'ses', available: sesClient !== null },
-    { name: 'brevo', available: brevoApi !== null },
+    { name: 'mailjet', available: mailjetClient !== null }, // 200/day free!
+    { name: 'brevo', available: brevoApi !== null }, // 0 credits currently
     { name: 'mailersend', available: mailerSendClient !== null },
     { name: 'mailgun', available: mailgunClient !== null },
     { name: 'sendgrid', available: process.env.SENDGRID_API_KEY !== undefined },
@@ -715,6 +725,24 @@ async function sendEmail({
         const result = await mailerSendClient.email.send(emailParams);
         messageId = result?.headers?.['x-message-id'] || `ms_${Date.now()}`;
         console.log(`[MailerSend] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
+      // ========== MAILJET ==========
+      else if (provider === 'mailjet' && mailjetClient) {
+        const request = mailjetClient.post('send', { version: 'v3.1' }).request({
+          Messages: [
+            {
+              From: { Email: fromEmail, Name: fromName },
+              To: [{ Email: to }],
+              Subject: subject,
+              HTMLPart: finalHtml || undefined,
+              TextPart: finalText || undefined,
+              ReplyTo: replyTo ? { Email: replyTo } : undefined,
+            },
+          ],
+        });
+        const result = await request;
+        messageId = result.body?.Messages?.[0]?.MessageID || `mj_${Date.now()}`;
+        console.log(`[Mailjet] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
       }
       // ========== MAILGUN ==========
       else if (provider === 'mailgun' && mailgunClient) {
