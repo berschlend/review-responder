@@ -160,8 +160,24 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 ### Naechste Schritte
 1. **Cold Outreach mit Fixes weiterfuehren** - Jetzt korrekt konfiguriert
 2. **Bot-Filter IMMER nutzen** - `?exclude_bots=true` bei allen Metriken
-3. **SMB-Fokus** - Leads mit 50-500 Reviews, persoenliche Emails (nicht info@)
+3. **HIGH-PAIN Leads priorisieren** - 500-5000 Reviews = PAIN = VALUE!
 4. **Telefon-Outreach parallel** - Fuer Hot Leads (bereits registriert/geklickt)
+
+### Email Outreach Fixed (18.01 Abend)
+- ✅ **Brevo funktioniert!** (300/Tag, getestet via `/api/admin/test-email`)
+- ✅ **5 Super-High Leads importiert** (Score 80-105, 1500-6000 Reviews)
+- ✅ **5 Cold Emails gesendet** via send-cold-email Endpoint
+- ✅ **Neuer Enrichment Endpoint:** `/api/cron/enrich-outreach-leads?limit=100`
+  - Verarbeitet 100 Leads/Call (vs 30 in daily-outreach)
+  - Priorisiert High-Review Leads (2000+ zuerst)
+  - **Bei cron-job.org eintragen!** (alle 2h)
+
+### Neues Lead Scoring (18.01)
+Dokumentiert in `.claude/rules/sales.md`:
+- **500-2000 Reviews** = +40 (Established SMB mit PAIN)
+- **2000-5000 Reviews** = +50 (Big SMB mit SERIOUS PAIN!)
+- **Personal Email** = +20 (Entscheider erreichbar)
+- **info@, contact@** = -20 (erreicht nie Entscheider)
 
 ### Neue Features (18.01)
 - react-select Searchable Dropdown fuer Business Types
