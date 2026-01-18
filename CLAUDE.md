@@ -384,6 +384,16 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Async Cron Pattern fuer Render Timeout (18.01.2026)
+**Problem:** Lead Enrichment Endpoint (`/api/cron/enrich-outreach-leads`) wurde von Render nach 30s gekillt (502 Error). 1438 Leads hatten keine Email, nur 30/Tag wurden enriched.
+**Root Cause:** Render Free Tier hat 30s Request Timeout. Synchrone Verarbeitung von 30+ Leads dauert laenger.
+**Loesung:** Async Pattern implementiert:
+1. Endpoint antwortet SOFORT mit `{"success": true, "message": "Enrichment started..."}`
+2. Verarbeitung laeuft im Hintergrund weiter (nach `res.json()`)
+3. Cron-Job bei cron-job.org ruft alle 30 Minuten auf
+**Ergebnis:** 30 Leads/30min = 1440 Leads/Tag statt 30 Leads/Tag (48x schneller)
+**Lesson:** Bei Render Free Tier IMMER async Pattern nutzen fuer lange Tasks. Response sofort senden, dann weiterarbeiten.
+
 ### Multi-Layer Bot Detection fuer Magic Links (18.01.2026)
 **Problem:** MS365 SafeLinks klickte Magic Links mit normalen Browser User-Agents → 3 Fake-Accounts erstellt (H0796@accor.com, h9057@accor.com, i.schmidt@tv-turm.de).
 **Root Cause:** Bot-Detection basierte NUR auf User-Agent, aber Enterprise Security Scanner nutzen normale Chrome/Edge UAs.
