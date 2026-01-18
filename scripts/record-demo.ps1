@@ -191,25 +191,57 @@ function Process-Video {
 
     Write-Color "`nStarte Post-Processing..." "Yellow"
 
+    # Edge Case: Input file exists and has content?
+    if (-not (Test-Path $InputPath)) {
+        Write-Color "  FEHLER: Input-Datei nicht gefunden: $InputPath" "Red"
+        return $null
+    }
+
+    $inputSize = (Get-Item $InputPath).Length
+    if ($inputSize -lt 10000) {  # Less than 10KB = probably corrupt
+        Write-Color "  FEHLER: Recording zu klein ($inputSize bytes) - moeglicherweise korrupt" "Red"
+        Write-Host "  Bitte nochmal aufnehmen."
+        return $null
+    }
+
     $pythonScript = "$ProjectDir\scripts\demo-video-postprocess.py"
-    $outputPath = "$OutputDir\demo-video-final.mp4"
+
+    # Timestamp fuer unique filename
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $outputPath = "$OutputDir\demo-video-$timestamp.mp4"
 
     if (Test-Path $pythonScript) {
-        python $pythonScript $InputPath $outputPath
+        Write-Color "  Verarbeite: $InputPath" "Gray"
+        Write-Color "  Output: $outputPath" "Gray"
+
+        # Run Python with error capture
+        $result = python $pythonScript $InputPath $outputPath 2>&1
 
         if (Test-Path $outputPath) {
-            Write-Color "`nFERTIG! Video gespeichert:" "Green"
-            Write-Host "  $outputPath"
+            $outputSize = (Get-Item $outputPath).Length
+            if ($outputSize -gt 10000) {
+                Write-Color "`nFERTIG! Video gespeichert:" "Green"
+                Write-Host "  $outputPath"
+                Write-Host "  Groesse: $([math]::Round($outputSize / 1MB, 2)) MB"
 
-            # Video oeffnen
-            Start-Process $outputPath
-            return $outputPath
+                # Video oeffnen
+                Start-Process $outputPath
+                return $outputPath
+            } else {
+                Write-Color "  FEHLER: Output-Video zu klein - FFmpeg Problem?" "Red"
+            }
+        } else {
+            Write-Color "  FEHLER: Output-Video nicht erstellt" "Red"
+            Write-Host "  Python Output: $result"
         }
     } else {
         Write-Color "Post-Processing Script nicht gefunden: $pythonScript" "Red"
     }
 
-    return $null
+    # Fallback: Original Video oeffnen
+    Write-Color "`nFallback: Oeffne Original-Recording ohne Overlays..." "Yellow"
+    Start-Process $InputPath
+    return $InputPath
 }
 
 # ========== MAIN ==========

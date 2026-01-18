@@ -809,3 +809,7 @@ RICHTIGE Interpretation:
 
 **Lesson:** Die "Cold Email = Gescheitert" Schlussfolgerung war VERFRÜHT. Erst nach SES Production mit optimiertem System können wir valide Daten sammeln.
 
+
+### [2026-01-18 02:05] Burst-5
+- Bot filter shows 100% of 39 clicks were bots. Real hot leads are REGISTERED users who never used the product - 16 found and emailed.
+
