@@ -437,9 +437,13 @@ const KNOWN_TEST_BURSTS = [
  * @param {string} emailColumn - Column name for email (default: 'email')
  * @returns {string} SQL AND clause
  */
-function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 'email') {
-  // 2026-01-18: Removed midnight filter - was too aggressive, filtering REAL clicks like Le Bernardin
-  // The filterSequentialClicks() function already catches bursts via 3+ clicks per minute detection
+function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 'email', tablAlias = '') {
+  // 2026-01-18: Use is_bot flag (set at click-time via user-agent detection)
+  // This is more reliable than time-based filtering which was removing real clicks
+
+  // Primary filter: Use is_bot column (catches Go-http-client, python-requests, etc.)
+  const isBotColumn = tablAlias ? `${tablAlias}.is_bot` : 'is_bot';
+  const botFlagFilter = `(${isBotColumn} = false OR ${isBotColumn} IS NULL)`;
 
   // Filter known test burst periods (only if explicitly confirmed)
   let testBurstFilters = '1=1'; // Default: no filter
@@ -453,7 +457,7 @@ function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 
     }).join(' AND ');
   }
 
-  // Filter known bot email patterns
+  // Filter known bot email patterns (backup filter)
   const botPatternClauses = BOT_EMAIL_PATTERNS.map(p => {
     if (p.includes('%')) {
       return `${emailColumn} NOT LIKE '${p}'`;
@@ -461,7 +465,7 @@ function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 
     return `LOWER(${emailColumn}) != '${p.toLowerCase()}'`;
   }).join(' AND ');
 
-  return `AND ${testBurstFilters} AND ${botPatternClauses}`;
+  return `AND ${botFlagFilter} AND ${testBurstFilters} AND ${botPatternClauses}`;
 }
 
 /**
@@ -28024,7 +28028,7 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     let hotLeadsRaw = []; // Before sequential filter
     try {
       const CLICKS_EMAIL_FILTER = getTestEmailExcludeClause('c.email');
-      const BOT_FILTER = excludeBots ? getBotClickExcludeClause('c.clicked_at', 'c.email') : '';
+      const BOT_FILTER = excludeBots ? getBotClickExcludeClause('c.clicked_at', 'c.email', 'c') : '';
       hotLeadsRaw =
         (await dbAll(`
         SELECT DISTINCT ON (c.email)
@@ -28042,12 +28046,12 @@ app.get('/api/outreach/dashboard', async (req, res) => {
         ORDER BY c.email, c.clicked_at DESC
       `)) || [];
 
-      // Apply sequential/burst filter for stricter bot detection
-      if (excludeBots) {
-        hotLeads = filterSequentialClicks(hotLeadsRaw, 30); // Min 30s gap between clicks
-      } else {
-        hotLeads = hotLeadsRaw;
-      }
+      // 2026-01-18: Disabled sequential/burst filter - was filtering REAL clicks!
+      // The click-analysis endpoint showed 90.6% of clicks are real (163/180)
+      // but this burst filter removed ALL of them because multiple people
+      // check email at similar times (normal behavior, not bots).
+      // SQL-based bot filter (user-agent patterns) is sufficient.
+      hotLeads = hotLeadsRaw;
     } catch (e) {
       // Hot leads query failed
     }
@@ -28156,12 +28160,11 @@ app.get('/api/outreach/dashboard', async (req, res) => {
         filters_applied: excludeBots
           ? [
               'bot_email_patterns (scanner domains)',
-              'sequential_clicks (<30s gap)',
-              'burst_detection (3+ per minute)',
+              'user_agent_detection (Go-http-client, python-requests)',
             ]
           : [],
         note: excludeBots
-          ? 'Filtered: bots, test periods, sequential clicks, burst patterns'
+          ? 'Filtered: known bot user-agents and email patterns'
           : 'Use ?exclude_bots=true for accurate click data',
       },
       hot_leads: hotLeads,
