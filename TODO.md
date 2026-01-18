@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 18.01.2026 (Session wrap-up)
+> Letzte Aktualisierung: 18.01.2026 18:30 (BURST-1 wrap-up - Bot Filter Fix)
 
 ---
 
