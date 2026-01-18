@@ -810,8 +810,8 @@ async function sendEmail({
     } catch (providerError) {
       console.error(`[${provider}] Failed: ${providerError.message}`);
 
-      // Try next available provider (Resend first - Brevo has 0 credits!)
-      const nextProviders = ['resend', 'brevo', 'mailersend', 'mailgun', 'sendgrid'].filter(
+      // Try next available provider (Resend LAST - reserved for transactional!)
+      const nextProviders = ['mailjet', 'brevo', 'mailersend', 'mailgun', 'sendgrid', 'resend'].filter(
         p => !triedProviders.has(p)
       );
       if (nextProviders.length === 0) {
@@ -819,9 +819,9 @@ async function sendEmail({
         break;
       }
 
-      // Find next provider that's actually available (Resend priority)
+      // Find next provider that's actually available (Resend last - reserved!)
       for (const next of nextProviders) {
-        if (next === 'resend' && resend) {
+        if (next === 'mailjet' && mailjetClient) {
           provider = next;
           break;
         }
@@ -838,6 +838,10 @@ async function sendEmail({
           break;
         }
         if (next === 'sendgrid' && process.env.SENDGRID_API_KEY) {
+          provider = next;
+          break;
+        }
+        if (next === 'resend' && resend) {
           provider = next;
           break;
         }
