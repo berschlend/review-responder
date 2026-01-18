@@ -74,6 +74,22 @@ const AI_SLOP_PHRASES = [
   'hope to see you',
   'swing by',
   'stop by again',
+  // Anti-groveling (Souveränität) - 2026 update
+  'I sincerely apologize',
+  'truly sorry',
+  'deeply sorry',
+  'deeply apologize',
+  'we failed',
+  'is inexcusable',
+  'is unacceptable',
+  'should never have happened',
+  'please give us another chance',
+  'we beg',
+  'Please reach out',
+  'Please contact me',
+  'I am sorry',
+  'I am truly sorry',
+  "That's completely unacceptable",
 ];
 
 const AI_SLOP_STARTS = [
@@ -99,7 +115,7 @@ const industryExamples = {
     negative: {
       review: 'Waited 45 minutes for our food. When it finally arrived, it was cold.',
       response:
-        "45 minutes and cold food. That's on us. Reach out directly and we'll make it right.",
+        "45 minutes and cold - that's not okay. Email me directly.",
     },
     terminology: ['reservation', 'table', 'chef', 'kitchen', 'menu', 'dish', 'service'],
   },
@@ -110,7 +126,7 @@ const industryExamples = {
     },
     negative: {
       review: 'My order was wrong twice. Staff seemed confused.',
-      response: "Two wrong orders is frustrating. Stop by again and ask for me directly. I'll make sure it's right.",
+      response: "Two wrong orders - noted. Ask for me next time, I'll sort it out.",
     },
     terminology: ['barista', 'roast', 'espresso', 'blend', 'pour-over', 'latte art', 'single-origin'],
   },
@@ -124,7 +140,7 @@ const industryExamples = {
     negative: {
       review: 'Had to wait 40 minutes past my appointment time. Very frustrating.',
       response:
-        "40 minutes is too long. We're working on our scheduling. Email us and we'll prioritize your next visit.",
+        "40 minutes wait - too long. We're looking at that. Email us for your next slot.",
     },
     terminology: ['procedure', 'hygienist', 'cleaning', 'x-ray', 'crown', 'filling', 'appointment'],
   },
@@ -136,7 +152,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Came 3 hours late and charged more than the quote.',
-      response: "Late arrival and price surprise. That's not how we operate. Let me review your invoice directly.",
+      response: "3 hours late plus price surprise - send me the invoice, I'll look at it.",
     },
     terminology: ['pipe', 'drain', 'faucet', 'leak', 'water heater', 'pressure', 'fixture', 'clog'],
   },
@@ -147,7 +163,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Left exposed wires after installing new outlet. Dangerous work.',
-      response: 'Exposed wires are unacceptable. Please call me immediately so I can send someone today.',
+      response: "Exposed wires - call me now. I'll send someone today.",
     },
     terminology: ['panel', 'circuit', 'outlet', 'wiring', 'breaker', 'voltage', 'load', 'code'],
   },
@@ -158,7 +174,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Charged $400 for a $50 capacitor. Complete ripoff.',
-      response: 'Parts cost varies but that markup sounds wrong. Send me the invoice and I will review it.',
+      response: "That markup sounds off. Send me the invoice, I'll review it.",
     },
     terminology: ['compressor', 'refrigerant', 'thermostat', 'ductwork', 'filter', 'coil', 'BTU', 'SEER rating'],
   },
@@ -169,7 +185,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Found 3 leaks after the "repair". Had to call another company.',
-      response: 'Leaks after a repair means we failed. Please contact me so we can inspect and make this right.',
+      response: "Leaks after repair - that needs fixing. Call me, I'll come take a look.",
     },
     terminology: ['shingle', 'flashing', 'underlayment', 'ridge', 'gutter', 'soffit', 'leak', 'inspection'],
   },
@@ -180,7 +196,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Plants died within a month. No follow-up despite warranty promise.',
-      response: 'Dead plants in a month means something went wrong. Reach out and we will honor our warranty.',
+      response: "Plants dead in a month - something went wrong. Call me, warranty's on.",
     },
     terminology: ['irrigation', 'mulch', 'hardscape', 'sod', 'drainage', 'grading', 'native plants', 'design'],
   },
@@ -191,7 +207,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Missed the bathrooms entirely. Had to do them myself.',
-      response: 'Missing bathrooms completely is a major oversight. Please let me send the team back at no charge.',
+      response: "Missed bathrooms - that's a miss. Let me send the team back, no charge.",
     },
     terminology: ['deep clean', 'move-out', 'sanitize', 'detail', 'recurring', 'eco-friendly', 'checklist'],
   },
@@ -203,7 +219,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Filed late and we got penalties. Unacceptable.',
-      response: 'Late filing causing penalties is our responsibility. Contact me to discuss how we fix this.',
+      response: "Late filing with penalties - call me. We'll sort this out.",
     },
     terminology: ['deduction', 'filing', 'audit', 'quarterly', 'bookkeeping', 'tax planning', 'CPA', 'return'],
   },
@@ -214,7 +230,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Claim was denied and agent disappeared. No help at all.',
-      response: 'Claim denial with no support is unacceptable. Please call the office and ask for me directly.',
+      response: "Claim denied and no callback - not good. Call the office, ask for me directly.",
     },
     terminology: ['premium', 'deductible', 'coverage', 'claim', 'policy', 'bundle', 'liability', 'quote'],
   },
@@ -225,7 +241,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Felt judged during our session. Will not be returning.',
-      response: 'Therapy should be a safe space. I am sorry that was not your experience. Please reach out if you would like to discuss.',
+      response: "That's not my intention. If you're open to it, reach out and we can talk.",
     },
     terminology: ['session', 'coping', 'boundaries', 'progress', 'appointment', 'confidential', 'therapeutic'],
   },
@@ -236,7 +252,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Caregiver no-showed twice. My father was left alone.',
-      response: 'No-shows with a loved one depending on us is inexcusable. Contact me immediately to discuss.',
+      response: "Two no-shows - that can't happen. Call me directly so we can fix this.",
     },
     terminology: ['caregiver', 'companion', 'medication management', 'mobility', 'respite', 'ADL', 'care plan'],
   },
@@ -248,7 +264,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Received photos 4 months late. Missed our anniversary.',
-      response: 'Four months is far too long. I understand the frustration. Please contact me to discuss.',
+      response: "4 months - way too long. Call me so we can work something out.",
     },
     terminology: ['session', 'editing', 'gallery', 'prints', 'RAW files', 'lighting', 'retouching', 'turnaround'],
   },
@@ -259,7 +275,7 @@ const industryExamples = {
     },
     negative: {
       review: 'DJ played wrong songs, cake was late. Coordination was a mess.',
-      response: 'Your wedding day deserved better coordination. I am truly sorry. Please reach out so we can discuss.',
+      response: "DJ and cake both off - that's a coordination miss. Email me so we can talk.",
     },
     terminology: ['ceremony', 'reception', 'vendor', 'timeline', 'rehearsal', 'coordination', 'floral', 'venue'],
   },
@@ -270,7 +286,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Picked up my child with a dirty diaper. Staff seemed overwhelmed.',
-      response: 'That should never happen. Please contact me directly so we can address this immediately.',
+      response: "Dirty diaper at pickup - that's a miss. Call me directly so we can address this.",
     },
     terminology: ['curriculum', 'ratio', 'learning centers', 'nap time', 'pickup', 'developmental milestones'],
   },
@@ -282,7 +298,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Item arrived damaged. Return process was a nightmare.',
-      response: 'Damaged item plus difficult return is double frustration. Email me your order number for immediate help.',
+      response: "Damaged plus hard return - that's double frustration. Email me your order number.",
     },
     terminology: ['shipping', 'tracking', 'return', 'refund', 'order', 'packaging', 'customer service'],
   },
@@ -293,7 +309,7 @@ const industryExamples = {
     },
     negative: {
       review: 'App crashed during important presentation. Cost us a client.',
-      response: 'Downtime during a presentation is unacceptable. Please contact support with details so we can investigate and make this right.',
+      response: "Crash during a presentation - send details to support so we can investigate.",
     },
     terminology: ['onboarding', 'integration', 'uptime', 'support ticket', 'feature request', 'subscription'],
   },
@@ -306,7 +322,7 @@ const industryExamples = {
     negative: {
       review: 'Room was not clean when we arrived. Had to wait for housekeeping to come back.',
       response:
-        "That's not the welcome we want for anyone. Contact us and we'll make your next stay right.",
+        "Not clean on arrival - that's a miss. Contact us for your next stay.",
     },
   },
   salon: {
@@ -317,7 +333,7 @@ const industryExamples = {
     },
     negative: {
       review: 'Color came out completely different from what I asked for. Very disappointed.',
-      response: "That's not okay. Please come back and we'll fix it, no charge.",
+      response: "Color off - come back and we'll fix it, no charge.",
     },
   },
   medical: {
@@ -328,7 +344,7 @@ const industryExamples = {
     negative: {
       review: 'Felt rushed during my appointment. Doctor barely looked at me.',
       response:
-        "That's not the care we want to provide. Please reach out so we can discuss your concerns properly.",
+        "Rushed appointment - that's not our standard. Call us to discuss.",
     },
   },
   automotive: {
@@ -340,7 +356,7 @@ const industryExamples = {
     negative: {
       review: 'Charged me for parts they never replaced. Found the old parts still in my car.',
       response:
-        "That's completely unacceptable. Please contact me directly so we can review what happened and make this right.",
+        "Parts charged but not replaced - send me the invoice, I'll look into it.",
     },
   },
   fitness: {
@@ -352,7 +368,7 @@ const industryExamples = {
     negative: {
       review: 'Impossible to cancel membership. Been trying for 3 months.',
       response:
-        "That shouldn't happen. Email me directly with your details and I'll handle the cancellation myself today.",
+        "3 months to cancel - that's too long. Email me your details, I'll handle it today.",
     },
   },
   legal: {
@@ -363,7 +379,7 @@ const industryExamples = {
     negative: {
       review: 'Never returned my calls. Felt completely ignored during my case.',
       response:
-        "Communication is fundamental to good legal service. I'm sorry we fell short. Please contact me directly to discuss.",
+        "No callbacks - that's a problem. Call me directly to discuss.",
     },
   },
   retail: {
@@ -374,7 +390,7 @@ const industryExamples = {
     negative: {
       review: 'Online order was wrong and customer service was unhelpful.',
       response:
-        "Wrong orders frustrate everyone. Email us your order number and we'll fix this immediately.",
+        "Wrong order plus no help - email us your order number, we'll fix it.",
     },
   },
   realestate: {
@@ -387,7 +403,7 @@ const industryExamples = {
     negative: {
       review: 'Agent never returned our calls. Lost a house we loved because of slow response.',
       response:
-        'Slow response cost you a home. That is unacceptable. Please contact our broker directly.',
+        "Lost a house due to slow response - contact our broker directly.",
     },
   },
   homeservices: {
@@ -398,7 +414,7 @@ const industryExamples = {
     negative: {
       review: 'Quoted $200, charged $500. No explanation for the difference.',
       response:
-        "Price jumps without explanation are not okay. Call me directly with your invoice and we'll review it.",
+        "$200 to $500 with no explanation - call me with the invoice, I'll review it.",
     },
   },
   pets: {
@@ -409,7 +425,7 @@ const industryExamples = {
     negative: {
       review: 'Picked up my cat with a small cut. Staff said it was already there.',
       response:
-        'Any injury is concerning. Please contact me directly so we can review what happened.',
+        "Cat with a cut - call me so we can review what happened.",
     },
   },
   generic: {
@@ -420,7 +436,7 @@ const industryExamples = {
     negative: {
       review: 'Poor experience. Service was slow and staff seemed uninterested.',
       response:
-        "That's not the experience we want anyone to have. Reach out directly and we'll make it right.",
+        "Slow service and uninterested staff - noted. Reach out directly.",
     },
   },
 };

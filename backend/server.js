@@ -4607,25 +4607,28 @@ async function generateResponseHandler(req, res) {
         avoid: 'Ignoring their slight criticism',
       },
       3: {
-        goal: 'Show you take feedback seriously',
+        goal: 'Stay sovereign - acknowledge without groveling',
         approach:
-          'Acknowledge their mixed experience, express desire to do better, invite them to give you another chance',
-        length: '3-4 sentences',
-        avoid: 'Being dismissive or overly apologetic',
+          'Brief acknowledgment of specific issue. No "sorry" needed. Offer path forward in 1 sentence.',
+        tone: 'Calm professional who heard the feedback. Not defensive, not apologetic.',
+        length: '2-3 sentences',
+        avoid: 'Apologizing, begging for another chance, self-criticism ("we failed")',
       },
       2: {
-        goal: 'Recover the relationship',
+        goal: 'Stay sovereign - address the issue directly',
         approach:
-          'Sincerely acknowledge disappointment, take responsibility, offer concrete resolution',
-        length: '3-4 sentences',
-        avoid: 'Making excuses or being defensive',
+          'Name the problem briefly. Offer direct contact. No groveling, no drama.',
+        tone: 'Busy owner who takes note and offers a fix. Not panicking.',
+        length: '2-3 sentences',
+        avoid: 'Over-apologizing, "truly sorry", "inexcusable", begging',
       },
       1: {
-        goal: 'Stay sovereign, show professionalism to future readers',
+        goal: 'Stay sovereign - handle criticism with quiet confidence',
         approach:
-          'Acknowledge frustration, take ownership briefly, offer direct contact to resolve',
+          'Acknowledge the issue in few words. Direct path to resolution. Move on.',
+        tone: 'Experienced owner who has seen it all. Calm, brief, professional.',
         length: '2-3 sentences',
-        avoid: 'Arguing, making excuses, passive-aggressive tone, over-apologizing',
+        avoid: 'Arguing, groveling, "we failed", "unacceptable", "please give us another chance"',
       },
     };
 
@@ -4731,6 +4734,36 @@ These sound human:
 - "That's on us. Email me directly and we'll fix it."
 - "[Name] will love hearing this."
 </good_response_patterns>
+
+<sovereign_response_patterns>
+WHY THIS MATTERS:
+Future customers read these responses. They judge the business by HOW the owner handles criticism.
+A groveling response signals weakness. A sovereign response signals professionalism.
+
+WHAT "SOVEREIGN" MEANS:
+You're a calm professional who heard the feedback. You're not panicking.
+You're not begging for forgiveness. You're handling it with quiet confidence.
+Think: experienced restaurant owner who's seen it all vs. nervous new hire.
+
+FOR NEGATIVE REVIEWS (1-3 stars), use these patterns:
+- "Das schauen wir uns an. Meld dich." (We'll look into it. Get in touch.)
+- "Geht nicht. Schreib mir direkt." (Not acceptable. Email me.)
+- "Verstehe ich. Mail mir." (I understand. Email me.)
+- "Notiert. Danke für den Hinweis." (Noted. Thanks for the heads up.)
+- "Fair point. Das checken wir." (Fair point. We'll check that.)
+
+NEVER use these groveling patterns:
+- "We failed" / "That's unacceptable" / "inexcusable" (self-flagellation)
+- "I'm so sorry" / "truly sorry" / "deeply apologize" (over-apologizing)
+- "Please reach out" / "Please contact me" (sounds begging)
+- "give us another chance" / "we'll do better" (sounds desperate)
+- "should never have happened" (dramatic)
+
+THE MENTAL MODEL:
+You're a busy owner checking reviews on your phone. Someone complained.
+You acknowledge it, offer a path forward, done. No drama. No essay. No groveling.
+Move on to the next thing.
+</sovereign_response_patterns>
 
 ${avoidPatternsSection}
 
